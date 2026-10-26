@@ -19,14 +19,4 @@ Pengembangan aplikasi penjualan dan manajemen stok yang mencakup katalog produk,
 
 Jira: https://amarabdlhkm.atlassian.net/browse/CHIK-7
 
-## Metodologi
 
-Scrum, dengan pelaksanaan Sprint 0 sampai Sprint 4.
-
-## Teknologi
-
-Akan ditentukan bersama tim Backend dan Frontend.
-
-## Status Proyek
-
-Tahap persiapan dan pengembangan awal.
