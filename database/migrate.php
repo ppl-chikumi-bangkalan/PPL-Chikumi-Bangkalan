@@ -1,6 +1,6 @@
 <?php
 // database/migrate.php
-require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/db.php';
 
 try {
     // Nonaktifkan foreign key checks sementara saat drop tabel
@@ -29,6 +29,7 @@ try {
         phone_number VARCHAR(20) UNIQUE NULL,
         password VARCHAR(255) NOT NULL,
         role ENUM('owner', 'cashier', 'customer') NOT NULL DEFAULT 'customer',
+        remember_token VARCHAR(100) NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB;");
