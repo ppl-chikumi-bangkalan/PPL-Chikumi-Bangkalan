@@ -1,6 +1,6 @@
 <?php
 // database/seed.php
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/db.php';
 
 try {
     // 1. Seed Users (Owner & Kasir)
