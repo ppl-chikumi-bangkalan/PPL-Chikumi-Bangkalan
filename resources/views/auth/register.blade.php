@@ -49,112 +49,180 @@
             </div>
         </section>
 
+        <!-- BAGIAN KANAN / FORM REGISTER -->
+        <section class="flex flex-col items-center justify-center bg-[#FFF3E6] px-5 py-8 sm:px-10 sm:py-12 lg:px-14">
 
-        <!-- BAGIAN KANAN / FORM LOGIN -->
-        <section class="bg-[#FFF3E6] flex flex-col items-center justify-center px-5 py-8 sm:px-10 sm:py-12 lg:px-14">
+            <!-- CARD REGISTER -->
+            <div class="bg-white p-5 rounded-2xl w-full max-w-2xl">
 
-            <div class="bg-white p-5 rounded-2xl w-full max-w-md">
+                <!-- KEMBALI KE LOGIN -->
+                <a href="/login"
+                    class="mb-7 inline-flex items-center gap-2 text-sm font-medium text-[#756D66] transition hover:text-[#FF8000]">
 
-                <div class="mb-7">
-                    <h2 class="text-2xl font-bold text-neutral-800 sm:text-3xl">
-                        Masuk ke Akun
-                    </h2>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                        stroke="currentColor" class="size-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6" />
+                    </svg>
 
-                    <p class="mt-2 text-xs leading-relaxed text-neutral-500">
-                        Gunakan email atau nomor WhatsApp dan password.
-                        Sistem akan mengarahkanmu sesuai hak akses akun.
+                    Kembali ke Masuk
+                </a>
+
+                <!-- JUDUL -->
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-[#24211F] sm:text-3xl">
+                        Buat Akun Pelanggan
+                    </h1>
+
+                    <p class="mt-2 text-sm leading-relaxed text-[#81766E]">
+                        Isi data di bawah. Nomor WhatsApp dipakai untuk konfirmasi pesanan.
                     </p>
                 </div>
 
-                <!-- FORM LOGIN -->
-                <form method="POST" class="space-y-5">
-                    {{-- @csrf --}}
+                <!-- FORM REGISTER -->
+                <form method="POST" action="#" class="space-y-5">
+                    @csrf
 
-                    <!-- EMAIL / WHATSAPP -->
+                    <!-- NAMA LENGKAP -->
                     <div>
-                        <label for="email" class="mb-2 block text-sm font-medium text-neutral-700">
-                            Email atau No. WhatsApp
+                        <label for="name" class="mb-2 block text-sm font-medium text-[#302C29]">
+                            Nama Lengkap
                         </label>
 
                         <div class="relative">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor"
-                                class="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-[#FF8000]">
+                                stroke-width="1.7" stroke="currentColor"
+                                class="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#37312D]">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
 
-                            <input type="text" id="email" name="email"
-                                placeholder="Masukkan email atau nomor WhatsApp" autocomplete="username" required
-                                class="w-full rounded-xl border border-neutral-300 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-[#FF8000]">
+                            <input type="text" id="name" name="name" placeholder="Masukkan nama lengkap"
+                                autocomplete="name" required value="{{ old('name') }}"
+                                class="w-full rounded-xl border border-[#EDE3DC] bg-white py-3.5 pl-12 pr-4 text-sm outline-none transition placeholder:text-[#A49A92] focus:border-[#FF8000]">
                         </div>
                     </div>
 
+                    <!-- WHATSAPP DAN EMAIL -->
+                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 
-                    <!-- PASSWORD -->
-                    <div>
-                        <label for="password" class="mb-2 block text-sm font-medium text-neutral-700">
-                            Password
-                        </label>
+                        <!-- WHATSAPP -->
+                        <div>
+                            <label for="phone" class="mb-2 block text-sm font-medium text-[#302C29]">
+                                No. WhatsApp
+                            </label>
 
-                        <div class="relative">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor"
-                                class="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-[#FF8000]">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                            </svg>
+                            <div class="relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.7" stroke="currentColor"
+                                    class="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#37312D]">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M10.5 3.75h3A2.25 2.25 0 0 1 15.75 6v12a2.25 2.25 0 0 1-2.25 2.25h-3A2.25 2.25 0 0 1 8.25 18V6a2.25 2.25 0 0 1 2.25-2.25ZM8.25 16.5h7.5" />
+                                </svg>
 
-                            <input type="password" id="password" name="password" placeholder="Masukkan password"
-                                autocomplete="current-password" required
-                                class="w-full rounded-xl border border-neutral-300 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-[#FF8000]">
+                                <input type="tel" id="phone" name="phone" placeholder="08xx xxxx xxxx"
+                                    autocomplete="tel" required value="{{ old('phone') }}"
+                                    class="w-full rounded-xl border border-[#EDE3DC] bg-white py-3.5 pl-12 pr-4 text-sm outline-none transition placeholder:text-[#A49A92] focus:border-[#FF8000]">
+                            </div>
+                        </div>
+
+                        <!-- EMAIL -->
+                        <div>
+                            <label for="email" class="mb-2 block text-sm font-medium text-[#302C29]">
+                                Email
+                            </label>
+
+                            <div class="relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.7" stroke="currentColor"
+                                    class="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#A49A92]">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M21.75 6.75v10.5A2.25 2.25 0 0 1 19.5 19.5h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-9.75 6.75L2.25 6.75" />
+                                </svg>
+
+                                <input type="email" id="email" name="email" placeholder="Masukkan email"
+                                    autocomplete="email" required value="{{ old('email') }}"
+                                    class="w-full rounded-xl border border-[#EDE3DC] bg-white py-3.5 pl-12 pr-4 text-sm outline-none transition placeholder:text-[#A49A92] focus:border-[#FF8000]">
+                            </div>
                         </div>
                     </div>
 
+                    <!-- PASSWORD DAN KONFIRMASI -->
+                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 
-                    <!-- INGAT SAYA DAN LUPA PASSWORD -->
-                    <div class="flex flex-wrap items-center justify-between gap-3 text-sm">
+                        <!-- PASSWORD -->
+                        <div>
+                            <label for="password" class="mb-2 block text-sm font-medium text-[#302C29]">
+                                Password
+                            </label>
 
-                        <label class="flex cursor-pointer items-center gap-2 text-neutral-600">
-                            <input type="checkbox" name="remember" value="1" class="size-4 accent-[#FF8000]">
-                            Ingat saya
-                        </label>
+                            <div class="relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.7" stroke="currentColor"
+                                    class="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#A49A92]">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                                </svg>
 
-                        <a href="#" class="font-medium text-[#FF8000] transition hover:text-[#E87500]">
-                            Lupa password?
-                        </a>
+                                <input type="password" id="password" name="password"
+                                    placeholder="Masukkan password" autocomplete="new-password" required
+                                    class="w-full rounded-xl border border-[#EDE3DC] bg-white py-3.5 pl-12 pr-4 text-sm outline-none transition placeholder:text-[#A49A92] focus:border-[#FF8000]">
+                            </div>
+                        </div>
+
+                        <!-- KONFIRMASI PASSWORD -->
+                        <div>
+                            <label for="password_confirmation" class="mb-2 block text-sm font-medium text-[#302C29]">
+                                Konfirmasi Password
+                            </label>
+
+                            <div class="relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.7" stroke="currentColor"
+                                    class="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#A49A92]">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                                </svg>
+
+                                <input type="password" id="password_confirmation" name="password_confirmation"
+                                    placeholder="Ulangi password" autocomplete="new-password" required
+                                    class="w-full rounded-xl border border-[#EDE3DC] bg-white py-3.5 pl-12 pr-4 text-sm outline-none transition placeholder:text-[#A49A92] focus:border-[#FF8000]">
+                            </div>
+
+                            <p id="password-error" class="mt-2 hidden text-xs text-red-500">
+                                Password tidak sama.
+                            </p>
+                        </div>
                     </div>
 
+                    <!-- PERSETUJUAN -->
+                    <div class="pt-1">
+                        <label class="flex cursor-pointer items-center gap-2.5 text-sm text-[#81766E]">
+                            <input type="checkbox" name="terms" value="1" required
+                                class="size-5 rounded accent-[#FF8000]">
 
-                    <!-- TOMBOL LOGIN -->
+                            Saya menyetujui Syarat & Ketentuan Chikumi
+                        </label>
+                    </div>
+
+                    <!-- TOMBOL DAFTAR -->
                     <button type="submit"
-                        class="w-full rounded-xl bg-[#FF8000] px-5 py-3.5 text-sm font-semibold text-white shadow-md transition hover:bg-[#FFF3E6] hover:text-[#FF8000]">
-                        Masuk
+                        class="w-full rounded-xl bg-[#FF8000] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#E87500]">
+                        Daftar Sekarang
                     </button>
 
                 </form>
 
+                <!-- SUDAH PUNYA AKUN -->
+                <div class="mt-5 text-center text-sm text-[#81766E]">
+                    Sudah punya akun?
 
-                <!-- DAFTAR -->
-                <div class="my-6 flex items-center gap-3">
-                    <div class="h-px flex-1 bg-neutral-200"></div>
-                    <span class="text-xs text-neutral-400">
-                        Belum punya akun?
-                    </span>
-                    <div class="h-px flex-1 bg-neutral-200"></div>
+                    <a href="/login" class="ml-1 font-semibold text-[#D96B00] hover:underline">
+                        Masuk
+                    </a>
                 </div>
 
-                <a href="/register"
-                    class="block w-full rounded-xl border border-neutral-200 bg-white px-5 py-3 text-center text-sm font-semibold text-neutral-700">
-                    Daftar Sebagai Pelanggan
-                </a>
-
             </div>
-            <!-- FOOTER -->
-            <p class="mt-10 w-full max-w-md text-center text-xs leading-relaxed text-neutral-400">
-                Akun Kasir & Admin hanya dibuat oleh Owner
-                melalui menu Pengguna.
-            </p>
+
         </section>
 
     </div>

@@ -51,9 +51,9 @@
 
 
         <!-- BAGIAN KANAN / FORM LOGIN -->
-        <section class="bg-[#FFF3E6] flex flex-col items-center justify-center px-5 py-8 sm:px-10 sm:py-12 lg:px-14">
+        <section class="bg-[#FFF3E6] flex flex-col items-center justify-center px-5 py-8 sm:px-10 sm:py-12 lg:px-14 shadow-lg">
 
-            <div class="bg-white p-5 rounded-2xl w-full max-w-md">
+            <div class="bg-white p-5 rounded-2xl w-full max-w-2xl">
 
                 <div class="mb-7">
                     <h2 class="text-2xl font-bold text-neutral-800 sm:text-3xl">
