@@ -19,12 +19,15 @@
     <div class="grid min-h-screen w-full grid-cols-1 lg:grid-cols-2">
 
         <!-- BAGIAN KIRI / BRANDING -->
-        <section class="relative flex min-h-[240px] flex-col justify-center overflow-hidden bg-[#FF8000] px-6 py-10 sm:px-10 sm:py-12 lg:min-h-full lg:px-14">
+        <section
+            class="relative flex min-h-[240px] flex-col justify-center overflow-hidden bg-[#FF8000] px-6 py-10 sm:px-10 sm:py-12 lg:min-h-full lg:px-14">
 
             <!-- Dekorasi -->
             <div class="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#FFA033] opacity-70"></div>
             <div class="absolute -bottom-20 -left-16 h-64 w-64 rounded-full bg-[#E87500] opacity-80"></div>
             <div class="absolute bottom-20 right-10 h-20 w-20 rounded-full bg-white opacity-10"></div>
+            <img src="{{ asset('images/chikumi-1.png') }}" alt="Ilustrasi Chikumi"
+                class="absolute right-0 top-0 z-0 h [150px] w-[164px] object-contain object-top">
 
             <div class="relative z-10">
                 <h1 class="text-3xl font-extrabold italic text-white sm:text-4xl lg:text-5xl">
@@ -51,7 +54,8 @@
 
 
         <!-- BAGIAN KANAN / FORM LOGIN -->
-        <section class="bg-[#FFF3E6] flex flex-col items-center justify-center px-5 py-8 sm:px-10 sm:py-12 lg:px-14 shadow-lg">
+        <section
+            class="bg-[#FFF3E6] flex flex-col items-center justify-center px-5 py-8 sm:px-10 sm:py-12 lg:px-14 shadow-lg">
 
             <div class="bg-white p-5 rounded-2xl w-full max-w-2xl">
 

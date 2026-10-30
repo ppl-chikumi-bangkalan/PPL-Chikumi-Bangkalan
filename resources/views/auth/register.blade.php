@@ -25,6 +25,8 @@
             <div class="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[#FFA033] opacity-70"></div>
             <div class="absolute -bottom-20 -left-16 h-64 w-64 rounded-full bg-[#E87500] opacity-80"></div>
             <div class="absolute bottom-20 right-10 h-20 w-20 rounded-full bg-white opacity-10"></div>
+            <img src="{{ asset('images/chikumi-1.png') }}" alt="Ilustrasi Chikumi"
+                class="absolute right-0 top-0 z-0 h [150px] w-[164px] object-contain object-top">
 
             <div class="relative z-10">
                 <h1 class="text-3xl font-extrabold italic text-white sm:text-4xl lg:text-5xl">
