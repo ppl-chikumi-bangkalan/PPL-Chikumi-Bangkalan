@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Produk - Chikumi</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,7 +36,7 @@
                 </p>
 
                 <!-- Dashboard -->
-                <a href="#"
+                <a href="{{ route('owner.dashboard') }}"
                     class="flex items-center gap-3 rounded-lg px-3 py-3 text-stone-600 transition hover:bg-orange-50 hover:text-[#FF8000]">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="size-6">
@@ -47,7 +48,7 @@
                 </a>
 
                 <!-- Kelola Produk -->
-                <a href="#"
+                <a href="{{ route('owner.kelola-produk') }}"
                     class="flex items-center gap-3 rounded-lg bg-[#FF8000] px-3 py-3 font-semibold text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="h-5 w-5 shrink-0">
@@ -91,15 +92,17 @@
                     <p class="text-[10px] text-stone-500">Owner</p>
                 </div>
 
-                <button type="button" aria-label="Logout"
-                    class="rounded-lg p-2 text-red-500 transition hover:bg-orange-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-                    </svg>
-
-                </button>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" aria-label="Logout"
+                        class="rounded-lg p-2 text-red-500 transition hover:bg-orange-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                        </svg>
+                    </button>
+                </form>
             </div>
         </aside>
 
@@ -183,7 +186,7 @@
                             </p>
                         </div>
 
-                        <button onclick="openModal('product')"
+                        <button onclick="openModal('variant')"
                             class="shrink-0 rounded-lg bg-orange-50 px-4 py-2 text-[10px] font-semibold text-[#FF8000] hover:bg-orange-100">
                             + Varian
                         </button>
@@ -258,42 +261,68 @@
         <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <div class="mb-5 flex items-center justify-between">
                 <h3 id="modalTitle" class="text-base font-bold">Tambah Produk</h3>
-                <button class="text-2xl text-stone-400 hover:text-stone-700">×</button>
+                <button type="button" onclick="closeModal()" class="text-2xl text-stone-400 hover:text-stone-700">×</button>
             </div>
 
             <form id="dataForm">
+                <input type="hidden" id="mode">
+
+                <div id="productGroup" class="mb-4 hidden">
+                    <label for="productSelect" class="mb-2 block text-xs font-semibold">Produk</label>
+                    <select id="productSelect"
+                        class="form-input w-full rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-xs outline-none focus:border-[#FF8000]"></select>
+                </div>
+
                 <div class="mb-4">
-                    <label for="name" class="mb-2 block text-xs font-semibold">Nama</label>
+                    <label for="name" id="nameLabel" class="mb-2 block text-xs font-semibold">Nama Produk</label>
                     <input id="name" required placeholder="Masukkan nama"
                         class="form-input w-full rounded-lg border border-stone-200 px-3 py-2.5 text-xs outline-none focus:border-[#FF8000]">
                 </div>
 
-                <div class="mb-4">
-                    <label for="category" class="mb-2 block text-xs font-semibold">Kategori</label>
-                    <select id="category" required
+                <div id="categoryGroup" class="mb-4">
+                    <label for="category" class="mb-2 block text-xs font-semibold">Kategori Produk (opsional)</label>
+                    <input id="category" placeholder="Contoh: Chikumi Main Menu"
+                        class="form-input w-full rounded-lg border border-stone-200 px-3 py-2.5 text-xs outline-none focus:border-[#FF8000]">
+                </div>
+
+                <div id="typeGroup" class="mb-4 hidden">
+                    <label for="type" class="mb-2 block text-xs font-semibold">Jenis Varian</label>
+                    <select id="type"
                         class="form-input w-full rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-xs outline-none focus:border-[#FF8000]">
-                        <option value="Filling">Filling</option>
-                        <option value="Dip Sauce">Dip Sauce</option>
-                        <option value="Seasoning">Seasoning</option>
+                        <option value="filling">Filling</option>
+                        <option value="dipping_sauce">Dip Sauce</option>
+                        <option value="seasoning">Seasoning</option>
                     </select>
                 </div>
 
                 <div id="sizeGroup" class="mb-4">
-                    <label for="size" class="mb-2 block text-xs font-semibold">Ukuran Produk</label>
-                    <input id="size" placeholder="Contoh: 15 cm"
-                        class="form-input w-full rounded-lg border border-stone-200 px-3 py-2.5 text-xs outline-none focus:border-[#FF8000]">
+                    <label for="size" class="mb-2 block text-xs font-semibold">Ukuran</label>
+                    <select id="size"
+                        class="form-input w-full rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-xs outline-none focus:border-[#FF8000]">
+                        <option value="Regular">Regular</option>
+                        <option value="Large">Large</option>
+                    </select>
                 </div>
 
                 <div id="priceGroup" class="mb-4">
-                    <label for="price" class="mb-2 block text-xs font-semibold">Harga (angka)</label>
+                    <label for="price" id="priceLabel" class="mb-2 block text-xs font-semibold">Harga (angka)</label>
                     <input id="price" type="number" min="0" placeholder="20000"
                         class="form-input w-full rounded-lg border border-stone-200 px-3 py-2.5 text-xs outline-none focus:border-[#FF8000]">
                 </div>
 
-                <div class="mb-4">
+                <div id="stockGroup" class="mb-4">
                     <label for="stock" class="mb-2 block text-xs font-semibold">Stok</label>
-                    <input id="stock" type="number" min="0" required placeholder="Masukkan stok"
+                    <input id="stock" type="number" min="0" placeholder="0"
                         class="form-input w-full rounded-lg border border-stone-200 px-3 py-2.5 text-xs outline-none focus:border-[#FF8000]">
+                </div>
+
+                <div id="activeGroup" class="mb-4 hidden">
+                    <label for="active" class="mb-2 block text-xs font-semibold">Status Varian</label>
+                    <select id="active"
+                        class="form-input w-full rounded-lg border border-stone-200 bg-white px-3 py-2.5 text-xs outline-none focus:border-[#FF8000]">
+                        <option value="1">Aktif</option>
+                        <option value="0">Nonaktif</option>
+                    </select>
                 </div>
 
                 <div class="mt-6 flex justify-end gap-2">
@@ -309,6 +338,306 @@
             </form>
         </div>
     </div>
+
+    <script>
+        const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+        const TYPE_LABEL = { filling: 'Filling', dipping_sauce: 'Dip Sauce', seasoning: 'Seasoning' };
+        let PRODUCTS = [];
+        let FILTER = 'all';
+        let EDIT = { product: null, size: null, variant: null };
+
+        async function api(method, url, body) {
+            const headers = {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': CSRF,
+            };
+            if (body !== undefined) headers['Content-Type'] = 'application/json';
+            const res = await fetch(url, {
+                method,
+                headers,
+                body: body === undefined ? undefined : JSON.stringify(body),
+            });
+            let data = {};
+            try { data = await res.json(); } catch (_) {}
+            if (!res.ok) {
+                if (res.status === 401) throw new Error('Sesi habis, silakan login ulang.');
+                throw new Error(data.message || ('Gagal (' + res.status + ')'));
+            }
+            return data;
+        }
+
+        function esc(v) {
+            return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        const rupiah = v => 'Rp ' + Number(v).toLocaleString('id-ID');
+        const show = (id, on) => document.getElementById(id).classList.toggle('hidden', !on);
+
+        async function load() {
+            const res = await api('GET', '/owner/api/produk');
+            PRODUCTS = res.data;
+            render();
+            applyFilter();
+        }
+
+        function render() {
+            const pBody = document.getElementById('productTable');
+            const vBody = document.getElementById('variantTable');
+
+            pBody.innerHTML = PRODUCTS.map(p => {
+                const tops = p.variants.map(v => v.name).join(', ');
+                const cats = p.variants.map(v => TYPE_LABEL[v.type] || v.type);
+                const rows = p.sizes.length ? p.sizes : [null];
+                return rows.map(s => {
+                    const low = s && Number(s.stock) <= Number(s.min_stock);
+                    const name = [p.name, ...p.variants.map(v => v.name)].join(' ').toLowerCase();
+                    const cat = ['Ukuran & Harga', ...cats].join('|');
+                    return `
+                    <tr data-name="${esc(name)}" data-cat="${esc(cat)}">
+                        <td class="p-4">
+                            <div class="font-semibold">${esc(p.name)}</div>
+                            <div class="text-[10px] text-stone-400">${esc(p.category?.name || '-')}</div>
+                        </td>
+                        <td class="p-4">${tops ? esc(tops) : '-'}</td>
+                        <td class="p-4">${s ? rupiah(s.base_price) : '-'}<div class="text-[10px] text-stone-400">${s ? esc(s.size_name) : ''}</div></td>
+                        <td class="p-4">${s ? `<span class="${low ? 'font-bold text-red-600' : ''}">${s.stock}</span>` : '-'}</td>
+                        <td class="p-4">${p.is_active ? '<span class="text-green-600">Aktif</span>' : '<span class="text-stone-400">Nonaktif</span>'}</td>
+                        <td class="p-4 text-center whitespace-nowrap">
+                            ${s ? `<button type="button" onclick="adjustStock(${s.id})" class="rounded px-2 py-1 text-[10px] font-semibold text-blue-600 hover:bg-blue-50">Stok</button>` : ''}
+                            <button type="button" onclick="editProduct(${p.id}${s ? ',' + s.id : ''})" class="rounded px-2 py-1 text-[10px] font-semibold text-[#FF8000] hover:bg-orange-50">Edit</button>
+                            <button type="button" onclick="removeProduct(${p.id})" class="rounded px-2 py-1 text-[10px] font-semibold text-red-600 hover:bg-red-50">Hapus</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            }).join('');
+
+            vBody.innerHTML = PRODUCTS.map(p => {
+                const total = p.sizes.reduce((a, s) => a + Number(s.stock), 0);
+                return p.variants.map(v => `
+                    <tr data-name="${esc((v.name + ' ' + p.name).toLowerCase())}" data-cat="${esc(TYPE_LABEL[v.type] || v.type)}">
+                        <td class="p-4">
+                            <div class="font-semibold">${esc(v.name)}</div>
+                            <div class="text-[10px] text-stone-400">${esc(p.name)}</div>
+                        </td>
+                        <td class="p-4">${esc(TYPE_LABEL[v.type] || v.type)}</td>
+                        <td class="p-4">${total}</td>
+                        <td class="p-4">${v.is_available ? '<span class="text-green-600">Aktif</span>' : '<span class="text-stone-400">Nonaktif</span>'}</td>
+                        <td class="p-4">
+                            <button type="button" onclick="toggleVariant(${v.id}, ${v.is_available ? 1 : 0})"
+                                class="rounded-full px-3 py-1 text-[10px] font-semibold ${v.is_available ? 'bg-green-50 text-green-600' : 'bg-stone-100 text-stone-500'}">
+                                ${v.is_available ? 'Nonaktifkan' : 'Aktifkan'}
+                            </button>
+                        </td>
+                        <td class="p-4 text-center whitespace-nowrap">
+                            <button type="button" onclick="editVariant(${v.id})" class="rounded px-2 py-1 text-[10px] font-semibold text-[#FF8000] hover:bg-orange-50">Edit</button>
+                            <button type="button" onclick="removeVariant(${v.id})" class="rounded px-2 py-1 text-[10px] font-semibold text-red-600 hover:bg-red-50">Hapus</button>
+                        </td>
+                    </tr>`).join('');
+            }).join('');
+        }
+
+        function matches(tr, q) { return !q || tr.dataset.name.includes(q); }
+
+        function applyFilter() {
+            const q = document.getElementById('searchInput').value.trim().toLowerCase();
+            let pShown = 0, vShown = 0;
+
+            document.querySelectorAll('#productTable tr').forEach(tr => {
+                const ok = matches(tr, q) &&
+                    (FILTER === 'all' || FILTER === 'Ukuran & Harga' || tr.dataset.cat.split('|').includes(FILTER));
+                tr.classList.toggle('hidden', !ok);
+                if (ok) pShown++;
+            });
+            document.querySelectorAll('#variantTable tr').forEach(tr => {
+                const ok = matches(tr, q) && (FILTER === 'all' || tr.dataset.cat === FILTER);
+                tr.classList.toggle('hidden', !ok);
+                if (ok) vShown++;
+            });
+
+            show('productEmpty', pShown === 0);
+            show('variantEmpty', vShown === 0);
+        }
+
+        function openModal(mode, opts = {}) {
+            EDIT = { product: null, size: null, variant: null, ...opts };
+            const isVariant = mode === 'variant';
+            const creatingVariant = isVariant && !EDIT.variant;
+
+            document.getElementById('mode').value = mode;
+            document.getElementById('dataModal').classList.replace('hidden', 'flex');
+            document.getElementById('modalTitle').textContent = isVariant
+                ? (EDIT.variant ? 'Edit Varian' : 'Tambah Varian')
+                : (EDIT.product ? 'Edit Produk' : 'Tambah Produk');
+            document.getElementById('nameLabel').textContent = isVariant ? 'Nama Varian' : 'Nama Produk';
+            document.getElementById('priceLabel').textContent = isVariant ? 'Harga Tambahan (angka)' : 'Harga (angka)';
+
+            show('productGroup', creatingVariant);
+            show('categoryGroup', !isVariant);
+            show('typeGroup', isVariant);
+            show('sizeGroup', !isVariant);
+            show('stockGroup', !isVariant);
+            show('activeGroup', isVariant);
+
+            if (creatingVariant) {
+                document.getElementById('productSelect').innerHTML =
+                    PRODUCTS.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+            }
+
+            document.getElementById('name').value = isVariant ? (EDIT.variant?.name || '') : (EDIT.product?.name || '');
+            document.getElementById('category').value = EDIT.product?.category?.name || '';
+            document.getElementById('type').value = EDIT.variant?.type || 'filling';
+            document.getElementById('size').value = EDIT.size?.size_name || 'Regular';
+            document.getElementById('price').value = isVariant
+                ? (EDIT.variant ? Number(EDIT.variant.additional_price) : '')
+                : (EDIT.size ? Number(EDIT.size.base_price) : '');
+            document.getElementById('stock').value = EDIT.size ? EDIT.size.stock : '';
+            document.getElementById('active').value = EDIT.variant && !EDIT.variant.is_available ? '0' : '1';
+        }
+
+        function closeModal() {
+            document.getElementById('dataModal').classList.replace('flex', 'hidden');
+        }
+
+        function editProduct(pid, sid) {
+            const p = PRODUCTS.find(x => x.id === pid);
+            if (!p) return;
+            const s = sid ? p.sizes.find(x => x.id === sid) : (p.sizes.length === 1 ? p.sizes[0] : null);
+            openModal('product', { product: p, size: s });
+        }
+
+        function editVariant(vid) {
+            for (const p of PRODUCTS) {
+                const v = p.variants.find(x => x.id === vid);
+                if (v) return openModal('variant', { variant: v, product: p });
+            }
+        }
+
+        async function adjustStock(sizeId) {
+            const raw = prompt('Jumlah stok (contoh: 5 untuk masuk, -3 untuk keluar):');
+            if (raw === null || raw.trim() === '') return;
+            const q = Number(raw);
+            if (!Number.isInteger(q) || q === 0) return alert('Masukkan angka bulat selain 0.');
+            try {
+                await api('PATCH', `/owner/api/ukuran/${sizeId}/stok`, {
+                    type: q > 0 ? 'in' : 'out',
+                    quantity: Math.abs(q),
+                });
+                await load();
+            } catch (err) { alert(err.message); }
+        }
+
+        async function toggleVariant(id, current) {
+            try {
+                await api('PATCH', `/owner/api/varian/${id}/status`, { is_available: current ? '0' : '1' });
+                await load();
+            } catch (err) { alert(err.message); }
+        }
+
+        async function removeProduct(id) {
+            if (!confirm('Hapus produk ini beserta semua ukuran & variannya?')) return;
+            try {
+                await api('DELETE', `/owner/api/produk/${id}`);
+                await load();
+            } catch (err) { alert(err.message); }
+        }
+
+        async function removeVariant(id) {
+            if (!confirm('Hapus varian ini?')) return;
+            try {
+                await api('DELETE', `/owner/api/varian/${id}`);
+                await load();
+            } catch (err) { alert(err.message); }
+        }
+
+        document.getElementById('dataForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const btn = e.submitter;
+            if (btn) btn.disabled = true;
+            try {
+                const mode = document.getElementById('mode').value;
+                const name = document.getElementById('name').value.trim();
+                const price = document.getElementById('price').value;
+
+                if (mode === 'variant') {
+                    const body = {
+                        type: document.getElementById('type').value,
+                        name,
+                        additional_price: price === '' ? 0 : Number(price),
+                        is_available: document.getElementById('active').value === '1',
+                    };
+                    if (EDIT.variant) {
+                        await api('PUT', `/owner/api/varian/${EDIT.variant.id}`, body);
+                    } else {
+                        const pid = document.getElementById('productSelect').value;
+                        await api('POST', `/owner/api/produk/${pid}/varian`, body);
+                    }
+                } else {
+                    const body = { name };
+                    const cat = document.getElementById('category').value.trim();
+                    if (cat) body.category_name = cat;
+                    const size = document.getElementById('size').value;
+                    const stock = document.getElementById('stock').value;
+                    const sizeBody = {
+                        size_name: size,
+                        base_price: price === '' ? 0 : Number(price),
+                        stock: stock === '' ? 0 : Number(stock),
+                    };
+
+                    if (EDIT.product) {
+                        await api('PUT', `/owner/api/produk/${EDIT.product.id}`, body);
+                        if (price !== '') {
+                            if (EDIT.size) await api('PUT', `/owner/api/ukuran/${EDIT.size.id}`, sizeBody);
+                            else await api('POST', `/owner/api/produk/${EDIT.product.id}/ukuran`, sizeBody);
+                        }
+                    } else {
+                        const res = await api('POST', '/owner/api/produk', body);
+                        if (price !== '') {
+                            await api('POST', `/owner/api/produk/${res.data.id}/ukuran`, sizeBody);
+                        }
+                    }
+                }
+
+                closeModal();
+                await load();
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => {
+            FILTER = btn.dataset.filter;
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                const on = b === btn;
+                b.classList.toggle('bg-[#FF8000]', on);
+                b.classList.toggle('text-white', on);
+                b.classList.toggle('font-semibold', on);
+                b.classList.toggle('bg-white', !on);
+                b.classList.toggle('border', !on);
+                b.classList.toggle('border-stone-200', !on);
+            });
+            applyFilter();
+        }));
+
+        document.getElementById('searchInput').addEventListener('input', applyFilter);
+        document.getElementById('dataModal').addEventListener('click', e => {
+            if (e.target.id === 'dataModal') closeModal();
+        });
+
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        document.getElementById('menuButton')?.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        });
+        overlay?.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
+
+        load().catch(err => alert(err.message));
+    </script>
 </body>
 
 </html>
