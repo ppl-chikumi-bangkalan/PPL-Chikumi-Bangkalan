@@ -51,3 +51,12 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->middleware('role:customer')->name('customer.dashboard');
 });
+
+// FRONTEND DEVELOPMENT (sementara, tanpa login)
+Route::get('/frontend/owner/dashboard', function () {
+    return view('owner.dashboard');
+})->name('frontend.owner');
+
+Route::get('/frontend/owner/produk', function () {
+    return view('owner.produk');
+})->name('frontend.owner');
