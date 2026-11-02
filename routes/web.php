@@ -57,6 +57,16 @@ Route::get('/frontend/owner/dashboard', function () {
     return view('owner.dashboard');
 })->name('frontend.owner');
 
-Route::get('/frontend/owner/produk', function () {
-    return view('owner.produk');
-})->name('frontend.owner');
+Route::prefix('owner')->group(function () {
+    Route::get('/stok', function () {
+        return view('owner.produk.stok');
+    })->name('owner.stok');
+
+    Route::get('/produk', function () {
+        return view('owner.produk.index');
+    })->name('owner.produk');
+
+    Route::get('/produk/edit', function () {
+        return view('owner.produk.edit');
+    })->name('owner.produk.edit');
+});
