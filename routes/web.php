@@ -58,9 +58,20 @@ Route::middleware('auth')->group(function () {
         return view('owner.produk');
     })->middleware('role:owner')->name('owner.kelola-produk');
 
+    Route::get('/owner/produk/{produk}/edit/{ukuran?}', [ProductController::class, 'pageEdit'])
+        ->whereNumber('produk')->whereNumber('ukuran')->middleware('role:owner')->name('owner.produk.edit');
+
+    Route::get('/owner/produk', [ProductController::class, 'pageIndex'])
+        ->middleware('role:owner')->name('owner.produk');
+
+    Route::get('/owner/stok', [ProductController::class, 'pageStok'])
+        ->middleware('role:owner')->name('owner.stok');
+
     Route::prefix('owner/api')->middleware('role:owner')->group(function () {
         Route::get('produk', [ProductController::class, 'index'])->name('owner.produk.index');
         Route::post('produk', [ProductController::class, 'store'])->name('owner.produk.store');
+        Route::get('produk/ketersediaan', [ProductController::class, 'availability'])->name('owner.produk.ketersediaan');
+
         Route::get('produk/{produk}', [ProductController::class, 'show'])->whereNumber('produk')->name('owner.produk.show');
         Route::put('produk/{produk}', [ProductController::class, 'update'])->whereNumber('produk')->name('owner.produk.update');
         Route::delete('produk/{produk}', [ProductController::class, 'destroy'])->whereNumber('produk')->name('owner.produk.destroy');
@@ -84,4 +95,4 @@ Route::get('/frontend/owner/dashboard', function () {
 
 Route::get('/frontend/owner/produk', function () {
     return redirect()->route('owner.kelola-produk');
-})->name('frontend.owner');
+})->name('frontend.owner.produk');

@@ -89,7 +89,7 @@ class ProductSizeController extends Controller
 
         StockHistory::create([
             'product_size_id' => $ukuran->id,
-            'user_id' => $request->user()->id,
+            'user_id' => $request->user()?->id,
             'type' => $data['type'],
             'quantity' => $data['quantity'],
             'source' => 'manual_restock',
