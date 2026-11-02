@@ -404,7 +404,7 @@
                         <td class="p-4">${p.is_active ? '<span class="text-green-600">Aktif</span>' : '<span class="text-stone-400">Nonaktif</span>'}</td>
                         <td class="p-4 text-center whitespace-nowrap">
                             ${s ? `<button type="button" onclick="adjustStock(${s.id})" class="rounded px-2 py-1 text-[10px] font-semibold text-blue-600 hover:bg-blue-50">Stok</button>` : ''}
-                            <button type="button" onclick="editProduct(${p.id}${s ? ',' + s.id : ''})" class="rounded px-2 py-1 text-[10px] font-semibold text-[#FF8000] hover:bg-orange-50">Edit</button>
+                            <button type="button" onclick="window.location.href='/owner/produk/${p.id}/edit${s ? '/' + s.id : ''}'" class="rounded px-2 py-1 text-[10px] font-semibold text-[#FF8000] hover:bg-orange-50">Edit</button>
                             <button type="button" onclick="removeProduct(${p.id})" class="rounded px-2 py-1 text-[10px] font-semibold text-red-600 hover:bg-red-50">Hapus</button>
                         </td>
                     </tr>`;
@@ -496,13 +496,6 @@
 
         function closeModal() {
             document.getElementById('dataModal').classList.replace('flex', 'hidden');
-        }
-
-        function editProduct(pid, sid) {
-            const p = PRODUCTS.find(x => x.id === pid);
-            if (!p) return;
-            const s = sid ? p.sizes.find(x => x.id === sid) : (p.sizes.length === 1 ? p.sizes[0] : null);
-            openModal('product', { product: p, size: s });
         }
 
         function editVariant(vid) {

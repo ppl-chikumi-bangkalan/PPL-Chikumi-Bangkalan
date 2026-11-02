@@ -35,6 +35,7 @@ await fetch('/owner/api/produk', {
 | GET | `/produk/{id}` | Detail  |
 | PUT | `/produk/{id}` | Ubah (field sama dengan buat) |
 | DELETE | `/produk/{id}` | Hapus; varian + ukuran ikut terhapus (FK CASCADE) |
+| GET | `/produk/ketersediaan` | Query ketersediaan: `data.ringkasan` (total/aman/menipis/habis), `data.produk` (per ukuran), `data.varian` (per varian) |
 
 ## Ukuran (harga & stok)
 
