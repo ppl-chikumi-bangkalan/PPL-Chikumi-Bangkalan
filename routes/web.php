@@ -54,10 +54,6 @@ Route::middleware('auth')->group(function () {
         return view('customer.dashboard');
     })->middleware('role:customer')->name('customer.dashboard');
 
-    Route::get('/owner/kelola-produk', function () {
-        return view('owner.produk');
-    })->middleware('role:owner')->name('owner.kelola-produk');
-
     Route::get('/owner/produk/{produk}/edit/{ukuran?}', [ProductController::class, 'pageEdit'])
         ->whereNumber('produk')->whereNumber('ukuran')->middleware('role:owner')->name('owner.produk.edit');
 
@@ -93,10 +89,6 @@ Route::get('/frontend/owner/dashboard', function () {
     return view('owner.dashboard');
 })->name('frontend.owner');
 
-Route::get('/frontend/owner/produk', function () {
-    return redirect()->route('owner.kelola-produk');
-})->name('frontend.owner.produk');
-
 Route::get('/frontend/customer/dashboard', function () {
     return view('customer.dashboard');
-})->name('frontend.customer.dashbaord');
+})->name('frontend.customer.dashboard');
