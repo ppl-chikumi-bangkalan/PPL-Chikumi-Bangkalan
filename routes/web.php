@@ -51,7 +51,7 @@ Route::middleware('auth')->group(function () {
     })->middleware('role:owner,cashier')->name('kasir.dashboard');
 
     Route::get('/customer/dashboard', function () {
-        return view('dashboard');
+        return view('customer.dashboard');
     })->middleware('role:customer')->name('customer.dashboard');
 
     Route::get('/owner/kelola-produk', function () {
@@ -96,3 +96,7 @@ Route::get('/frontend/owner/dashboard', function () {
 Route::get('/frontend/owner/produk', function () {
     return redirect()->route('owner.kelola-produk');
 })->name('frontend.owner.produk');
+
+Route::get('/frontend/customer/dashboard', function () {
+    return view('customer.dashboard');
+})->name('frontend.customer.dashbaord');
