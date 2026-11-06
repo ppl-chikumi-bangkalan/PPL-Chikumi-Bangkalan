@@ -101,19 +101,32 @@
                     @endif
                 </a>
 
-                <a href="{{ Route::has('customer.akun') ? route('customer.akun') : '#' }}" aria-label="Akun"
-                    class="grid h-10 w-10 place-items-center rounded-full bg-[#FF8000] text-base font-bold text-white">
-                    {{ strtoupper(mb_substr($namaUser, 0, 1)) }}
-                </a>
+                <!-- PROFIL + MENU KELUAR -->
+                <div class="relative">
+                    <button type="button" id="btnProfil" aria-label="Akun" aria-expanded="false"
+                        class="grid h-10 w-10 place-items-center rounded-full bg-[#FF8000] text-base font-bold text-white">
+                        {{ strtoupper(mb_substr($namaUser, 0, 1)) }}
+                    </button>
+
+                    <div id="menuProfil"
+                        class="absolute right-0 top-12 z-50 hidden w-52 rounded-2xl border border-[#EDE6DF] bg-white p-2 shadow-lg">
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit"
+                                class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#E03131] transition hover:bg-[#FDECEC]">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
+                                    stroke="currentColor" class="h-5 w-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                                </svg>
+                                Keluar
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <!--
-            SUSUNAN:
-            - HP      : satu kolom, urutan persis Figma P3 (order-1 s/d order-6)
-            - Tablet  : satu kolom lebih lebar, kartu ukuran berdampingan
-            - Desktop : kiri = sapaan, banner, ukuran | kanan = cara ambil, alamat, rasa
-        -->
         <div class="mt-4 flex flex-col gap-4 lg:mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,1fr)_400px]">
 
             <!-- KOLOM KIRI -->
@@ -340,6 +353,29 @@
         });
 
         pilihMode('delivery');
+
+        // ============ MENU PROFIL (KELUAR) ============
+        const btnProfil = document.getElementById('btnProfil');
+        const menuProfil = document.getElementById('menuProfil');
+
+        function aturMenuProfil(buka) {
+            menuProfil.classList.toggle('hidden', !buka);
+            btnProfil.setAttribute('aria-expanded', buka);
+        }
+
+        btnProfil.addEventListener('click', e => {
+            e.stopPropagation();
+            aturMenuProfil(menuProfil.classList.contains('hidden'));
+        });
+
+        // Klik di luar kartu atau tekan Esc = tutup
+        document.addEventListener('click', e => {
+            if (!menuProfil.contains(e.target)) aturMenuProfil(false);
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') aturMenuProfil(false);
+        });
     </script>
 </body>
 

@@ -37,7 +37,7 @@
         <!-- Produk & Stok -->
         <a href="{{ route('owner.stok') }}"
             class="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] transition
-            {{ in_array($currentRoute, ['owner.kelola-produk', 'owner.stok', 'owner.produk', 'owner.produk.edit'])
+            {{ in_array($currentRoute, ['owner.stok', 'owner.produk', 'owner.produk.edit'])
                 ? 'bg-[#FF8000] font-semibold text-white'
                 : 'text-[#6B645D] hover:bg-[#F7F3EF] hover:text-[#FF8000]' }}">
 
