@@ -36,7 +36,8 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
-            "@php artisan migrate --force",
+            "@php database/migrate.php",
+            "@php database/seed.php",
             "npm install --ignore-scripts",
             "npm run build"
         ],
