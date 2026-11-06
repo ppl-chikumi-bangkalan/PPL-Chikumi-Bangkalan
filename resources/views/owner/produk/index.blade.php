@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>Data Produk - Admin</title>
 
@@ -19,8 +20,7 @@
     <div class="flex min-h-screen">
 
         <!-- OVERLAY MOBILE -->
-        <div id="sidebarOverlay" class="fixed inset-0 z-40 hidden bg-black/40 lg:hidden" onclick="toggleSidebar()">
-        </div>
+        <div id="overlay" class="fixed inset-0 z-40 hidden bg-black/40 lg:hidden"></div>
 
         <!-- SIDEBAR -->
         @include('components.owner.sidebar')
@@ -34,11 +34,23 @@
             <div class="mx-auto max-w-[1500px] p-4 sm:p-6 lg:p-8">
 
                 <!-- JUDUL -->
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold sm:text-3xl">Produk & Stok</h2>
-                    <p class="mt-2 text-sm text-stone-500">
-                        Pantau sisa stok dan rencanakan penambahan stok.
-                    </p>
+                <div class="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                    <div>
+                        <h2 class="text-2xl font-bold sm:text-3xl">Produk & Stok</h2>
+                        <p class="mt-2 text-sm text-stone-500">
+                            Atur harga & varian menu Chikumi
+                        </p>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input type="search" id="searchInput" placeholder="Cari produk..."
+                            class="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm outline-none focus:border-[#FF8000] sm:w-56">
+
+                        <button type="button" onclick="openModal('product')"
+                            class="shrink-0 rounded-xl bg-[#FF8000] px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600">
+                            + Tambah Produk
+                        </button>
+                    </div>
                 </div>
 
 
@@ -101,7 +113,7 @@
                                 </p>
                             </div>
 
-                            <button type="button"
+                            <button type="button" onclick="openModal('product')"
                                 class="shrink-0 rounded-lg bg-orange-50 px-4 py-2 text-sm font-semibold text-[#FF8000] transition hover:bg-orange-100">
                                 + Varian
                             </button>
@@ -220,7 +232,7 @@
                                                     </button>
 
                                                     <!-- HAPUS -->
-                                                    <button type="button"
+                                                    <button type="button" onclick="removeProduct({{ $product['id'] }})"
                                                         class="text-red-400 transition hover:text-red-600"
                                                         title="Hapus produk">
 
@@ -255,7 +267,7 @@
                                 </p>
                             </div>
 
-                            <button type="button"
+                            <button type="button" onclick="openModal('variant')"
                                 class="shrink-0 rounded-lg bg-orange-50 px-4 py-2 text-sm font-semibold text-[#FF8000] transition hover:bg-orange-100">
                                 + Varian
                             </button>
@@ -279,6 +291,10 @@
 
                                     @php
                                         $variantRows = $products->flatMap(fn ($product) => $product->variants->map(fn ($variant) => [
+                                            'id' => $variant->id,
+                                            'product_id' => $product->id,
+                                            'type' => $variant->type,
+                                            'additional_price' => (int) $variant->additional_price,
                                             'name' => $variant->name,
                                             'category' => $typeLabel[$variant->type] ?? $variant->type,
                                             'price' => 'Rp ' . number_format((float) $variant->additional_price, 0, ',', '.'),
@@ -321,6 +337,7 @@
                                             <td class="px-5 py-3">
                                                 <label class="relative inline-flex cursor-pointer items-center">
                                                     <input type="checkbox" class="peer sr-only"
+                                                        onchange="toggleVariant({{ $variant['id'] }}, this)"
                                                         {{ $variant['active'] ? 'checked' : '' }}>
 
                                                     <span
@@ -335,7 +352,13 @@
                                                 <div class="flex items-center justify-center gap-3">
 
                                                     <!-- EDIT -->
-                                                    <button type="button"
+                                                    <button type="button" onclick="editVariant(this)"
+                                                        data-id="{{ $variant['id'] }}"
+                                                        data-product-id="{{ $variant['product_id'] }}"
+                                                        data-type="{{ $variant['type'] }}"
+                                                        data-name="{{ $variant['name'] }}"
+                                                        data-price="{{ $variant['additional_price'] }}"
+                                                        data-active="{{ $variant['active'] ? 1 : 0 }}"
                                                         class="text-stone-400 transition hover:text-[#FF8000]"
                                                         title="Edit varian">
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -347,7 +370,7 @@
                                                     </button>
 
                                                     <!-- HAPUS -->
-                                                    <button type="button"
+                                                    <button type="button" onclick="removeVariant({{ $variant['id'] }})"
                                                         class="text-red-400 transition hover:text-red-600"
                                                         title="Hapus varian">
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -375,8 +398,272 @@
                     </div>
 
                 </section>
+            </div>
         </main>
     </div>
+
+    <!-- MODAL TAMBAH / EDIT -->
+    <div id="dataModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/40 p-4">
+        <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+
+            <div class="mb-5 flex items-start justify-between">
+                <h3 id="modalTitle" class="text-lg font-bold">Tambah Produk</h3>
+                <button type="button" onclick="closeModal()" aria-label="Tutup"
+                    class="grid h-8 w-8 place-items-center rounded-lg bg-stone-100 text-stone-500 hover:bg-stone-200">✕</button>
+            </div>
+
+            <form id="dataForm" class="space-y-4">
+                <input type="hidden" id="mode">
+
+                <div id="productGroup">
+                    <label for="productSelect" class="mb-1.5 block text-sm font-medium">Produk</label>
+                    <select id="productSelect"
+                        class="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-[#FF8000]">
+                        @foreach ($products as $product)
+                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label id="nameLabel" for="name" class="mb-1.5 block text-sm font-medium">Nama Produk</label>
+                    <input id="name" required placeholder="Masukkan nama"
+                        class="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-[#FF8000]">
+                </div>
+
+                <div id="typeGroup">
+                    <label for="type" class="mb-1.5 block text-sm font-medium">Kategori</label>
+                    <select id="type"
+                        class="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-[#FF8000]">
+                        <option value="filling">Filling</option>
+                        <option value="dipping_sauce">Dip Sauce</option>
+                        <option value="seasoning">Seasoning</option>
+                    </select>
+                </div>
+
+                <div id="sizeGroup">
+                    <label for="size" class="mb-1.5 block text-sm font-medium">Ukuran</label>
+                    <select id="size"
+                        class="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-[#FF8000]">
+                        <option value="Regular">Regular</option>
+                        <option value="Large">Large</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label id="priceLabel" for="price" class="mb-1.5 block text-sm font-medium">Harga (Rp)</label>
+                    <input id="price" type="number" min="0" placeholder="20000"
+                        class="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-[#FF8000]">
+                </div>
+
+                <div id="stockGroup">
+                    <label for="stock" class="mb-1.5 block text-sm font-medium">Stok Awal</label>
+                    <input id="stock" type="number" min="0" placeholder="0"
+                        class="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-[#FF8000]">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal()"
+                        class="rounded-xl border border-stone-200 bg-white px-5 py-3 text-sm font-semibold">Batal</button>
+                    <button type="submit"
+                        class="rounded-xl bg-[#FF8000] px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-60">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+        let FILTER = 'Semua';
+        let EDIT_VARIANT_ID = null;
+
+        // Kirim permintaan ke API backend (sudah dibuat di ProductController / VariantController)
+        async function api(method, url, body) {
+            const headers = {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': CSRF,
+            };
+            if (body !== undefined) headers['Content-Type'] = 'application/json';
+
+            const res = await fetch(url, {
+                method,
+                headers,
+                body: body === undefined ? undefined : JSON.stringify(body),
+            });
+
+            let data = {};
+            try { data = await res.json(); } catch (_) {}
+
+            if (!res.ok) {
+                if (res.status === 401) throw new Error('Sesi habis, silakan login ulang.');
+                throw new Error(data.message || ('Gagal (' + res.status + ')'));
+            }
+            return data;
+        }
+
+        const show = (id, on) => document.getElementById(id).classList.toggle('hidden', !on);
+
+        // ========== FILTER KATEGORI + PENCARIAN ==========
+        function applyFilter() {
+            const q = document.getElementById('searchInput').value.trim().toLowerCase();
+
+            document.querySelectorAll('.product-row').forEach(tr => {
+                const okCat = FILTER === 'Semua' || tr.dataset.category.split('|').includes(FILTER);
+                tr.classList.toggle('hidden', !(okCat && tr.dataset.search.includes(q)));
+            });
+
+            document.querySelectorAll('.variant-row').forEach(tr => {
+                const okCat = FILTER === 'Semua' || FILTER === tr.dataset.category;
+                tr.classList.toggle('hidden', !(okCat && tr.dataset.search.includes(q)));
+            });
+        }
+
+        document.querySelectorAll('.category-btn').forEach(btn => btn.addEventListener('click', () => {
+            FILTER = btn.dataset.filter;
+
+            document.querySelectorAll('.category-btn').forEach(b => {
+                const on = b === btn;
+                b.classList.toggle('bg-[#FF8000]', on);
+                b.classList.toggle('text-white', on);
+                b.classList.toggle('font-semibold', on);
+                b.classList.toggle('bg-white', !on);
+                b.classList.toggle('border', !on);
+                b.classList.toggle('border-stone-200', !on);
+                b.classList.toggle('text-stone-600', !on);
+            });
+
+            applyFilter();
+        }));
+
+        document.getElementById('searchInput').addEventListener('input', applyFilter);
+
+        // ========== MODAL ==========
+        function openModal(mode, variant = null) {
+            const isVariant = mode === 'variant';
+            EDIT_VARIANT_ID = variant ? variant.id : null;
+
+            document.getElementById('mode').value = mode;
+            document.getElementById('modalTitle').textContent = isVariant
+                ? (variant ? 'Edit Varian' : 'Tambah Varian')
+                : 'Tambah Produk';
+            document.getElementById('nameLabel').textContent = isVariant ? 'Nama Varian' : 'Nama Produk';
+            document.getElementById('priceLabel').textContent = isVariant ? 'Tambahan Harga (Rp)' : 'Harga (Rp)';
+
+            show('productGroup', isVariant && !variant);
+            show('typeGroup', isVariant);
+            show('sizeGroup', !isVariant);
+            show('stockGroup', !isVariant);
+
+            document.getElementById('name').value = variant ? variant.name : '';
+            document.getElementById('type').value = variant ? variant.type : 'filling';
+            document.getElementById('price').value = variant ? variant.price : '';
+            document.getElementById('size').value = 'Regular';
+            document.getElementById('stock').value = '';
+
+            const modal = document.getElementById('dataModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('dataModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function editVariant(btn) {
+            openModal('variant', btn.dataset);
+        }
+
+        document.getElementById('dataModal').addEventListener('click', e => {
+            if (e.target.id === 'dataModal') closeModal();
+        });
+
+        document.getElementById('dataForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const btn = e.submitter;
+            if (btn) btn.disabled = true;
+
+            try {
+                const mode = document.getElementById('mode').value;
+                const name = document.getElementById('name').value.trim();
+                const price = document.getElementById('price').value;
+
+                if (mode === 'variant') {
+                    const body = {
+                        type: document.getElementById('type').value,
+                        name,
+                        additional_price: price === '' ? 0 : Number(price),
+                    };
+
+                    if (EDIT_VARIANT_ID) {
+                        await api('PUT', `/owner/api/varian/${EDIT_VARIANT_ID}`, body);
+                    } else {
+                        const pid = document.getElementById('productSelect').value;
+                        await api('POST', `/owner/api/produk/${pid}/varian`, { ...body, is_available: true });
+                    }
+                } else {
+                    const res = await api('POST', '/owner/api/produk', { name });
+                    const stock = document.getElementById('stock').value;
+
+                    if (price !== '') {
+                        await api('POST', `/owner/api/produk/${res.data.id}/ukuran`, {
+                            size_name: document.getElementById('size').value,
+                            base_price: Number(price),
+                            stock: stock === '' ? 0 : Number(stock),
+                        });
+                    }
+                }
+
+                window.location.reload();
+            } catch (err) {
+                alert(err.message);
+                if (btn) btn.disabled = false;
+            }
+        });
+
+        // ========== AKSI DI TABEL ==========
+        async function toggleVariant(id, input) {
+            try {
+                await api('PATCH', `/owner/api/varian/${id}/status`, { is_available: input.checked ? '1' : '0' });
+                window.location.reload();
+            } catch (err) {
+                input.checked = !input.checked;
+                alert(err.message);
+            }
+        }
+
+        async function removeProduct(id) {
+            if (!confirm('Hapus produk ini beserta semua ukuran & variannya?')) return;
+            try {
+                await api('DELETE', `/owner/api/produk/${id}`);
+                window.location.reload();
+            } catch (err) { alert(err.message); }
+        }
+
+        async function removeVariant(id) {
+            if (!confirm('Hapus varian ini?')) return;
+            try {
+                await api('DELETE', `/owner/api/varian/${id}`);
+                window.location.reload();
+            } catch (err) { alert(err.message); }
+        }
+
+        // ========== SIDEBAR DI HP ==========
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        document.getElementById('menuButton')?.addEventListener('click', () => {
+            sidebar?.classList.remove('-translate-x-full');
+            overlay?.classList.remove('hidden');
+        });
+
+        overlay?.addEventListener('click', () => {
+            sidebar?.classList.add('-translate-x-full');
+            overlay?.classList.add('hidden');
+        });
+    </script>
 
 </body>
 
