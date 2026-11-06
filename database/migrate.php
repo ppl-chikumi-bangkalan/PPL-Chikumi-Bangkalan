@@ -11,6 +11,7 @@ try {
         'pos_item_variants', 'pos_transaction_items', 'pos_transactions',
         'order_item_variants', 'order_items', 'orders',
         'cart_item_variants', 'carts',
+        'delivery_addresses',
         'expenses', 'stock_histories',
         'product_sizes', 'variants', 'products', 'categories', 'users'
     ];
@@ -165,6 +166,21 @@ try {
         variant_price DECIMAL(12, 2) NOT NULL,
         CONSTRAINT fk_order_item_variant_item FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE,
         CONSTRAINT fk_order_item_variant_variant FOREIGN KEY (variant_id) REFERENCES variants(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB;");
+
+    // 9b. Delivery Addresses (Alamat pengiriman pelanggan)
+    $pdo->exec("CREATE TABLE delivery_addresses (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        customer_id BIGINT NOT NULL,
+        label VARCHAR(50) NULL,
+        recipient_name VARCHAR(100) NOT NULL,
+        phone VARCHAR(20) NOT NULL,
+        detail TEXT NOT NULL,
+        city VARCHAR(100) NOT NULL,
+        postal_code VARCHAR(10) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        CONSTRAINT fk_delivery_address_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB;");
 
     // 10. POS Transactions (Transaksi Kasir)

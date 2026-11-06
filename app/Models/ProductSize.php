@@ -34,4 +34,9 @@ class ProductSize extends Model
     {
         return $this->hasMany(StockHistory::class, 'product_size_id');
     }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(OrderItem::class, 'product_size_id');
+    }
 }

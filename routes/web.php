@@ -3,6 +3,11 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Customer\AddressController;
+use App\Http\Controllers\Customer\CatalogController;
+use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\OrderController;
+use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Owner\ProductController;
 use App\Http\Controllers\Owner\ProductSizeController;
 use App\Http\Controllers\Owner\VariantController;
@@ -53,6 +58,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/customer/dashboard', function () {
         return view('customer.dashboard');
     })->middleware('role:customer')->name('customer.dashboard');
+    Route::get('/customer/api/katalog', [CatalogController::class, 'index'])->name('customer.katalog');
+    // Tanpa nama route: view lama memanggil route('customer.produk', ['ukuran'=>...])
+    // yang tidak cocok parameternya -> UrlGenerationException loop. Saat wiring API,
+    // pakai /customer/api/produk/{id_produk} langsung (lihat docs/API-KATALOG.md).
+    Route::get('/customer/api/produk/{produk}', [CustomerProductController::class, 'show'])->whereNumber('produk');
+    Route::prefix('customer/api')->middleware('role:customer')->group(function () {
+        Route::get('keranjang', [CartController::class, 'index'])->name('customer.keranjang.index');
+        Route::post('keranjang', [CartController::class, 'store'])->name('customer.keranjang.store');
+        Route::put('keranjang/{keranjang}', [CartController::class, 'update'])->whereNumber('keranjang')->name('customer.keranjang.update');
+        Route::delete('keranjang/{keranjang}', [CartController::class, 'destroy'])->whereNumber('keranjang')->name('customer.keranjang.destroy');
+        Route::get('pesanan', [OrderController::class, 'index'])->name('customer.pesanan.index');
+        Route::post('pesanan/checkout', [OrderController::class, 'checkout'])->name('customer.pesanan.checkout');
+        Route::patch('pesanan/{pesanan}/batal', [OrderController::class, 'cancel'])->whereNumber('pesanan')->name('customer.pesanan.batal');
+        Route::get('alamat', [AddressController::class, 'index'])->name('customer.alamat.index');
+        Route::post('alamat', [AddressController::class, 'store'])->name('customer.alamat.store');
+        Route::put('alamat/{alamat}', [AddressController::class, 'update'])->whereNumber('alamat')->name('customer.alamat.update');
+        Route::delete('alamat/{alamat}', [AddressController::class, 'destroy'])->whereNumber('alamat')->name('customer.alamat.destroy');
+    });
 
     Route::get('/owner/produk/{produk}/edit/{ukuran?}', [ProductController::class, 'pageEdit'])
         ->whereNumber('produk')->whereNumber('ukuran')->middleware('role:owner')->name('owner.produk.edit');
@@ -88,7 +111,23 @@ Route::middleware('auth')->group(function () {
 Route::get('/frontend/owner/dashboard', function () {
     return view('owner.dashboard');
 })->name('frontend.owner');
-
 Route::get('/frontend/customer/dashboard', function () {
     return view('customer.dashboard');
 })->name('frontend.customer.dashboard');
+Route::get('/frontend/customer/api/katalog', [CatalogController::class, 'index'])
+    ->name('frontend.customer.katalog');
+// API dev pelanggan (tanpa login; kirim header `X-Dev-Customer: <id pelanggan>` untuk data milik pelanggan tsb)
+Route::prefix('frontend/customer/api')->group(function () {
+    Route::get('produk/{produk}', [CustomerProductController::class, 'show'])->whereNumber('produk');
+    Route::get('keranjang', [CartController::class, 'index']);
+    Route::post('keranjang', [CartController::class, 'store']);
+    Route::put('keranjang/{keranjang}', [CartController::class, 'update'])->whereNumber('keranjang');
+    Route::delete('keranjang/{keranjang}', [CartController::class, 'destroy'])->whereNumber('keranjang');
+    Route::get('pesanan', [OrderController::class, 'index']);
+    Route::post('pesanan/checkout', [OrderController::class, 'checkout']);
+    Route::patch('pesanan/{pesanan}/batal', [OrderController::class, 'cancel'])->whereNumber('pesanan');
+    Route::get('alamat', [AddressController::class, 'index']);
+    Route::post('alamat', [AddressController::class, 'store']);
+    Route::put('alamat/{alamat}', [AddressController::class, 'update'])->whereNumber('alamat');
+    Route::delete('alamat/{alamat}', [AddressController::class, 'destroy'])->whereNumber('alamat');
+});
