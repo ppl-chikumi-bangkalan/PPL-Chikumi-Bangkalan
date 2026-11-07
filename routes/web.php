@@ -59,6 +59,11 @@ Route::middleware('auth')->group(function () {
         return view('customer.dashboard');
     })->middleware('role:customer')->name('customer.dashboard');
     Route::get('/customer/api/katalog', [CatalogController::class, 'index'])->name('customer.katalog');
+
+    Route::get('/customer/produk', function () {
+        return view('customer.produk');
+    })->middleware('role:customer')->name('customer.produk');
+    
     // Tanpa nama route: view lama memanggil route('customer.produk', ['ukuran'=>...])
     // yang tidak cocok parameternya -> UrlGenerationException loop. Saat wiring API,
     // pakai /customer/api/produk/{id_produk} langsung (lihat docs/API-KATALOG.md).
@@ -116,6 +121,11 @@ Route::get('/frontend/customer/dashboard', function () {
 })->name('frontend.customer.dashboard');
 Route::get('/frontend/customer/api/katalog', [CatalogController::class, 'index'])
     ->name('frontend.customer.katalog');
+Route::get('/frontend/customer/produk', function () {
+    return view('customer.produk');
+})->name('frontend.customer.produk');
+
+
 // API dev pelanggan (tanpa login; kirim header `X-Dev-Customer: <id pelanggan>` untuk data milik pelanggan tsb)
 Route::prefix('frontend/customer/api')->group(function () {
     Route::get('produk/{produk}', [CustomerProductController::class, 'show'])->whereNumber('produk');
