@@ -55,7 +55,7 @@ Route::middleware('auth')->group(function () {
     })->middleware('role:owner')->name('owner.dashboard');
 
     Route::get('/kasir/dashboard', function () {
-        return view('dashboard');
+        return view('kasir.dashboard');
     })->middleware('role:owner,cashier')->name('kasir.dashboard');
 
     Route::get('/customer/dashboard', [DashboardController::class, 'page'])
@@ -138,6 +138,9 @@ Route::get('/frontend/customer/produk', function (Request $request) {
 
     return view('customer.produk', ['produk' => $produk]);
 })->name('frontend.customer.produk');
+Route::get('/frontend/kasir/dashboard', function () {
+    return view('kasir.dashboard');
+})->name('frontend.kasir.dashboard');
 
 
 // API dev pelanggan (tanpa login; kirim header `X-Dev-Customer: <id pelanggan>` untuk data milik pelanggan tsb)
