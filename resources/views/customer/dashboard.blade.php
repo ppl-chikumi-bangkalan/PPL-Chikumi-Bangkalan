@@ -8,8 +8,10 @@
     $alamat = ['label' => 'Rumah', 'detail' => 'Jl. Trunojoyo No. 12, Bangkalan Kota'];
 
     $produk = [
-        ['nama' => 'Chikumi Reguler', 'ukuran' => 'Reguler', 'panjang' => '16 cm', 'harga_seasoning' => 20000, 'harga_dip' => 21000, 'tersedia' => true],
-        ['nama' => 'Chikumi Large',   'ukuran' => 'Large',   'panjang' => '25 cm', 'harga_seasoning' => 26000, 'harga_dip' => 27000, 'tersedia' => false],
+        ['nama' => 'Chikumi Reguler', 'ukuran' => 'Reguler', 'panjang' => '16 cm', 'topping' => 'seasoning', 'label_topping' => 'Seasoning', 'harga' => 20000, 'tersedia' => true],
+        ['nama' => 'Chikumi Reguler', 'ukuran' => 'Reguler', 'panjang' => '16 cm', 'topping' => 'dip',       'label_topping' => 'Dipping',   'harga' => 21000, 'tersedia' => true],
+        ['nama' => 'Chikumi Large',   'ukuran' => 'Large',   'panjang' => '25 cm', 'topping' => 'seasoning', 'label_topping' => 'Seasoning', 'harga' => 26000, 'tersedia' => false],
+        ['nama' => 'Chikumi Large',   'ukuran' => 'Large',   'panjang' => '25 cm', 'topping' => 'dip',       'label_topping' => 'Dipping',   'harga' => 27000, 'tersedia' => false],
     ];
 
     $opsiAmbil = [
@@ -164,13 +166,13 @@
                         @foreach ($produk as $item)
                             @php
                                 $linkAtur = Route::has('customer.produk')
-                                    ? route('customer.produk', ['ukuran' => $item['ukuran']])
+                                    ? route('customer.produk', ['ukuran' => $item['ukuran'], 'topping' => $item['topping']])
                                     : '#';
                             @endphp
 
                             @if ($item['tersedia'])
                                 <a href="{{ $linkAtur }}"
-                                    class="flex items-center gap-3.5 rounded-2xl border-2 border-[#FF8000] bg-white p-3.5">
+                                    class="flex items-center gap-3.5 rounded-2xl border-2 border-transparent bg-white p-3.5 outline-none transition hover:border-[#FF8000] focus-visible:border-[#FF8000] active:border-[#FF8000]">
 
                                     <div class="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#FF8000] min-[380px]:h-[92px] min-[380px]:w-[92px]">
                                         <img src="{{ asset('images/chikumi-1.png') }}" alt="{{ $item['nama'] }}" class="h-[76px] w-auto object-contain min-[380px]:h-[88px]">
@@ -178,9 +180,8 @@
 
                                     <div class="min-w-0 flex-1">
                                         <p class="text-lg font-extrabold italic">{{ $item['nama'] }}</p>
-                                        <p class="mt-0.5 text-xs text-[#6B645D]">{{ $item['panjang'] }}</p>
-                                        <p class="mt-1 text-xs font-semibold text-[#D96C00]">Seasoning {{ $rupiah($item['harga_seasoning']) }}</p>
-                                        <p class="mt-0.5 text-xs font-semibold text-[#D96C00]">Dip Sauce {{ $rupiah($item['harga_dip']) }}</p>
+                                        <p class="mt-0.5 text-xs text-[#6B645D]">{{ $item['label_topping'] }} · {{ $item['panjang'] }}</p>
+                                        <p class="mt-1 text-sm font-semibold text-[#D96C00]">{{ $rupiah($item['harga']) }}</p>
                                     </div>
 
                                     <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#FF8000] text-white">
@@ -199,7 +200,7 @@
 
                                     <div class="min-w-0 flex-1">
                                         <p class="text-lg font-extrabold italic text-[#A39B93]">{{ $item['nama'] }}</p>
-                                        <p class="mt-0.5 text-xs text-[#A39B93]">{{ $item['panjang'] }}</p>
+                                        <p class="mt-0.5 text-xs text-[#A39B93]">{{ $item['label_topping'] }} · {{ $item['panjang'] }}</p>
                                         <span class="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-[#FDECEC] px-2.5 py-1 text-xs font-medium text-[#E03131]">
                                             <span class="h-1.5 w-1.5 rounded-full bg-[#E03131]"></span>
                                             Habis
