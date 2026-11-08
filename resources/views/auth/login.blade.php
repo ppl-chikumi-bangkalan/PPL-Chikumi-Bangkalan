@@ -70,9 +70,15 @@
                     </p>
                 </div>
 
+                @if ($errors->any())
+                    <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
+
                 <!-- FORM LOGIN -->
-                <form method="POST" class="space-y-5">
-                    {{-- @csrf --}}
+                <form method="POST" action="{{ route('login.store') }}" class="space-y-5">
+                    @csrf
 
                     <!-- EMAIL / WHATSAPP -->
                     <div>
@@ -88,7 +94,7 @@
                                     d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
 
-                            <input type="text" id="email" name="email"
+                            <input type="text" id="email" name="email" value="{{ old('email') }}"
                                 placeholder="Masukkan email atau nomor WhatsApp" autocomplete="username" required
                                 class="w-full rounded-xl border border-neutral-300 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-[#FF8000]">
                         </div>

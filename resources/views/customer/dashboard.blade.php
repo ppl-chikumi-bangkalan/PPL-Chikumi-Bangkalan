@@ -1,46 +1,17 @@
 @php
-    // ============================================================
-    // DATA CONTOH (FRONTEND) — nanti diganti data asli oleh backend
-    // ============================================================
-    $namaUser = 'Budi';
-    $jumlahKeranjang = 2;
-
-    $alamat = ['label' => 'Rumah', 'detail' => 'Jl. Trunojoyo No. 12, Bangkalan Kota'];
-
-    $produk = [
-        ['nama' => 'Chikumi Reguler', 'ukuran' => 'Reguler', 'panjang' => '16 cm', 'topping' => 'seasoning', 'label_topping' => 'Seasoning', 'harga' => 20000, 'tersedia' => true],
-        ['nama' => 'Chikumi Reguler', 'ukuran' => 'Reguler', 'panjang' => '16 cm', 'topping' => 'dip',       'label_topping' => 'Dipping',   'harga' => 21000, 'tersedia' => true],
-        ['nama' => 'Chikumi Large',   'ukuran' => 'Large',   'panjang' => '25 cm', 'topping' => 'seasoning', 'label_topping' => 'Seasoning', 'harga' => 26000, 'tersedia' => false],
-        ['nama' => 'Chikumi Large',   'ukuran' => 'Large',   'panjang' => '25 cm', 'topping' => 'dip',       'label_topping' => 'Dipping',   'harga' => 27000, 'tersedia' => false],
-    ];
+    $namaUser ??= 'Pelanggan';
+    $jumlahKeranjang ??= 0;
+    $alamat ??= null;
+    $produk ??= collect();
+    $rasa ??= collect();
 
     $opsiAmbil = [
         ['mode' => 'pickup',   'judul' => 'Pick Up',  'ket' => 'Ambil di gerai · tanpa ongkir',   'icon' => 'store'],
         ['mode' => 'delivery', 'judul' => 'Delivery', 'ket' => 'Diantar kurir · ongkir per area', 'icon' => 'pin'],
     ];
 
-    // habis = true artinya varian sedang tidak tersedia
-    $rasa = [
-        ['judul' => 'Filling', 'aturan' => 'pilih 1', 'pilihan' => [
-            ['nama' => 'Garlic Cream Cheese', 'habis' => false],
-            ['nama' => 'Cream Cheese',        'habis' => false],
-            ['nama' => 'Mentaiko',            'habis' => false],
-            ['nama' => 'Tartar',              'habis' => false],
-        ]],
-        ['judul' => 'Dip Sauce', 'aturan' => 'pilih 1 · +Rp 1.000', 'pilihan' => [
-            ['nama' => 'BBQ',          'habis' => false],
-            ['nama' => 'Black Pepper', 'habis' => false],
-            ['nama' => 'Korean Spicy', 'habis' => false],
-            ['nama' => 'Teriyaki',     'habis' => false],
-        ]],
-        ['judul' => 'Seasoning', 'aturan' => 'boleh lebih dari 1', 'pilihan' => [
-            ['nama' => 'BBQ',       'habis' => false],
-            ['nama' => 'Sweetcorn', 'habis' => false],
-            ['nama' => 'Extra Hot', 'habis' => true],
-        ]],
-    ];
-
-    $rupiah = fn ($angka) => 'Rp ' . number_format($angka, 0, ',', '.');
+    $rupiah = fn ($angka) => 'Rp ' . number_format((float) $angka, 0, ',', '.');
+    $produkRoute = auth()->check() ? 'customer.produk' : 'frontend.customer.produk';
 @endphp
 
 <!DOCTYPE html>
@@ -163,11 +134,12 @@
                     <h3 class="text-lg font-bold">Pilih Ukuran</h3>
 
                     <div class="mt-4 grid gap-4 md:grid-cols-2">
-                        @foreach ($produk as $item)
+                        @forelse ($produk as $item)
                             @php
-                                $linkAtur = Route::has('customer.produk')
-                                    ? route('customer.produk', ['ukuran' => $item['ukuran'], 'topping' => $item['topping']])
-                                    : '#';
+                                $linkAtur = route($produkRoute, [
+                                    'produk' => $item['produk_id'],
+                                    'ukuran' => $item['size_id'],
+                                ]);
                             @endphp
 
                             @if ($item['tersedia'])
@@ -215,7 +187,9 @@
                                     </span>
                                 </div>
                             @endif
-                        @endforeach
+                        @empty
+                            <p class="text-sm text-[#6B645D]">Belum ada produk tersedia.</p>
+                        @endforelse
                     </div>
                 </section>
 
@@ -274,12 +248,17 @@
                     </span>
 
                     <div class="min-w-0 flex-1">
-                        <p class="text-sm font-semibold">Antar ke · {{ $alamat['label'] }}</p>
-                        <p class="truncate text-xs text-[#6B645D]">{{ $alamat['detail'] }}</p>
+                        @if ($alamat)
+                            <p class="text-sm font-semibold">Antar ke · {{ $alamat['label'] }}</p>
+                            <p class="truncate text-xs text-[#6B645D]">{{ $alamat['detail'] }}</p>
+                        @else
+                            <p class="text-sm font-semibold">Belum ada alamat</p>
+                            <p class="text-xs text-[#6B645D]">Tambahkan alamat pengiriman saat checkout.</p>
+                        @endif
                     </div>
 
                     <a href="{{ Route::has('customer.alamat') ? route('customer.alamat') : '#' }}"
-                        class="text-sm font-semibold text-[#FF8000]">Ganti</a>
+                        class="text-sm font-semibold text-[#FF8000]">{{ $alamat ? 'Ganti' : 'Tambah' }}</a>
                 </section>
 
                 <!-- PILIHAN RASA HARI INI -->

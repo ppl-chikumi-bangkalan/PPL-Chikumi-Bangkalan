@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductSize;
 use App\Models\StockHistory;
+use App\Support\PriceCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -91,16 +92,20 @@ class OrderController extends Controller
                     abort(422, "Stok {$size->size_name} tidak cukup — sisa {$size->stock}.");
                 }
 
-                $unit = (float) $size->base_price + (float) $cart->variants->sum('additional_price');
-                $itemTotal = round($unit * $cart->quantity, 2);
+                $variants = PriceCalculator::resolveVariants(
+                    $size->product_id,
+                    $cart->variants->pluck('id')->all()
+                );
+                $price = PriceCalculator::breakdown($size, $variants, $cart->quantity);
+
                 $item = OrderItem::create([
                     'order_id' => $order->id,
                     'product_size_id' => $size->id,
-                    'unit_price' => $unit,
+                    'unit_price' => $price['harga_satuan'],
                     'quantity' => $cart->quantity,
-                    'subtotal' => $itemTotal,
+                    'subtotal' => $price['subtotal'],
                 ]);
-                foreach ($cart->variants as $variant) {
+                foreach ($variants as $variant) {
                     $item->variants()->attach($variant->id, ['variant_price' => $variant->additional_price]);
                 }
                 $size->decrement('stock', $cart->quantity);
@@ -112,7 +117,7 @@ class OrderController extends Controller
                     'source' => 'online_order',
                     'reference_id' => $order->id,
                 ]);
-                $subtotal += $itemTotal;
+                $subtotal += $price['subtotal'];
             }
 
             $order->update(['subtotal' => $subtotal, 'grand_total' => round($subtotal + $ongkir, 2)]);

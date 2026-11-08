@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\ProductSize;
-use App\Models\Variant;
+use App\Support\PriceCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -39,7 +39,7 @@ class CartController extends Controller
         abort_unless($size->product->is_active, 422, 'Produk tidak tersedia.');
         abort_unless($size->stock >= $data['quantity'], 422, "Stok {$size->size_name} hanya {$size->stock}.");
 
-        $variants = $this->validvariants($size->product_id, $data['variant_ids'] ?? []);
+        $variants = PriceCalculator::resolveVariants($size->product_id, $data['variant_ids'] ?? []);
 
         DB::transaction(function () use ($customerId, $size, $data, $variants) {
             $variantIds = $variants->pluck('id')->sort()->values();
@@ -93,7 +93,7 @@ class CartController extends Controller
             ->get()
             ->map(function (Cart $cart) {
                 $size = $cart->productSize;
-                $variantPrice = (float) $cart->variants->sum('additional_price');
+                $price = PriceCalculator::breakdown($size, $cart->variants, $cart->quantity);
 
                 return [
                     'id' => $cart->id,
@@ -101,33 +101,13 @@ class CartController extends Controller
                     'gambar' => $size->product->image_url,
                     'ukuran' => $size->size_name,
                     'product_size_id' => $size->id,
-                    'varian' => $cart->variants->map(fn (Variant $v) => [
-                        'id' => $v->id,
-                        'type' => $v->type,
-                        'nama' => $v->name,
-                        'tambahan_harga' => (float) $v->additional_price,
-                    ])->values(),
-                    'harga_satuan' => round((float) $size->base_price + $variantPrice, 2),
+                    'varian' => $price['varian'],
+                    'harga_satuan' => $price['harga_satuan'],
                     'quantity' => $cart->quantity,
-                    'subtotal' => round(((float) $size->base_price + $variantPrice) * $cart->quantity, 2),
+                    'subtotal' => $price['subtotal'],
                     'stok_cukup' => $size->stock >= $cart->quantity,
                 ];
             });
-    }
-
-    // Varian harus aktif & milik produk yang sama; maksimal satu per tipe.
-    private function validVariants(int $productId, array $ids)
-    {
-        if (! $ids) {
-            return collect();
-        }
-        $variants = Variant::whereIn('id', $ids)->get();
-        abort_if($variants->count() !== count($ids), 422, 'Ada varian yang tidak ditemukan.');
-        abort_if($variants->contains(fn ($v) => $v->product_id !== $productId), 422, 'Varian bukan dari produk ini.');
-        abort_if($variants->contains(fn ($v) => ! $v->is_available), 422, 'Ada varian yang sedang tidak tersedia.');
-        abort_if($variants->pluck('type')->unique()->count() !== $variants->count(), 422, 'Pilih maksimal satu varian per tipe.');
-
-        return $variants;
     }
 
     private function authorizeCart(Request $request, Cart $keranjang): void

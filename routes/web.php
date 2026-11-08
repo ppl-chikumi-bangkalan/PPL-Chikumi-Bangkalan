@@ -6,11 +6,14 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Customer\AddressController;
 use App\Http\Controllers\Customer\CatalogController;
 use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\DashboardController;
 use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Owner\ProductController;
 use App\Http\Controllers\Owner\ProductSizeController;
 use App\Http\Controllers\Owner\VariantController;
+use App\Models\Product;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -55,19 +58,25 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->middleware('role:owner,cashier')->name('kasir.dashboard');
 
-    Route::get('/customer/dashboard', function () {
-        return view('customer.dashboard');
-    })->middleware('role:customer')->name('customer.dashboard');
+    Route::get('/customer/dashboard', [DashboardController::class, 'page'])
+        ->middleware('role:customer')->name('customer.dashboard');
     Route::get('/customer/api/katalog', [CatalogController::class, 'index'])->name('customer.katalog');
 
-    Route::get('/customer/produk', function () {
-        return view('customer.produk');
+    Route::get('/customer/produk', function (Request $request) {
+        $produk = Product::with(['sizes', 'variants'])
+            ->where('is_active', true)
+            ->when($request->integer('produk'), fn ($query, $id) => $query->whereKey($id))
+            ->orderBy('id')
+            ->first();
+
+        return view('customer.produk', ['produk' => $produk]);
     })->middleware('role:customer')->name('customer.produk');
-    
+
     // Tanpa nama route: view lama memanggil route('customer.produk', ['ukuran'=>...])
     // yang tidak cocok parameternya -> UrlGenerationException loop. Saat wiring API,
     // pakai /customer/api/produk/{id_produk} langsung (lihat docs/API-KATALOG.md).
     Route::get('/customer/api/produk/{produk}', [CustomerProductController::class, 'show'])->whereNumber('produk');
+    Route::get('/customer/api/produk/{produk}/harga', [CustomerProductController::class, 'price'])->whereNumber('produk');
     Route::prefix('customer/api')->middleware('role:customer')->group(function () {
         Route::get('keranjang', [CartController::class, 'index'])->name('customer.keranjang.index');
         Route::post('keranjang', [CartController::class, 'store'])->name('customer.keranjang.store');
@@ -116,19 +125,25 @@ Route::middleware('auth')->group(function () {
 Route::get('/frontend/owner/dashboard', function () {
     return view('owner.dashboard');
 })->name('frontend.owner');
-Route::get('/frontend/customer/dashboard', function () {
-    return view('customer.dashboard');
-})->name('frontend.customer.dashboard');
+Route::get('/frontend/customer/dashboard', [DashboardController::class, 'page'])
+    ->name('frontend.customer.dashboard');
 Route::get('/frontend/customer/api/katalog', [CatalogController::class, 'index'])
     ->name('frontend.customer.katalog');
-Route::get('/frontend/customer/produk', function () {
-    return view('customer.produk');
+Route::get('/frontend/customer/produk', function (Request $request) {
+    $produk = Product::with(['sizes', 'variants'])
+        ->where('is_active', true)
+        ->when($request->integer('produk'), fn ($query, $id) => $query->whereKey($id))
+        ->orderBy('id')
+        ->first();
+
+    return view('customer.produk', ['produk' => $produk]);
 })->name('frontend.customer.produk');
 
 
 // API dev pelanggan (tanpa login; kirim header `X-Dev-Customer: <id pelanggan>` untuk data milik pelanggan tsb)
 Route::prefix('frontend/customer/api')->group(function () {
     Route::get('produk/{produk}', [CustomerProductController::class, 'show'])->whereNumber('produk');
+    Route::get('produk/{produk}/harga', [CustomerProductController::class, 'price'])->whereNumber('produk');
     Route::get('keranjang', [CartController::class, 'index']);
     Route::post('keranjang', [CartController::class, 'store']);
     Route::put('keranjang/{keranjang}', [CartController::class, 'update'])->whereNumber('keranjang');

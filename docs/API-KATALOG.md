@@ -8,11 +8,12 @@
 |---|---|---|
 | GET | `/katalog` | Query katalog. Param opsional: `category=<id>`, `search=<teks>`, `hanya_tersedia=1`. Hanya produk aktif; varian yang dikirim hanya yang `is_available`. |
 | GET | `/produk/{id}` | Detail 1 produk (bentuk sama dengan item katalog). Produk nonaktif → 404. |
+| GET | `/produk/{id}/harga` | Preview harga. Param: `product_size_id`*, `variant_ids[]?`, `quantity?` (default 1). Response `data = {product_size_id, ukuran, harga_dasar, varian[], total_tambahan, harga_satuan, quantity, subtotal}`. Ukuran bukan milik produk / varian tidak valid → 422. |
 
 Bentuk item: `id, nama, deskripsi, gambar, kategori, tersedia`,
 `ukuran[] = {id, nama, harga_dasar, tersedia}`,
 `varian[] = {type, pilihan[] = {id, nama, tambahan_harga}}` (type: `filling` / `dipping_sauce` / `seasoning`).
-Harga total per item = `harga_dasar + Σ tambahan_harga` (hitung di frontend saat user memilih).
+Harga total per item = `harga_dasar + Σ tambahan_harga` (frontend menampilkan saat user memilih; backend menghitung ulang saat masuk keranjang/checkout). Aturan varian: maksimal 1 untuk tipe `filling` dan `dipping_sauce`, sedangkan `seasoning` boleh lebih dari satu.
 
 ## Keranjang
 | Metode | Endpoint | Keterangan |
