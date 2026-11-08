@@ -69,7 +69,7 @@
             <!-- PILIHAN -->
             <div class="mt-4 space-y-6 lg:mt-0">
 
-                <!-- 1. PILIH UKURAN & TOPPING (sama dengan kartu di Beranda) -->
+                <!-- 1. PILIH UKURAN (Reguler / Large) -->
                 <section>
                     <div class="flex items-center gap-2">
                         <h2 class="text-base font-bold">1. Pilih Ukuran</h2>
@@ -93,10 +93,42 @@
                     <div id="daftarFilling" class="mt-4 flex flex-wrap gap-2"></div>
                 </section>
 
-                <!-- 3a. PILIH SEASONING (muncul kalau kartu Seasoning yang dipilih) -->
+                <!-- 3. JENIS TOPPING (menentukan harga) -->
+                <section>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-base font-bold">3. Jenis Topping</h2>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-[11px] font-medium text-[#6B645D]">
+                            <span class="h-1.5 w-1.5 rounded-full bg-[#6B645D]"></span> pilih salah satu
+                        </span>
+                    </div>
+
+                    <div class="mt-4 space-y-4">
+                        <button type="button" data-topping="seasoning"
+                            class="pilihan-topping flex w-full items-center gap-3.5 rounded-2xl border-2 border-transparent bg-white p-4 text-left outline-none transition hover:border-[#FF8000] focus-visible:border-[#FF8000] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-transparent">
+                            <span class="radio grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 border-[#A39B93]"></span>
+                            <span class="flex-1">
+                                <span class="block text-base font-semibold">Seasoning Powder</span>
+                                <span class="block text-xs text-[#6B645D]">Pilih 1 seasoning</span>
+                            </span>
+                            <span id="hargaSeasoning" class="text-sm font-semibold text-[#D96C00]"></span>
+                        </button>
+
+                        <button type="button" data-topping="dip"
+                            class="pilihan-topping flex w-full items-center gap-3.5 rounded-2xl border-2 border-transparent bg-white p-4 text-left outline-none transition hover:border-[#FF8000] focus-visible:border-[#FF8000] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-transparent">
+                            <span class="radio grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 border-[#A39B93]"></span>
+                            <span class="flex-1">
+                                <span class="block text-base font-semibold">Dip Sauce</span>
+                                <span class="block text-xs text-[#6B645D]">Pilih 1 saus</span>
+                            </span>
+                            <span id="hargaDip" class="text-sm font-semibold text-[#D96C00]"></span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 4a. PILIH SEASONING (muncul kalau topping = Seasoning Powder) -->
                 <section id="bagianSeasoning">
                     <div class="flex items-center gap-2">
-                        <h2 class="text-base font-bold">3. Pilih Seasoning</h2>
+                        <h2 class="text-base font-bold">4. Pilih Seasoning</h2>
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-[11px] font-medium text-[#6B645D]">
                             <span class="h-1.5 w-1.5 rounded-full bg-[#6B645D]"></span> pilih 1
                         </span>
@@ -105,10 +137,10 @@
                     <div id="daftarSeasoning" class="mt-4 flex flex-wrap gap-2"></div>
                 </section>
 
-                <!-- 3b. PILIH DIP SAUCE (muncul kalau kartu Dipping yang dipilih) -->
+                <!-- 4b. PILIH DIP SAUCE (muncul kalau topping = Dip Sauce) -->
                 <section id="bagianDip" class="hidden">
                     <div class="flex items-center gap-2">
-                        <h2 class="text-base font-bold">3. Pilih Dip Sauce</h2>
+                        <h2 class="text-base font-bold">4. Pilih Dip Sauce</h2>
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-[11px] font-medium text-[#6B645D]">
                             <span class="h-1.5 w-1.5 rounded-full bg-[#6B645D]"></span> pilih 1 saus
                         </span>
@@ -254,39 +286,25 @@
             return btn;
         }
 
-        // Kartu = ukuran × jenis topping, contoh "Chikumi Reguler · Seasoning · 16 cm · Rp 20.000"
-        const LABEL_TOPPING = { seasoning: 'Seasoning', dip: 'Dipping' };
-
-        function buatKartuPilihan(ukuran, topping) {
-            const bisaDipilih = ukuran.tersedia && varian[topping].length > 0;
-
+        // Kartu ukuran: "Chikumi Reguler · 16 cm" (harga ditentukan di Jenis Topping)
+        function buatKartuUkuran(ukuran) {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.disabled = !bisaDipilih;
+            btn.disabled = !ukuran.tersedia;
             btn.dataset.ukuran = ukuran.id;
-            btn.dataset.topping = topping;
-            btn.className = 'pilihan-ukuran rounded-2xl border-2 border-transparent bg-white p-3.5 text-left outline-none transition hover:border-[#FF8000] focus-visible:border-[#FF8000] disabled:cursor-not-allowed disabled:bg-white/60 disabled:hover:border-transparent';
+            btn.className = 'pilihan-ukuran rounded-2xl border-2 border-transparent bg-white p-4 text-left outline-none transition hover:border-[#FF8000] focus-visible:border-[#FF8000] disabled:cursor-not-allowed disabled:bg-white/60 disabled:hover:border-transparent';
 
             const judul = document.createElement('p');
-            judul.className = 'text-base font-extrabold italic leading-tight' + (bisaDipilih ? '' : ' text-[#A39B93]');
-            judul.textContent = 'Chikumi ' + (LABEL_UKURAN[ukuran.nama] ?? ukuran.nama);
+            judul.className = 'judul text-base font-semibold' + (ukuran.tersedia ? '' : ' text-[#A39B93]');
+            judul.textContent = LABEL_UKURAN[ukuran.nama] ?? ukuran.nama;
 
             const ket = document.createElement('p');
-            ket.className = 'mt-1 text-xs ' + (bisaDipilih ? 'text-[#6B645D]' : 'text-[#A39B93]');
-            ket.textContent = [LABEL_TOPPING[topping], PANJANG_UKURAN[ukuran.nama]].filter(Boolean).join(' · ');
+            ket.className = 'mt-0.5 text-xs ' + (ukuran.tersedia ? 'text-[#6B645D]' : 'text-[#A39B93]');
+            ket.textContent = [PANJANG_UKURAN[ukuran.nama], ukuran.tersedia ? null : 'habis'].filter(Boolean).join(' · ');
 
-            const harga = document.createElement('p');
-            if (bisaDipilih) {
-                harga.className = 'harga mt-1.5 text-sm font-semibold text-[#D96C00]';
-            } else {
-                harga.className = 'mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-[#FDECEC] px-2.5 py-1 text-xs font-medium text-[#E03131]';
-                harga.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-[#E03131]"></span>Habis';
-            }
-
-            btn.append(judul, ket, harga);
+            btn.append(judul, ket);
             btn.addEventListener('click', () => {
                 pilihan.ukuranId = ukuran.id;
-                pilihan.topping = topping;
                 render();
             });
 
@@ -299,25 +317,28 @@
                 if (tipe[grup.type]) varian[tipe[grup.type]] = grup.pilihan;
             });
 
-            const kartu = produk.ukuran.flatMap(u => ['seasoning', 'dip'].map(t => buatKartuPilihan(u, t)));
-            document.getElementById('daftarUkuran').replaceChildren(...kartu);
+            document.getElementById('daftarUkuran').replaceChildren(...produk.ukuran.map(buatKartuUkuran));
             document.getElementById('daftarFilling').replaceChildren(...varian.filling.map(v => buatChip('filling', v)));
             document.getElementById('daftarSeasoning').replaceChildren(...varian.seasoning.map(v => buatChip('seasoning', v)));
             document.getElementById('daftarDip').replaceChildren(...varian.dip.map(v => buatChip('dip', v)));
 
-            // Kartu awal: dari Beranda (?ukuran=Reguler&topping=dip), kalau habis pakai kartu pertama yang bisa dipilih
+            // Pilihan awal dari kartu Beranda (?ukuran=Reguler&topping=dip)
             const params = new URLSearchParams(location.search);
             const mintaUkuran = params.get('ukuran');
             const mintaTopping = params.get('topping');
-            const bisaDipilih = kartu.filter(k => !k.disabled);
-            const dariBeranda = bisaDipilih.find(k => {
-                const ukuran = produk.ukuran.find(u => u.id === Number(k.dataset.ukuran));
-                return (ukuran.nama === mintaUkuran || LABEL_UKURAN[ukuran.nama] === mintaUkuran)
-                    && (!mintaTopping || k.dataset.topping === mintaTopping);
-            });
-            const awal = dariBeranda ?? bisaDipilih[0];
-            pilihan.ukuranId = awal ? Number(awal.dataset.ukuran) : null;
-            pilihan.topping = awal ? awal.dataset.topping : 'seasoning';
+
+            // Ukuran: dari Beranda, kalau habis pakai yang tersedia
+            const tersedia = produk.ukuran.filter(u => u.tersedia);
+            const ukuranAwal = tersedia.find(u => u.nama === mintaUkuran || LABEL_UKURAN[u.nama] === mintaUkuran) ?? tersedia[0];
+            pilihan.ukuranId = ukuranAwal?.id ?? null;
+
+            // Jenis topping: yang tidak punya pilihan dinonaktifkan
+            document.querySelector('[data-topping=seasoning]').disabled = varian.seasoning.length === 0;
+            document.querySelector('[data-topping=dip]').disabled = varian.dip.length === 0;
+
+            if (mintaTopping === 'dip' && varian.dip.length) pilihan.topping = 'dip';
+            else if (varian.seasoning.length) pilihan.topping = 'seasoning';
+            else if (varian.dip.length) pilihan.topping = 'dip';
 
             document.getElementById('statusMuat').classList.add('hidden');
             document.getElementById('konten').classList.remove('hidden');
@@ -355,22 +376,41 @@
             btn.classList.toggle('border-[#EDE6DF]', !aktif);
         }
 
-        function render() {
-            // Kartu ukuran + topping: yang dipilih bergaris oranye, harga ikut diperbarui
-            document.querySelectorAll('.pilihan-ukuran:not([disabled])').forEach(btn => {
-                const ukuran = produk.ukuran.find(u => u.id === Number(btn.dataset.ukuran));
-                const aktif = ukuran.id === pilihan.ukuranId && btn.dataset.topping === pilihan.topping;
+        // Kartu (ukuran & jenis topping): polos, bergaris oranye kalau dipilih
+        function gayaKartu(btn, aktif) {
+            btn.classList.toggle('border-[#FF8000]', aktif);
+            btn.classList.toggle('bg-[#FFF3E6]', aktif);
+            btn.classList.toggle('border-transparent', !aktif);
+            btn.classList.toggle('bg-white', !aktif);
+        }
 
-                btn.classList.toggle('border-[#FF8000]', aktif);
-                btn.classList.toggle('bg-[#FFF3E6]', aktif);
-                btn.classList.toggle('border-transparent', !aktif);
-                btn.classList.toggle('bg-white', !aktif);
-                btn.querySelector('.harga').textContent = formatRupiah(hargaKartu(ukuran, btn.dataset.topping));
+        function render() {
+            // Kartu ukuran: yang dipilih bergaris oranye
+            document.querySelectorAll('.pilihan-ukuran:not([disabled])').forEach(btn => {
+                const aktif = Number(btn.dataset.ukuran) === pilihan.ukuranId;
+                gayaKartu(btn, aktif);
+                btn.querySelector('.judul').classList.toggle('text-[#D96C00]', aktif);
             });
 
             document.querySelectorAll('.chip').forEach(btn => {
                 gayaChip(btn, pilihan[btn.dataset.group] === Number(btn.dataset.id));
             });
+
+            // Jenis topping (radio) + harga sesuai ukuran yang dipilih
+            document.querySelectorAll('.pilihan-topping').forEach(btn => {
+                const aktif = btn.dataset.topping === pilihan.topping;
+                gayaKartu(btn, aktif);
+
+                const radio = btn.querySelector('.radio');
+                radio.classList.toggle('border-[#FF8000]', aktif);
+                radio.classList.toggle('bg-[#FF8000]', aktif);
+                radio.classList.toggle('border-[#A39B93]', !aktif);
+                radio.innerHTML = aktif ? '<span class="h-2 w-2 rounded-full bg-white"></span>' : '';
+            });
+
+            const ukuran = ukuranTerpilih();
+            document.getElementById('hargaSeasoning').textContent = ukuran && varian.seasoning.length ? formatRupiah(hargaKartu(ukuran, 'seasoning')) : '';
+            document.getElementById('hargaDip').textContent = ukuran && varian.dip.length ? formatRupiah(hargaKartu(ukuran, 'dip')) : '';
 
             document.getElementById('bagianSeasoning').classList.toggle('hidden', pilihan.topping !== 'seasoning');
             document.getElementById('bagianDip').classList.toggle('hidden', pilihan.topping !== 'dip');
@@ -386,7 +426,14 @@
             document.getElementById('pesanError').classList.add('hidden');
         }
 
-        // ============ JUMLAH ============
+        // ============ TOPPING & JUMLAH ============
+        document.querySelectorAll('.pilihan-topping').forEach(btn => {
+            btn.addEventListener('click', () => {
+                pilihan.topping = btn.dataset.topping;
+                render();
+            });
+        });
+
         document.getElementById('btnKurang').addEventListener('click', () => {
             pilihan.jumlah = Math.max(1, pilihan.jumlah - 1);
             render();
