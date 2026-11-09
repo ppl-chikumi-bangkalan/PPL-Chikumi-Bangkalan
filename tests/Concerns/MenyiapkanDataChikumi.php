@@ -81,6 +81,42 @@ trait MenyiapkanDataChikumi
             $table->foreignId('cart_id');
             $table->foreignId('variant_id');
         });
+        Schema::create('stock_histories', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_size_id');
+            $table->foreignId('user_id')->nullable();
+            $table->string('type');
+            $table->integer('quantity');
+            $table->string('source');
+            $table->foreignId('reference_id')->nullable();
+            $table->string('notes')->nullable();
+            $table->timestamp('created_at')->nullable();
+        });
+        Schema::create('pos_transactions', function (Blueprint $table) {
+            $table->id();
+            $table->string('transaction_number', 50)->unique();
+            $table->foreignId('cashier_id');
+            $table->decimal('total_amount', 12, 2);
+            $table->string('payment_method');
+            $table->decimal('amount_paid', 12, 2);
+            $table->decimal('change_amount', 12, 2);
+            $table->string('status')->default('paid');
+            $table->timestamp('created_at')->nullable();
+        });
+        Schema::create('pos_transaction_items', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('pos_transaction_id');
+            $table->foreignId('product_size_id');
+            $table->decimal('unit_price', 12, 2);
+            $table->integer('quantity');
+            $table->decimal('subtotal', 12, 2);
+        });
+        Schema::create('pos_item_variants', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('pos_transaction_item_id');
+            $table->foreignId('variant_id');
+            $table->decimal('variant_price', 12, 2);
+        });
     }
 
     /**
@@ -141,6 +177,17 @@ trait MenyiapkanDataChikumi
             'phone_number' => '081200000001',
             'password' => 'rahasia123',
             'role' => 'customer',
+        ]);
+    }
+
+    protected function buatKasir(): User
+    {
+        return User::create([
+            'name' => 'Kasir Uji',
+            'email' => 'kasir.uji@gmail.com',
+            'phone_number' => '081200000002',
+            'password' => 'rahasia123',
+            'role' => 'cashier',
         ]);
     }
 }

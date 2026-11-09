@@ -1,3 +1,6 @@
+@php
+    $apiBase = auth()->check() ? '/owner/api' : '/frontend/owner/api';
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 
@@ -39,17 +42,17 @@
                     </div>
 
                     <div class="flex flex-wrap gap-1.5">
-                        <button data-period="Hari Ini"
+                        <button data-period="hari"
                             class="period-btn rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs">
                             Hari Ini
                         </button>
 
-                        <button data-period="Minggu Ini"
+                        <button data-period="minggu"
                             class="period-btn rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs">
                             Minggu Ini
                         </button>
 
-                        <button data-period="Bulan Ini"
+                        <button data-period="bulan"
                             class="period-btn rounded-full bg-[#FF8000] px-3 py-1.5 text-xs font-semibold text-white">
                             Bulan Ini
                         </button>
@@ -69,10 +72,8 @@
                             </svg>
                         </div>
                         <p class="text-sm text-stone-500">Omzet</p>
-                        <h3 class="mt-1 text-xl font-bold">Rp 8.750.000</h3>
-                        <p class="mt-1 text-xs font-medium text-green-600">
-                            ↑ 8% vs bulan lalu
-                        </p>
+                        <h3 id="cardOmzet" class="mt-1 text-xl font-bold">Rp 0</h3>
+                        <p id="cardOmzetSub" class="mt-1 text-xs text-stone-400">Kasir · Online</p>
                     </div>
 
                     <!-- PENGELUARAN -->
@@ -85,7 +86,7 @@
                             </svg>
                         </div>
                         <p class="text-sm text-stone-500">Pengeluaran</p>
-                        <h3 class="mt-1 text-xl font-bold">Rp 5.200.000</h3>
+                        <h3 id="cardPengeluaran" class="mt-1 text-xl font-bold">Rp 0</h3>
                         <p class="mt-1 text-xs text-stone-400">Total biaya usaha</p>
                     </div>
 
@@ -99,8 +100,8 @@
                             </svg>
                         </div>
                         <p class="text-sm text-white/80">Laba Bersih*</p>
-                        <h3 class="mt-1 text-xl font-bold">Rp 3.550.000</h3>
-                        <p class="mt-1 text-xs text-white/80">Margin 40,6%</p>
+                        <h3 id="cardLaba" class="mt-1 text-xl font-bold">Rp 0</h3>
+                        <p id="cardMargin" class="mt-1 text-xs text-white/80">Margin 0%</p>
                     </div>
 
                     <!-- TRANSAKSI -->
@@ -113,8 +114,8 @@
                             </svg>
                         </div>
                         <p class="text-sm text-stone-500">Transaksi</p>
-                        <h3 class="mt-1 text-xl font-bold">412</h3>
-                        <p class="mt-1 text-xs text-stone-400">Kasir 238 · Online 174</p>
+                        <h3 id="cardTransaksi" class="mt-1 text-xl font-bold">0</h3>
+                        <p id="cardTransaksiSub" class="mt-1 text-xs text-stone-400">Kasir 0 · Online 0</p>
                     </div>
                 </div>
 
@@ -124,8 +125,8 @@
                     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <div>
                             <h3 class="text-base font-bold">Omzet vs Pengeluaran</h3>
-                            <p class="text-xs text-stone-400">
-                                Perbandingan per minggu · Oktober 2026
+                            <p id="grafikSub" class="text-xs text-stone-400">
+                                Perbandingan per minggu
                             </p>
                         </div>
 
@@ -142,48 +143,7 @@
                     </div>
 
                     <!-- BAR CHART -->
-                    <div class="flex h-36 items-end justify-around gap-3 border-b border-stone-100 px-2">
-
-                        <div class="flex h-full flex-1 flex-col items-center justify-end">
-                            <div class="flex h-full items-end gap-1">
-                                <div class="w-3 rounded-t bg-[#FF8000]" style="height: 65%"></div>
-                                <div class="w-3 rounded-t bg-stone-500" style="height: 43%"></div>
-                            </div>
-                            <p class="mt-2 text-[7px] text-stone-400">1-7 Okt</p>
-                        </div>
-
-                        <div class="flex h-full flex-1 flex-col items-center justify-end">
-                            <div class="flex h-full items-end gap-1">
-                                <div class="w-3 rounded-t bg-[#FF8000]" style="height: 74%"></div>
-                                <div class="w-3 rounded-t bg-stone-500" style="height: 51%"></div>
-                            </div>
-                            <p class="mt-2 text-[7px] text-stone-400">8-14 Okt</p>
-                        </div>
-
-                        <div class="flex h-full flex-1 flex-col items-center justify-end">
-                            <div class="flex h-full items-end gap-1">
-                                <div class="w-3 rounded-t bg-[#FF8000]" style="height: 76%"></div>
-                                <div class="w-3 rounded-t bg-stone-500" style="height: 55%"></div>
-                            </div>
-                            <p class="mt-2 text-[7px] text-stone-400">15-21 Okt</p>
-                        </div>
-
-                        <div class="flex h-full flex-1 flex-col items-center justify-end">
-                            <div class="flex h-full items-end gap-1">
-                                <div class="w-3 rounded-t bg-[#FF8000]" style="height: 86%"></div>
-                                <div class="w-3 rounded-t bg-stone-500" style="height: 52%"></div>
-                            </div>
-                            <p class="mt-2 text-[7px] text-stone-400">22-28 Okt</p>
-                        </div>
-
-                        <div class="flex h-full flex-1 flex-col items-center justify-end">
-                            <div class="flex h-full items-end gap-1">
-                                <div class="w-3 rounded-t bg-[#FF8000]" style="height: 15%"></div>
-                                <div class="w-3 rounded-t bg-stone-500" style="height: 9%"></div>
-                            </div>
-                            <p class="mt-2 text-[7px] text-stone-400">29-31 Okt</p>
-                        </div>
-                    </div>
+                    <div id="grafikBars" class="flex h-36 items-end justify-around gap-3 border-b border-stone-100 px-2"></div>
                 </section>
 
                 <!-- KONDISI STOK -->
@@ -205,23 +165,19 @@
 
                     <!-- RINGKASAN STOK -->
                     <div class="grid grid-cols-3 gap-2 px-4 pb-3">
-
                         <div class="rounded-lg bg-green-50 p-2">
-                            <h4 class="text-sm font-bold text-green-600">7 komponen</h4>
+                            <h4 id="stokAman" class="text-sm font-bold text-green-600">0 komponen</h4>
                             <p class="text-xs text-stone-500">Aman</p>
                         </div>
-
                         <div class="rounded-lg bg-red-50 p-2">
-                            <h4 class="text-sm font-bold text-red-500">4 komponen</h4>
+                            <h4 id="stokMenipis" class="text-sm font-bold text-red-500">0 komponen</h4>
                             <p class="text-xs text-stone-500">Di bawah minimum</p>
                         </div>
-
                         <div class="rounded-lg bg-rose-100 p-2">
-                            <h4 class="text-sm font-bold text-rose-600">2 komponen</h4>
+                            <h4 id="stokHabis" class="text-sm font-bold text-rose-600">0 komponen</h4>
                             <p class="text-xs text-stone-500">Habis</p>
                         </div>
                     </div>
-
                     <!-- TABEL STOK -->
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-[600px] text-left text-sm">
@@ -235,43 +191,13 @@
                                 </tr>
                             </thead>
 
-                            <tbody class="divide-y divide-red-100">
-
-                                <tr class="bg-red-50">
-                                    <td class="p-3 font-semibold text-red-600">Kulit Larga</td>
-                                    <td class="p-3 text-red-500">0 pcs</td>
-                                    <td class="p-3 text-red-500">+80 pcs</td>
-                                    <td class="p-3 font-semibold text-red-500">● Habis</td>
-                                </tr>
-
-                                <tr class="bg-red-50">
-                                    <td class="p-3 font-semibold text-red-600">Seasoning Extra Hot</td>
-                                    <td class="p-3 text-red-500">0 takaran</td>
-                                    <td class="p-3 text-red-500">Restock</td>
-                                    <td class="p-3 font-semibold text-red-500">● Habis</td>
-                                </tr>
-
-                                <tr class="bg-red-50">
-                                    <td class="p-3 font-semibold text-red-600">Kulit Reguler</td>
-                                    <td class="p-3 text-red-500">4 pcs</td>
-                                    <td class="p-3 text-red-500">+40 pcs</td>
-                                    <td class="p-3 font-semibold text-red-500">● Minimum</td>
-                                </tr>
-
-                                <tr class="bg-red-50">
-                                    <td class="p-3 font-semibold text-red-600">MentaiKio</td>
-                                    <td class="p-3 text-red-500">6 porsi</td>
-                                    <td class="p-3 text-red-500">+8 porsi</td>
-                                    <td class="p-3 font-semibold text-red-500">● Minimum</td>
-                                </tr>
-
-                            </tbody>
+                            <tbody id="tabelStok" class="divide-y divide-red-100"></tbody>
                         </table>
                     </div>
                 </section>
 
                 <p class="py-2 text-center text-xs text-stone-400">
-                    Chikumi Owner Dashboard · Data contoh frontend
+                    Chikumi Owner Dashboard
                 </p>
 
                 <p class="text-center text-xs text-stone-400">
@@ -281,6 +207,87 @@
             </div>
         </main>
     </div>
+
+    <script>
+        const API_BASE = @json($apiBase);
+        const rp = n => 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n));
+        const el = id => document.getElementById(id);
+
+        async function ambil(path) {
+            const response = await fetch(API_BASE + path, {headers: {'Accept': 'application/json'}});
+            if (!response.ok) throw new Error('Gagal memuat data.');
+            return response.json();
+        }
+
+        function renderRingkasan(data) {
+            el('cardOmzet').textContent = rp(data.omzet);
+            el('cardOmzetSub').textContent = `Kasir ${rp(data.omzet_kasir)} · Online ${rp(data.omzet_online)}`;
+            el('cardPengeluaran').textContent = rp(data.pengeluaran);
+            el('cardLaba').textContent = rp(data.laba);
+            el('cardMargin').textContent = `Margin ${data.margin}%`;
+            el('cardTransaksi').textContent = data.transaksi.total;
+            el('cardTransaksiSub').textContent = `Kasir ${data.transaksi.kasir} · Online ${data.transaksi.online}`;
+            renderGrafik(data.grafik);
+        }
+
+        function renderGrafik(grafik) {
+            const max = Math.max(1, ...grafik.omzet, ...grafik.pengeluaran);
+            el('grafikBars').innerHTML = grafik.label.map((label, i) => `
+                <div class="flex h-full flex-1 flex-col items-center justify-end">
+                    <div class="flex h-full items-end gap-1">
+                        <div class="w-3 rounded-t bg-[#FF8000]" style="height: ${Math.round(grafik.omzet[i] / max * 100)}%"></div>
+                        <div class="w-3 rounded-t bg-stone-500" style="height: ${Math.round(grafik.pengeluaran[i] / max * 100)}%"></div>
+                    </div>
+                    <p class="mt-2 text-[7px] text-stone-400">${label}</p>
+                </div>`).join('');
+        }
+
+        function renderStok(data) {
+            el('stokAman').textContent = `${data.ringkasan.aman} komponen`;
+            el('stokMenipis').textContent = `${data.ringkasan.menipis} komponen`;
+            el('stokHabis').textContent = `${data.ringkasan.habis} komponen`;
+            const perlu = data.produk.filter(item => item.status !== 'aman');
+            el('tabelStok').innerHTML = perlu.length ? perlu.map(item => {
+                const habis = item.status === 'habis';
+                const saran = Math.max(item.min_stock * 2 - item.stock, 0);
+                const warna = habis ? 'text-red-500' : 'text-orange-600';
+                const latar = habis ? 'bg-red-50' : 'bg-orange-50';
+                return `<tr class="${latar}">
+                    <td class="p-3 font-semibold ${warna}">${item.product} ${item.size}</td>
+                    <td class="p-3 ${warna}">${item.stock} pcs</td>
+                    <td class="p-3 ${warna}">${saran > 0 ? '+' + saran + ' pcs' : '-'}</td>
+                    <td class="p-3 font-semibold ${warna}">● ${habis ? 'Habis' : 'Minimum'}</td>
+                </tr>`;
+            }).join('') : '<tr><td colspan="4" class="p-3 text-center text-stone-400">Semua komponen aman.</td></tr>';
+        }
+
+        async function muat(periode = 'bulan') {
+            try {
+                const [ringkasan, stok] = await Promise.all([
+                    ambil(`/dashboard?periode=${periode}`),
+                    ambil('/ketersediaan'),
+                ]);
+                renderRingkasan(ringkasan.data);
+                renderStok(stok.data);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        document.querySelectorAll('.period-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.period-btn').forEach(item => {
+                    item.classList.remove('bg-[#FF8000]', 'font-semibold', 'text-white');
+                    item.classList.add('border', 'border-stone-200', 'bg-white');
+                });
+                button.classList.remove('border', 'border-stone-200', 'bg-white');
+                button.classList.add('bg-[#FF8000]', 'font-semibold', 'text-white');
+                muat(button.dataset.period);
+            });
+        });
+        muat();
+    </script>
 </body>
+
 
 </html>

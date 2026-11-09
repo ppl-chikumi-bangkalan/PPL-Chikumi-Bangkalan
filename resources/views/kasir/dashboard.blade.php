@@ -1,27 +1,28 @@
+@php
+    $apiUrl = auth()->check() ? '/kasir/api/transaksi' : '/frontend/kasir/api/transaksi';
+    $devKasirId = auth()->check() ? null : 2;
+    $rupiah = fn ($angka) => 'Rp ' . number_format((float) $angka, 0, ',', '.');
+    $panjang = fn ($nama) => $nama === 'Regular' ? '16 cm' : '25 cm';
+@endphp
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>POS Kasir - Chikumi</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
     @vite(['resources/css/app.css'])
 </head>
-
 <body class="min-h-screen bg-[#FFF9F2] font-['Poppins'] text-[#1E1B18]">
-
     <!-- TOPBAR KASIR -->
     <header class="sticky top-0 z-30 flex h-[76px] items-center gap-6 border-b border-[#EDE6DF] bg-white px-7">
         <div class="shrink-0">
             <h1 class="text-[32px] font-extrabold italic leading-tight text-[#FF8000]">Chikumi</h1>
             <p class="text-[10px] font-semibold tracking-wide">JAPANESE SNACK</p>
         </div>
-
         <!-- MENU KASIR -->
         <nav class="flex items-center gap-1 rounded-xl bg-[#F7F3EF] p-1">
             <a href="#" class="flex items-center gap-2 rounded-lg bg-[#FF8000] px-4 py-2.5 text-sm font-semibold text-white">
@@ -32,44 +33,34 @@
                 </svg>
                 POS
             </a>
-
             <a href="#" class="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#6B645D] transition hover:text-[#FF8000]">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
                     stroke="currentColor" class="h-5 w-5">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M5.25 3.75h13.5v16.5l-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5V3.75Z" />
-                    <path stroke-linecap="round" d="M9 8.25h6M9 11.25h6M9 14.25h3.75" />
-                </svg>
-                Pesanan Online
-                <span class="grid h-5 min-w-5 place-items-center rounded-full bg-[#E03131] px-1.5 text-[11px] font-semibold text-white">3</span>
-            </a>
-
-            <a href="#" class="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm text-[#6B645D] transition hover:text-[#FF8000]">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
-                    stroke="currentColor" class="h-5 w-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
                 Riwayat
             </a>
         </nav>
-
-            <div class="ml-auto flex items-center gap-4">
-                <span class="grid h-10 w-10 place-items-center rounded-full bg-[#FF8000] text-base font-bold text-white">R</span>
-                <div class="leading-tight">
-                    <p class="text-sm font-semibold">Chikumi</p>
-                    <p class="text-xs text-[#6B645D]">Kasir</p>
-                </div>
+        <div class="ml-auto flex items-center gap-4">
+            <span class="grid h-10 w-10 place-items-center rounded-full bg-[#FF8000] text-base font-bold text-white">
+                {{ strtoupper(substr(auth()->user()->name ?? 'K', 0, 1)) }}
+            </span>
+            <div class="leading-tight">
+                <p class="text-sm font-semibold">{{ auth()->user()->name ?? 'Kasir' }}</p>
+                <p class="text-xs text-[#6B645D]">Kasir</p>
             </div>
-
-            <!-- Logout: backend jadikan form POST ke route('logout') + @csrf -->
-            <button type="button" aria-label="Keluar"
-                class="grid h-11 w-11 place-items-center rounded-xl border border-[#EDE6DF] bg-white text-[#E03131] transition hover:bg-[#FDECEC]">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
-                    stroke="currentColor" class="h-5 w-5">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-                </svg>
-            </button>
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" aria-label="Keluar"
+                    class="grid h-11 w-11 place-items-center rounded-xl border border-[#EDE6DF] bg-white text-[#E03131] transition hover:bg-[#FDECEC]">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
+                        stroke="currentColor" class="h-5 w-5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                    </svg>
+                </button>
+            </form>
         </div>
     </header>
 
@@ -84,64 +75,60 @@
 
             <!-- KARTU UKURAN -->
             <div class="grid gap-5 md:grid-cols-2">
+                @forelse ($produk as $p)
+                    @foreach ($p['ukuran'] as $u)
+                        @php
+                            $habis = $u['stok'] <= 0;
+                            $menipis = ! $habis && $u['stok'] <= $u['min_stok'];
+                            $chip = [['label' => 'Harga dasar', 'harga' => $u['harga']]];
+                            if ($u['harga_seasoning'] !== null) {
+                                $chip[] = ['label' => '+ Seasoning', 'harga' => $u['harga_seasoning']];
+                            }
+                            if ($u['harga_dip'] !== null) {
+                                $chip[] = ['label' => '+ Dip Sauce', 'harga' => $u['harga_dip']];
+                            }
+                        @endphp
+                        <button type="button" data-produk-id="{{ $p['id'] }}" data-ukuran-id="{{ $u['id'] }}"
+                            @disabled($habis)
+                            class="{{ $habis ? 'cursor-not-allowed rounded-2xl border-2 border-transparent bg-white/60 p-[18px] text-left' : 'block rounded-2xl border-2 border-transparent bg-white p-[18px] text-left outline-none transition hover:border-[#FF8000] focus-visible:border-[#FF8000]' }}">
+                            <div class="grid h-[180px] place-items-center overflow-hidden rounded-xl {{ $habis ? 'bg-[#FFE0BF]/60' : 'bg-[#FF8000]' }}">
+                                <img src="{{ $p['gambar'] }}" alt="{{ $p['nama'] }}"
+                                    class="h-[176px] w-auto object-contain {{ $habis ? 'opacity-50' : '' }}">
+                            </div>
 
-                <!-- Chikumi Reguler (tersedia) — klik membuka popup Pilih Varian -->
-                <a href="#pilih-varian"
-                    class="block rounded-2xl border-2 border-transparent bg-white p-[18px] text-left outline-none transition hover:border-[#FF8000] focus-visible:border-[#FF8000]">
-                    <div class="grid h-[180px] place-items-center overflow-hidden rounded-xl bg-[#FF8000]">
-                        <img src="/images/chikumi-1.png" alt="Chikumi Reguler" class="h-[176px] w-auto object-contain">
-                    </div>
+                            <div class="mt-3.5 flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-[22px] font-extrabold italic leading-tight {{ $habis ? 'text-[#A39B93]' : '' }}">{{ $p['nama'] }}</p>
+                                    <p class="text-sm {{ $habis ? 'text-[#A39B93]' : 'text-[#6B645D]' }}">{{ $u['nama'] }} · {{ $panjang($u['nama']) }}</p>
+                                </div>
+                                @if ($habis)
+                                    <span class="mt-3 inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#FDECEC] px-2.5 py-1 text-xs font-medium text-[#E03131]">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-[#E03131]"></span> Habis
+                                    </span>
+                                @elseif ($menipis)
+                                    <span class="mt-3 inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#FFF4D6] px-2.5 py-1 text-xs font-medium text-[#C27C00]">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-[#C27C00]"></span> Sisa {{ $u['stok'] }} pcs · menipis
+                                    </span>
+                                @else
+                                    <span class="mt-3 inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#E8F7EC] px-2.5 py-1 text-xs font-medium text-[#2F9E44]">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-[#2F9E44]"></span> Sisa {{ $u['stok'] }} pcs
+                                    </span>
+                                @endif
+                            </div>
 
-                    <div class="mt-3.5 flex items-start justify-between gap-3">
-                        <div>
-                            <p class="text-[22px] font-extrabold italic leading-tight">Chikumi Reguler</p>
-                            <p class="text-sm text-[#6B645D]">16 cm</p>
-                        </div>
-                        <span class="mt-3 inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#FFF4D6] px-2.5 py-1 text-xs font-medium text-[#C27C00]">
-                            <span class="h-1.5 w-1.5 rounded-full bg-[#C27C00]"></span> Sisa 4 pcs · menipis
-                        </span>
-                    </div>
-
-                    <div class="mt-3.5 grid grid-cols-2 gap-2.5">
-                        <div class="rounded-xl bg-[#FFF3E6] p-3">
-                            <p class="text-xs text-[#6B645D]">+ Seasoning</p>
-                            <p class="mt-0.5 text-lg font-bold text-[#D96C00]">Rp 20.000</p>
-                        </div>
-                        <div class="rounded-xl bg-[#FFF3E6] p-3">
-                            <p class="text-xs text-[#6B645D]">+ Dip Sauce</p>
-                            <p class="mt-0.5 text-lg font-bold text-[#D96C00]">Rp 21.000</p>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Chikumi Large (habis) -->
-                <button type="button" disabled
-                    class="cursor-not-allowed rounded-2xl border-2 border-transparent bg-white/60 p-[18px] text-left">
-                    <div class="grid h-[180px] place-items-center overflow-hidden rounded-xl bg-[#FFE0BF]/60">
-                        <img src="/images/chikumi-1.png" alt="Chikumi Large" class="h-[176px] w-auto object-contain opacity-50">
-                    </div>
-
-                    <div class="mt-3.5 flex items-start justify-between gap-3">
-                        <div>
-                            <p class="text-[22px] font-extrabold italic leading-tight text-[#A39B93]">Chikumi Large</p>
-                            <p class="text-sm text-[#A39B93]">25 cm</p>
-                        </div>
-                        <span class="mt-3 inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#FDECEC] px-2.5 py-1 text-xs font-medium text-[#E03131]">
-                            <span class="h-1.5 w-1.5 rounded-full bg-[#E03131]"></span> Habis
-                        </span>
-                    </div>
-
-                    <div class="mt-3.5 grid grid-cols-2 gap-2.5">
-                        <div class="rounded-xl bg-[#FFF9F2] p-3">
-                            <p class="text-xs text-[#A39B93]/70">+ Seasoning</p>
-                            <p class="mt-0.5 text-lg font-bold text-[#A39B93]/70">Rp 26.000</p>
-                        </div>
-                        <div class="rounded-xl bg-[#FFF9F2] p-3">
-                            <p class="text-xs text-[#A39B93]/70">+ Dip Sauce</p>
-                            <p class="mt-0.5 text-lg font-bold text-[#A39B93]/70">Rp 27.000</p>
-                        </div>
-                    </div>
-                </button>
+                            <div class="mt-3.5 grid grid-cols-2 gap-2.5">
+                                @foreach ($chip as $c)
+                                    <div class="rounded-xl {{ $habis ? 'bg-[#FFF9F2]' : 'bg-[#FFF3E6]' }} p-3">
+                                        <p class="text-xs {{ $habis ? 'text-[#A39B93]/70' : 'text-[#6B645D]' }}">{{ $c['label'] }}</p>
+                                        <p class="mt-0.5 text-lg font-bold {{ $habis ? 'text-[#A39B93]/70' : 'text-[#D96C00]' }}">{{ $rupiah($c['harga']) }}</p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </button>
+                    @endforeach
+                @empty
+                    <p class="text-sm text-[#6B645D]">Belum ada produk aktif.</p>
+                @endforelse
             </div>
 
             <!-- PILIHAN RASA HARI INI -->
@@ -152,46 +139,23 @@
                 </div>
 
                 <div class="mt-3.5 space-y-3.5">
-                    <!-- Filling -->
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <div class="w-[140px] shrink-0">
-                            <p class="text-sm font-semibold">Filling</p>
-                            <p class="text-xs text-[#6B645D]">wajib pilih 1</p>
+                    @foreach ($rasa as $group)
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <div class="w-[140px] shrink-0">
+                                <p class="text-sm font-semibold">{{ $group['judul'] }}</p>
+                                <p class="text-xs text-[#6B645D]">{{ $group['aturan'] }}</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($group['pilihan'] as $pilihan)
+                                    @if ($pilihan['tersedia'])
+                                        <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">{{ $pilihan['nama'] }}</span>
+                                    @else
+                                        <span class="rounded-full border border-[#F7F3EF] bg-[#FFF9F2] px-5 py-2.5 text-sm text-[#A39B93]/70">{{ $pilihan['nama'] }} · habis</span>
+                                    @endif
+                                @endforeach
+                            </div>
                         </div>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Garlic Cream Cheese</span>
-                            <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Cream Cheese</span>
-                            <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Mentaiko</span>
-                            <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Tartar</span>
-                        </div>
-                    </div>
-
-                    <!-- Dip Sauce -->
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <div class="w-[140px] shrink-0">
-                            <p class="text-sm font-semibold">Dip Sauce</p>
-                            <p class="text-xs text-[#6B645D]">pilih 1 · +Rp 1.000</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">BBQ</span>
-                            <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Black Pepper</span>
-                            <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Korean Spicy</span>
-                            <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Teriyaki</span>
-                        </div>
-                    </div>
-
-                    <!-- Seasoning -->
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <div class="w-[140px] shrink-0">
-                            <p class="text-sm font-semibold">Seasoning</p>
-                            <p class="text-xs text-[#6B645D]">boleh lebih dari 1</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">BBQ</span>
-                            <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Sweetcorn</span>
-                            <span class="rounded-full border border-[#F7F3EF] bg-[#FFF9F2] px-5 py-2.5 text-sm text-[#A39B93]/70">Extra Hot · habis</span>
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
             </section>
         </main>
@@ -199,9 +163,9 @@
         <aside class="flex flex-col border-t border-[#EDE6DF] bg-white p-6 lg:sticky lg:top-[76px] lg:h-[calc(100vh-76px)] lg:border-l lg:border-t-0">
 
             <div class="flex items-center justify-between">
-                <h2 class="text-xl font-bold">Pesanan #CK-0125</h2>
+                <h2 class="text-xl font-bold">Pesanan Baru</h2>
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-xs font-medium text-[#D96C00]">
-                    <span class="h-1.5 w-1.5 rounded-full bg-[#D96C00]"></span> 2 item
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#D96C00]"></span> <span id="jumlahItem">0 item</span>
                 </span>
             </div>
 
@@ -217,100 +181,46 @@
             </div>
 
             <!-- DAFTAR ITEM -->
-            <div class="mt-3.5 flex-1 space-y-3.5 overflow-y-auto">
-
-                <!-- Item 1 -->
-                <div class="flex gap-3 rounded-2xl bg-[#F7F3EF] p-3">
-                    <div class="grid h-[52px] w-[52px] shrink-0 place-items-center overflow-hidden rounded-xl bg-[#FF8000]">
-                        <img src="/images/chikumi-1.png" alt="" class="h-12 w-auto object-contain">
-                    </div>
-
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-start justify-between gap-2">
-                            <p class="text-sm font-semibold">Reguler · Seasoning</p>
-                            <div class="flex shrink-0 gap-1.5">
-                                <button type="button" aria-label="Edit" class="text-[#6B645D] hover:text-[#FF8000]">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
-                                    </svg>
-                                </button>
-                                <button type="button" aria-label="Hapus" class="text-[#E03131] hover:opacity-70">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <p class="mt-1 text-xs text-[#6B645D]">Mentaiko · BBQ + Sweetcorn</p>
-
-                        <div class="mt-2 flex items-center justify-between">
-                            <div class="flex items-center rounded-lg border border-[#EDE6DF] bg-white">
-                                <button type="button" aria-label="Kurangi" class="grid h-[34px] w-[34px] place-items-center text-[#FF8000]">−</button>
-                                <span class="w-[34px] text-center text-sm font-semibold">2</span>
-                                <button type="button" aria-label="Tambah" class="grid h-[34px] w-[34px] place-items-center text-[#FF8000]">+</button>
-                            </div>
-                            <p class="text-sm font-bold text-[#D96C00]">Rp 40.000</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Item 2 -->
-                <div class="flex gap-3 rounded-2xl bg-[#F7F3EF] p-3">
-                    <div class="grid h-[52px] w-[52px] shrink-0 place-items-center overflow-hidden rounded-xl bg-[#FF8000]">
-                        <img src="/images/chikumi-1.png" alt="" class="h-12 w-auto object-contain">
-                    </div>
-
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-start justify-between gap-2">
-                            <p class="text-sm font-semibold">Reguler · Dip Sauce</p>
-                            <div class="flex shrink-0 gap-1.5">
-                                <button type="button" aria-label="Edit" class="text-[#6B645D] hover:text-[#FF8000]">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
-                                    </svg>
-                                </button>
-                                <button type="button" aria-label="Hapus" class="text-[#E03131] hover:opacity-70">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <p class="mt-1 text-xs text-[#6B645D]">Cream Cheese · Korean Spicy</p>
-
-                        <div class="mt-2 flex items-center justify-between">
-                            <div class="flex items-center rounded-lg border border-[#EDE6DF] bg-white">
-                                <button type="button" aria-label="Kurangi" class="grid h-[34px] w-[34px] place-items-center text-[#FF8000]">−</button>
-                                <span class="w-[34px] text-center text-sm font-semibold">1</span>
-                                <button type="button" aria-label="Tambah" class="grid h-[34px] w-[34px] place-items-center text-[#FF8000]">+</button>
-                            </div>
-                            <p class="text-sm font-bold text-[#D96C00]">Rp 21.000</p>
-                        </div>
-                    </div>
-                </div>
+            <div id="daftarItem" class="mt-3.5 flex-1 space-y-3.5 overflow-y-auto">
+                <p class="mt-6 text-center text-sm text-[#A39B93]">Belum ada item. Pilih ukuran di kiri.</p>
             </div>
 
             <!-- TOTAL -->
             <div class="mt-4 border-t border-[#EDE6DF] pt-3.5">
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-[#6B645D]">Subtotal (3 pcs)</span>
-                    <span>Rp 61.000</span>
+                    <span class="text-[#6B645D]" id="subtotalQty">Subtotal (0 pcs)</span>
+                    <span id="subtotal">Rp 0</span>
                 </div>
                 <div class="mt-3.5 flex items-center justify-between">
                     <span class="text-lg font-bold">Total</span>
-                    <span class="text-[26px] font-bold text-[#D96C00]">Rp 61.000</span>
+                    <span id="total" class="text-[26px] font-bold text-[#D96C00]">Rp 0</span>
                 </div>
 
+                <div class="mt-3.5 grid grid-cols-2 gap-2.5">
+                    <label class="block">
+                        <span class="mb-1 block text-xs text-[#6B645D]">Metode</span>
+                        <select id="metodeBayar"
+                            class="w-full rounded-xl border border-[#EDE6DF] bg-white px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#FF8000]">
+                            <option value="cash">Tunai</option>
+                            <option value="non_cash">Non-tunai</option>
+                        </select>
+                    </label>
+                    <label class="block">
+                        <span class="mb-1 block text-xs text-[#6B645D]">Uang dibayar</span>
+                        <input id="jumlahBayar" type="number" min="0" placeholder="0"
+                            class="w-full rounded-xl border border-[#EDE6DF] bg-white px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#FF8000]">
+                    </label>
+                </div>
+                <p id="kembalian" class="mt-1.5 text-xs font-medium text-[#2F9E44]"></p>
+
                 <div class="mt-3.5 flex gap-2.5">
-                    <button type="button"
+                    <button type="button" id="btnBatal"
                         class="w-[102px] rounded-xl border border-[#EDE6DF] bg-white py-4 text-base font-semibold transition hover:border-[#A39B93]">
                         Batal
                     </button>
-                    <button type="button"
+                    <button type="button" id="btnBayar"
                         class="flex-1 rounded-xl bg-[#FF8000] py-4 text-base font-semibold text-white transition hover:bg-[#D96C00]">
-                        Bayar · Rp 61.000
+                        <span id="labelBayar">Bayar · Rp 0</span>
                     </button>
                 </div>
             </div>
@@ -319,6 +229,257 @@
 
     <!-- POPUP K2 · PILIH VARIAN (form transaksi kasir) -->
     @include('components.kasir.pilih-varian')
+
+    <script>
+        const PRODUK = @json($produk);
+        const API_URL = @json($apiUrl);
+        const DEV_KASIR = @json($devKasirId);
+        const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const rp = n => 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n));
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+        const el = id => document.getElementById(id);
+        const LABEL = {filling: 'Creamy Filling', dipping_sauce: 'Dip Sauce', seasoning: 'Seasoning'};
+        const ATURAN = {filling: 'wajib pilih 1', dipping_sauce: 'pilih 1', seasoning: 'boleh lebih dari 1'};
+
+        let produkAktif = null;
+        let ukuranAktif = null;
+        let keranjang = [];
+
+        function cari(produkId, ukuranId) {
+            const p = PRODUK.find(x => x.id === produkId);
+            const u = p?.ukuran.find(x => x.id === ukuranId);
+            return p && u ? {p, u} : null;
+        }
+
+        function bukaVarian(produkId, ukuranId) {
+            const found = cari(produkId, ukuranId);
+            if (!found) return;
+            produkAktif = found.p;
+            ukuranAktif = found.u;
+            el('varianJudul').textContent = `${found.p.nama} · ${found.u.nama}`;
+            el('varianGambar').src = found.p.gambar;
+            el('bagianVarian').innerHTML = found.p.varian.map(g => {
+                const tunggal = g.type !== 'seasoning';
+                const opsi = g.pilihan.map(v => `
+                    <label class="cursor-pointer rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm transition has-checked:border-[#FF8000] has-checked:bg-[#FF8000] has-checked:font-semibold has-checked:text-white ${v.tersedia ? '' : 'cursor-not-allowed bg-[#FFF9F2] text-[#A39B93]/70'}">
+                        <input type="${tunggal ? 'radio' : 'checkbox'}" name="varian_${g.type}" value="${v.id}"
+                            data-id="${v.id}" data-nama="${esc(v.nama)}" data-harga="${v.harga}" data-type="${g.type}"
+                            class="sr-only" ${v.tersedia ? '' : 'disabled'}>
+                        ${esc(v.nama)}${v.harga ? ' · +' + rp(v.harga) : ''}${v.tersedia ? '' : ' · habis'}
+                    </label>`).join('');
+                return `<section class="mt-5">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-base font-bold">${LABEL[g.type] || g.type}</h3>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-[11px] font-medium text-[#6B645D]">
+                            <span class="h-1.5 w-1.5 rounded-full bg-[#6B645D]"></span> ${ATURAN[g.type] || ''}
+                        </span>
+                    </div>
+                    <div class="mt-3 flex flex-wrap gap-2">${opsi}</div>
+                </section>`;
+            }).join('');
+            el('kasirJumlah').value = 1;
+            perbaruiHargaVarian();
+            el('pilih-varian').classList.replace('hidden', 'flex');
+        }
+
+        function tutupVarian() {
+            const modal = el('pilih-varian');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function pilihan() {
+            return [...document.querySelectorAll('#bagianVarian input:checked')].map(input => ({
+                id: Number(input.dataset.id),
+                nama: input.dataset.nama,
+                harga: Number(input.dataset.harga),
+                type: input.dataset.type,
+            }));
+        }
+
+        function perbaruiHargaVarian() {
+            if (!ukuranAktif) return;
+            const total = ukuranAktif.harga + pilihan().reduce((t, v) => t + v.harga, 0);
+            el('hargaPorsi').textContent = rp(total);
+        }
+
+        function tambah() {
+            if (!produkAktif || !ukuranAktif) return;
+            const qty = Math.max(1, parseInt(el('kasirJumlah').value || '1', 10));
+            const varian = pilihan();
+            const butuhFilling = produkAktif.varian.some(g => g.type === 'filling' && g.pilihan.some(v => v.tersedia));
+            if (butuhFilling && !varian.some(v => v.type === 'filling')) {
+                alert('Pilih filling dulu.');
+                return;
+            }
+            const harga = ukuranAktif.harga + varian.reduce((t, v) => t + v.harga, 0);
+            const key = ukuranAktif.id + '|' + varian.map(v => v.id).sort((a, b) => a - b).join(',');
+            const ada = keranjang.find(k => k.key === key);
+            if (ada) {
+                if (ada.qty + qty > ukuranAktif.stok) {
+                    alert(`Stok tersisa ${ukuranAktif.stok}.`);
+                    return;
+                }
+                ada.qty += qty;
+            } else {
+                if (qty > ukuranAktif.stok) {
+                    alert(`Stok tersisa ${ukuranAktif.stok}.`);
+                    return;
+                }
+                keranjang.push({
+                    key,
+                    ukuran_id: ukuranAktif.id,
+                    nama: `${produkAktif.nama} · ${ukuranAktif.nama}`,
+                    gambar: produkAktif.gambar,
+                    varian,
+                    harga,
+                    qty,
+                    stok: ukuranAktif.stok,
+                });
+            }
+            renderKeranjang();
+            tutupVarian();
+        }
+
+        function totalKeranjang() {
+            return keranjang.reduce((t, k) => t + k.harga * k.qty, 0);
+        }
+
+        function renderKeranjang() {
+            const daftar = el('daftarItem');
+            const total = totalKeranjang();
+            const jumlah = keranjang.reduce((t, k) => t + k.qty, 0);
+            el('jumlahItem').textContent = `${jumlah} item`;
+            el('subtotalQty').textContent = `Subtotal (${jumlah} pcs)`;
+            el('subtotal').textContent = rp(total);
+            el('total').textContent = rp(total);
+            el('labelBayar').textContent = 'Bayar · ' + rp(total);
+            if (!keranjang.length) {
+                daftar.innerHTML = '<p class="mt-6 text-center text-sm text-[#A39B93]">Belum ada item. Pilih ukuran di kiri.</p>';
+                el('jumlahBayar').value = '';
+                el('kembalian').textContent = '';
+                return;
+            }
+            daftar.innerHTML = keranjang.map(k => `
+                <div class="flex gap-3 rounded-2xl bg-[#F7F3EF] p-3">
+                    <div class="grid h-[52px] w-[52px] shrink-0 place-items-center overflow-hidden rounded-xl bg-[#FF8000]">
+                        <img src="${k.gambar}" alt="" class="h-12 w-auto object-contain">
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-start justify-between gap-2">
+                            <p class="text-sm font-semibold">${esc(k.nama)}</p>
+                            <button type="button" data-hapus="${k.key}" aria-label="Hapus" class="text-[#E03131] hover:opacity-70">✕</button>
+                        </div>
+                        <p class="mt-1 text-xs text-[#6B645D]">${k.varian.map(v => esc(v.nama)).join(' · ') || 'Tanpa varian'}</p>
+                        <div class="mt-2 flex items-center justify-between">
+                            <div class="flex items-center rounded-lg border border-[#EDE6DF] bg-white">
+                                <button type="button" data-kurang="${k.key}" aria-label="Kurangi" class="grid h-[34px] w-[34px] place-items-center text-[#FF8000]">−</button>
+                                <span class="w-[34px] text-center text-sm font-semibold">${k.qty}</span>
+                                <button type="button" data-tambah="${k.key}" aria-label="Tambah" class="grid h-[34px] w-[34px] place-items-center text-[#FF8000]">+</button>
+                            </div>
+                            <p class="text-sm font-bold text-[#D96C00]">${rp(k.harga * k.qty)}</p>
+                        </div>
+                    </div>
+                </div>`).join('');
+            perbaruiKembalian();
+        }
+
+        function perbaruiKembalian() {
+            const total = totalKeranjang();
+            const metode = el('metodeBayar').value;
+            const bayarEl = el('jumlahBayar');
+            if (metode === 'non_cash') {
+                bayarEl.value = total;
+                bayarEl.readOnly = true;
+            } else {
+                bayarEl.readOnly = false;
+            }
+            const bayar = Number(bayarEl.value || 0);
+            el('kembalian').textContent = bayar ? 'Kembalian: ' + rp(Math.max(0, bayar - total)) : '';
+        }
+
+        async function bayar() {
+            if (!keranjang.length) {
+                alert('Pesanan masih kosong.');
+                return;
+            }
+            const total = totalKeranjang();
+            const metode = el('metodeBayar').value;
+            const dibayar = metode === 'non_cash' ? total : Number(el('jumlahBayar').value || 0);
+            if (dibayar < total) {
+                alert('Uang dibayar kurang dari total.');
+                return;
+            }
+            const headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            };
+            if (CSRF) headers['X-CSRF-TOKEN'] = CSRF;
+            if (DEV_KASIR) headers['X-Dev-Kasir'] = DEV_KASIR;
+            try {
+                el('btnBayar').disabled = true;
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        payment_method: metode,
+                        amount_paid: dibayar,
+                        items: keranjang.map(k => ({
+                            product_size_id: k.ukuran_id,
+                            quantity: k.qty,
+                            variant_ids: k.varian.map(v => v.id),
+                        })),
+                    }),
+                });
+                const hasil = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(hasil.message || 'Gagal menyimpan transaksi.');
+                }
+                alert(`${hasil.message || 'Transaksi berhasil.'}\nKembalian: ${rp(hasil.data.kembalian)}`);
+                keranjang = [];
+                renderKeranjang();
+                location.reload();
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                el('btnBayar').disabled = false;
+            }
+        }
+
+        document.querySelectorAll('[data-produk-id]').forEach(button => {
+            button.addEventListener('click', () => bukaVarian(Number(button.dataset.produkId), Number(button.dataset.ukuranId)));
+        });
+        el('bagianVarian').addEventListener('change', perbaruiHargaVarian);
+        el('daftarItem').addEventListener('click', event => {
+            const button = event.target.closest('button');
+            if (!button) return;
+            const key = button.dataset.hapus ?? button.dataset.kurang ?? button.dataset.tambah;
+            const item = keranjang.find(k => k.key === key);
+            if (!item) return;
+            if (button.dataset.hapus) {
+                keranjang = keranjang.filter(k => k.key !== key);
+            } else if (button.dataset.kurang) {
+                item.qty--;
+                if (item.qty < 1) keranjang = keranjang.filter(k => k.key !== key);
+            } else {
+                if (item.qty + 1 > item.stok) {
+                    alert(`Stok tersisa ${item.stok}.`);
+                    return;
+                }
+                item.qty++;
+            }
+            renderKeranjang();
+        });
+        el('metodeBayar').addEventListener('change', perbaruiKembalian);
+        el('jumlahBayar').addEventListener('input', perbaruiKembalian);
+        el('btnBatal').addEventListener('click', () => {
+            keranjang = [];
+            renderKeranjang();
+        });
+        el('btnBayar').addEventListener('click', bayar);
+        renderKeranjang();
+    </script>
 </body>
 
 </html>

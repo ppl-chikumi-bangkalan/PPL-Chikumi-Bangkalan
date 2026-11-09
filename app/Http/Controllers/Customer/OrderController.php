@@ -75,7 +75,7 @@ class OrderController extends Controller
         $order = DB::transaction(function () use ($carts, $customerId, $data, $alamat, $ongkir) {
             $subtotal = 0.0;
             $order = Order::create([
-                'order_number' => 'CHKM-' . now()->format('ymdHis') . '-' . random_int(100, 999),
+                'order_number' => 'CHKM-'.now()->format('ymdHis').'-'.random_int(100, 999),
                 'customer_id' => $customerId,
                 'delivery_method' => $data['delivery_method'],
                 'shipping_address' => $alamat,

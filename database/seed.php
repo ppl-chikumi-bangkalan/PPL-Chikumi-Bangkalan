@@ -1,6 +1,7 @@
 <?php
+
 // database/seed.php
-require_once __DIR__ . '/db.php';
+require_once __DIR__.'/db.php';
 
 try {
     // 1. Seed Users (Owner & Kasir)
@@ -38,8 +39,8 @@ try {
         (?, 'seasoning', 'Balado Extra Pedas', 0.00, 1);");
     $stmtVar->execute([$productId, $productId, $productId, $productId]);
 
-    echo "Seeding berhasil: Akun Owner, Kasir, dan sampel produk berhasil dimasukkan!";
+    echo 'Seeding berhasil: Akun Owner, Kasir, dan sampel produk berhasil dimasukkan!';
 
 } catch (PDOException $e) {
-    echo "Seeding Gagal: " . $e->getMessage();
+    echo 'Seeding Gagal: '.$e->getMessage();
 }
