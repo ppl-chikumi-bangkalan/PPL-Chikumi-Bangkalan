@@ -4,11 +4,14 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Customer\AddressController;
-use App\Http\Controllers\Customer\CatalogController;
 use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\CatalogController;
 use App\Http\Controllers\Customer\DashboardController;
 use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
+use App\Http\Controllers\Kasir\DashboardController as KasirDashboardController;
+use App\Http\Controllers\Kasir\TransactionController as KasirTransactionController;
+use App\Http\Controllers\Owner\DashboardController as OwnerDashboardController;
 use App\Http\Controllers\Owner\ProductController;
 use App\Http\Controllers\Owner\ProductSizeController;
 use App\Http\Controllers\Owner\VariantController;
@@ -50,13 +53,13 @@ Route::post('/logout', LogoutController::class)->middleware('auth')->name('logou
 
 // AREA DENGAN HAK AKSES (placeholder berisi tombol logout sementara)
 Route::middleware('auth')->group(function () {
-    Route::get('/owner/dashboard', function () {
-        return view('owner.dashboard');
-    })->middleware('role:owner')->name('owner.dashboard');
+    Route::get('/owner/dashboard', [OwnerDashboardController::class, 'page'])
+        ->middleware('role:owner')->name('owner.dashboard');
 
-    Route::get('/kasir/dashboard', function () {
-        return view('kasir.dashboard');
-    })->middleware('role:owner,cashier')->name('kasir.dashboard');
+    Route::get('/kasir/dashboard', [KasirDashboardController::class, 'page'])
+        ->middleware('role:owner,cashier')->name('kasir.dashboard');
+    Route::post('/kasir/api/transaksi', [KasirTransactionController::class, 'store'])
+        ->middleware('role:owner,cashier')->name('kasir.transaksi.store');
 
     Route::get('/customer/dashboard', [DashboardController::class, 'page'])
         ->middleware('role:customer')->name('customer.dashboard');
@@ -101,6 +104,7 @@ Route::middleware('auth')->group(function () {
         ->middleware('role:owner')->name('owner.stok');
 
     Route::prefix('owner/api')->middleware('role:owner')->group(function () {
+        Route::get('dashboard', [OwnerDashboardController::class, 'summary'])->name('owner.dashboard.api');
         Route::get('produk', [ProductController::class, 'index'])->name('owner.produk.index');
         Route::post('produk', [ProductController::class, 'store'])->name('owner.produk.store');
         Route::get('produk/ketersediaan', [ProductController::class, 'availability'])->name('owner.produk.ketersediaan');
@@ -122,9 +126,10 @@ Route::middleware('auth')->group(function () {
 });
 
 // FRONTEND DEVELOPMENT (sementara, tanpa login)
-Route::get('/frontend/owner/dashboard', function () {
-    return view('owner.dashboard');
-})->name('frontend.owner');
+Route::get('/frontend/owner/dashboard', [OwnerDashboardController::class, 'page'])
+    ->name('frontend.owner');
+Route::get('/frontend/owner/api/dashboard', [OwnerDashboardController::class, 'summary']);
+Route::get('/frontend/owner/api/ketersediaan', [ProductController::class, 'availability']);
 Route::get('/frontend/customer/dashboard', [DashboardController::class, 'page'])
     ->name('frontend.customer.dashboard');
 Route::get('/frontend/customer/api/katalog', [CatalogController::class, 'index'])
@@ -138,10 +143,10 @@ Route::get('/frontend/customer/produk', function (Request $request) {
 
     return view('customer.produk', ['produk' => $produk]);
 })->name('frontend.customer.produk');
-Route::get('/frontend/kasir/dashboard', function () {
-    return view('kasir.dashboard');
-})->name('frontend.kasir.dashboard');
-
+Route::get('/frontend/kasir/dashboard', [KasirDashboardController::class, 'page'])
+    ->name('frontend.kasir.dashboard');
+// API dev kasir (tanpa login; kirim header `X-Dev-Kasir: <id kasir/owner>`)
+Route::post('/frontend/kasir/api/transaksi', [KasirTransactionController::class, 'store']);
 
 // API dev pelanggan (tanpa login; kirim header `X-Dev-Customer: <id pelanggan>` untuk data milik pelanggan tsb)
 Route::prefix('frontend/customer/api')->group(function () {

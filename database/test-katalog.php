@@ -1,4 +1,5 @@
 <?php
+
 // database/test-katalog.php — smoke test backend area pelanggan.
 // Jalankan server dev (php artisan serve) lalu: php database/test-katalog.php [base_url]
 // Exit 0 = semua lulus.
@@ -9,10 +10,10 @@ $fail = 0;
 function req(string $method, string $path, ?array $body = null, string|bool|null $dev = null): array
 {
     global $base, $devCustomer;
-    $ch = curl_init($base . $path);
+    $ch = curl_init($base.$path);
     $headers = ['Accept: application/json'];
     if ($dev !== false) {
-        $headers[] = 'X-Dev-Customer: ' . ($dev ?? $devCustomer);
+        $headers[] = 'X-Dev-Customer: '.($dev ?? $devCustomer);
     }
     if ($body !== null) {
         $headers[] = 'Content-Type: application/json';
@@ -33,6 +34,7 @@ function req(string $method, string $path, ?array $body = null, string|bool|null
     }
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+
     return [$status, json_decode($out, true) ?? []];
 }
 
@@ -53,7 +55,7 @@ check('katalog punya ukuran+varian', isset($pertama['ukuran'][0]['harga_dasar'],
 check('katalog kategori tak dikenal -> 422', $s === 422, "status=$s");
 
 // detail produk
-[$s, $j] = req('GET', '/frontend/customer/api/produk/' . ($pertama['id'] ?? 1));
+[$s, $j] = req('GET', '/frontend/customer/api/produk/'.($pertama['id'] ?? 1));
 check('detail produk 200', $s === 200 && ($j['data']['id'] ?? null) === ($pertama['id'] ?? null), "status=$s");
 
 // harga = harga dasar ukuran + tambahan varian
@@ -68,12 +70,12 @@ $queryHarga = http_build_query([
 ]);
 [$s, $j] = req('GET', "/frontend/customer/api/produk/{$pertama['id']}/harga?{$queryHarga}");
 $expected = ((float) $sizeUji['harga_dasar'] + (float) ($varUjiA['tambahan_harga'] ?? 0) + (float) ($varUjiB['tambahan_harga'] ?? 0)) * 2;
-check('harga ukuran+varian sesuai', $s === 200 && abs((float) ($j['data']['subtotal'] ?? -1) - $expected) < 0.01, "status=$s subtotal=" . ($j['data']['subtotal'] ?? '-'));
+check('harga ukuran+varian sesuai', $s === 200 && abs((float) ($j['data']['subtotal'] ?? -1) - $expected) < 0.01, "status=$s subtotal=".($j['data']['subtotal'] ?? '-'));
 [$s] = req('GET', "/frontend/customer/api/produk/{$pertama['id']}/harga?product_size_id=999");
 check('harga ukuran salah -> 422', $s === 422, "status=$s");
 if (count($pertama['varian'][1]['pilihan'] ?? []) >= 2) {
     $duaTipeSama = $pertama['varian'][1]['pilihan'];
-    [$s] = req('GET', "/frontend/customer/api/produk/{$pertama['id']}/harga?" . http_build_query([
+    [$s] = req('GET', "/frontend/customer/api/produk/{$pertama['id']}/harga?".http_build_query([
         'product_size_id' => $sizeUji['id'],
         'variant_ids' => [$duaTipeSama[0]['id'], $duaTipeSama[1]['id']],
     ]));
@@ -101,7 +103,7 @@ $itemKeranjang = $j['data']['item'][0] ?? null;
 $hargaHarap = (float) $pertama['ukuran'][0]['harga_dasar']
     + ($varSatu ? (float) ($pertama['varian'][0]['pilihan'][0]['tambahan_harga'] ?? 0) : 0)
     + ($varLainTipe ? (float) ($pertama['varian'][1]['pilihan'][0]['tambahan_harga'] ?? 0) : 0);
-check('harga keranjang = ukuran + varian', $itemKeranjang && abs((float) ($itemKeranjang['harga_satuan'] ?? -1) - $hargaHarap) < 0.01, 'harga=' . ($itemKeranjang['harga_satuan'] ?? '-'));
+check('harga keranjang = ukuran + varian', $itemKeranjang && abs((float) ($itemKeranjang['harga_satuan'] ?? -1) - $hargaHarap) < 0.01, 'harga='.($itemKeranjang['harga_satuan'] ?? '-'));
 [$s] = req('POST', '/frontend/customer/api/keranjang', ['product_size_id' => $sizeId, 'quantity' => 1, 'variant_ids' => array_fill(0, 2, $varSatu)]);
 check('varian dobel -> 422', $s === 422, "status=$s");
 [$s] = req('GET', '/frontend/customer/api/keranjang', null, false);

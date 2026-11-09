@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\User;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\MenyiapkanDataChikumi;
 use Tests\TestCase;
 
@@ -121,7 +122,7 @@ class HargaDinamisTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('varianTidakValid')]
+    #[DataProvider('varianTidakValid')]
     public function test_f07_f10_pilihan_varian_tidak_valid_ditolak_422(array $kunci): void
     {
         $this->cekHarga([

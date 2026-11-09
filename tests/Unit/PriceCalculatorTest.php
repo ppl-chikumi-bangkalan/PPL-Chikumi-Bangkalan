@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Support\PriceCalculator;
 use Illuminate\Validation\ValidationException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\MenyiapkanDataChikumi;
 use Tests\TestCase;
 
@@ -110,7 +111,7 @@ class PriceCalculatorTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('pilihanTidakValid')]
+    #[DataProvider('pilihanTidakValid')]
     public function test_u10_pilihan_varian_tidak_valid_ditolak(array $kunci, string $pesan): void
     {
         try {
