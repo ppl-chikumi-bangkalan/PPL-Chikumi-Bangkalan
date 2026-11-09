@@ -85,9 +85,9 @@
             <!-- KARTU UKURAN -->
             <div class="grid gap-5 md:grid-cols-2">
 
-                <!-- Chikumi Reguler (tersedia) -->
-                <button type="button"
-                    class="rounded-2xl border-2 border-transparent bg-white p-[18px] text-left outline-none transition hover:border-[#FF8000] focus-visible:border-[#FF8000]">
+                <!-- Chikumi Reguler (tersedia) — klik membuka popup Pilih Varian -->
+                <a href="#pilih-varian"
+                    class="block rounded-2xl border-2 border-transparent bg-white p-[18px] text-left outline-none transition hover:border-[#FF8000] focus-visible:border-[#FF8000]">
                     <div class="grid h-[180px] place-items-center overflow-hidden rounded-xl bg-[#FF8000]">
                         <img src="/images/chikumi-1.png" alt="Chikumi Reguler" class="h-[176px] w-auto object-contain">
                     </div>
@@ -112,7 +112,7 @@
                             <p class="mt-0.5 text-lg font-bold text-[#D96C00]">Rp 21.000</p>
                         </div>
                     </div>
-                </button>
+                </a>
 
                 <!-- Chikumi Large (habis) -->
                 <button type="button" disabled
@@ -316,6 +316,9 @@
             </div>
         </aside>
     </div>
+
+    <!-- POPUP K2 · PILIH VARIAN (form transaksi kasir) -->
+    @include('components.kasir.pilih-varian')
 </body>
 
 </html>
