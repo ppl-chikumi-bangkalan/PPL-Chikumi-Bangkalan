@@ -230,7 +230,8 @@
     <!-- POPUP K2 · PILIH VARIAN (form transaksi kasir) -->
     @include('components.kasir.pilih-varian')
     @include('components.kasir.pembayaran')
-    
+    @include('components.kasir.struk')
+
     <script>
         const PRODUK = @json($produk);
         const API_URL = @json($apiUrl);
