@@ -113,7 +113,7 @@
                                 </p>
                             </div>
 
-                            <button type="button" onclick="openModal('product')"
+                            <button type="button" onclick="openModal('variant')"
                                 class="shrink-0 rounded-lg bg-orange-50 px-4 py-2 text-sm font-semibold text-[#FF8000] transition hover:bg-orange-100">
                                 + Varian
                             </button>

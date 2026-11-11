@@ -13,6 +13,7 @@ class PosTransaction extends Model
     protected $fillable = [
         'transaction_number',
         'cashier_id',
+        'customer_name',
         'total_amount',
         'payment_method',
         'amount_paid',

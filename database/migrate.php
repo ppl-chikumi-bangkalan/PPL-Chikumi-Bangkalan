@@ -189,6 +189,7 @@ try {
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
         transaction_number VARCHAR(50) UNIQUE NOT NULL,
         cashier_id BIGINT NOT NULL,
+        customer_name VARCHAR(100) NULL,
         total_amount DECIMAL(12, 2) NOT NULL,
         payment_method ENUM('cash', 'non_cash') NOT NULL,
         amount_paid DECIMAL(12, 2) NOT NULL,

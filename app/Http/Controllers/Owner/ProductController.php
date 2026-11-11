@@ -42,10 +42,16 @@ class ProductController extends Controller
 
         abort_unless($ukuran === null || $ukuran->product_id === $produk->id, 404);
 
+        // Daftar topping yang sudah dikenal katalog -> bisa dicentang untuk produk ini.
+        $toppingMaster = Variant::orderBy('additional_price')
+            ->get()
+            ->unique(fn (Variant $variant) => $variant->type.'|'.$variant->name)
+            ->groupBy('type');
+
         $previous = url()->previous();
         $back = str_contains($previous, '/edit') ? route('owner.produk') : $previous;
 
-        return view('owner.produk.edit', compact('produk', 'ukuran', 'back'));
+        return view('owner.produk.edit', compact('produk', 'ukuran', 'back', 'toppingMaster'));
     }
 
     public function availability()

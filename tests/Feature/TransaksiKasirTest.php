@@ -151,6 +151,26 @@ class TransaksiKasirTest extends TestCase
             ->assertJsonPath('data.metode_pembayaran', 'non_cash');
     }
 
+    public function test_non_cash_memaksa_kembalian_nol_dan_menyimpan_nama_pelanggan(): void
+    {
+        $this->kirim([
+            'payment_method' => 'non_cash',
+            'amount_paid' => 20000,
+            'customer_name' => 'Budi',
+            'items' => [['product_size_id' => $this->d['regular']->id, 'quantity' => 1]],
+        ])->assertCreated()
+            ->assertJsonPath('data.pelanggan', 'Budi')
+            ->assertJsonPath('data.dibayar', 15000)
+            ->assertJsonPath('data.kembalian', 0);
+
+        $this->assertDatabaseHas('pos_transactions', [
+            'customer_name' => 'Budi',
+            'payment_method' => 'non_cash',
+            'amount_paid' => 15000,
+            'change_amount' => 0,
+        ]);
+    }
+
     public function test_pelanggan_tidak_boleh_menyimpan_transaksi(): void
     {
         $this->actingAs($this->buatPelanggan())
