@@ -96,6 +96,7 @@ trait MenyiapkanDataChikumi
             $table->id();
             $table->string('transaction_number', 50)->unique();
             $table->foreignId('cashier_id');
+            $table->string('customer_name')->nullable();
             $table->decimal('total_amount', 12, 2);
             $table->string('payment_method');
             $table->decimal('amount_paid', 12, 2);

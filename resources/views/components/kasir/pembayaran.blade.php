@@ -1,52 +1,28 @@
 <div id="pembayaran" class="fixed inset-x-0 bottom-0 top-[76px] z-40 hidden overflow-y-auto bg-[#FFF9F2] target:block">
-    <form class="group mx-auto grid max-w-[1366px] gap-6 p-7 lg:grid-cols-[500px_minmax(0,1fr)] lg:items-start">
+    <form onsubmit="event.preventDefault(); prosesPembayaran()" class="group mx-auto grid max-w-[1366px] gap-6 p-7 lg:grid-cols-[500px_minmax(0,1fr)] lg:items-start">
 
         <!-- KIRI: RINGKASAN PESANAN + METODE -->
         <section class="rounded-3xl border border-[#EDE6DF] bg-white p-6">
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <h2 class="text-lg font-semibold">Ringkasan Pesanan</h2>
-                    <p class="text-xs text-[#6B645D]">#CK-0125 · 15.32 WIB</p>
+                    <p class="text-xs text-[#6B645D]"><span id="bayarNomor">—</span> · <span id="bayarWaktu">—</span></p>
                 </div>
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-xs font-medium text-[#D96C00]">
                     <span class="h-1.5 w-1.5 rounded-full bg-[#D96C00]"></span> Kasir
                 </span>
             </div>
 
-            <div class="mt-3.5 space-y-3.5">
-                <div class="flex items-center gap-3 rounded-2xl bg-[#F7F3EF] p-2.5">
-                    <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#FF8000]">
-                        <img src="/images/chikumi-1.png" alt="" class="h-11 w-auto object-contain">
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <p class="text-sm font-semibold">Reguler · Seasoning</p>
-                        <p class="truncate text-xs text-[#6B645D]">Mentaiko · BBQ + Sweetcorn</p>
-                    </div>
-                    <span class="text-sm text-[#6B645D]">2×</span>
-                    <span class="w-[72px] text-right text-sm font-semibold">Rp 40.000</span>
-                </div>
-
-                <div class="flex items-center gap-3 rounded-2xl bg-[#F7F3EF] p-2.5">
-                    <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#FF8000]">
-                        <img src="/images/chikumi-1.png" alt="" class="h-11 w-auto object-contain">
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <p class="text-sm font-semibold">Reguler · Dip Sauce</p>
-                        <p class="truncate text-xs text-[#6B645D]">Cream Cheese · Korean Spicy</p>
-                    </div>
-                    <span class="text-sm text-[#6B645D]">1×</span>
-                    <span class="w-[72px] text-right text-sm font-semibold">Rp 21.000</span>
-                </div>
-            </div>
+            <div id="ringkasanItem" class="mt-3.5 space-y-3.5"></div>
 
             <div class="mt-3.5 border-t border-[#EDE6DF] pt-3.5">
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-[#6B645D]">Subtotal (3 pcs)</span>
-                    <span>Rp 61.000</span>
+                    <span id="ringkasanSubtotalQty" class="text-[#6B645D]">Subtotal (0 pcs)</span>
+                    <span id="ringkasanSubtotal">Rp 0</span>
                 </div>
                 <div class="mt-3.5 flex items-center justify-between">
                     <span class="text-lg font-bold">Total</span>
-                    <span class="text-[28px] font-bold text-[#D96C00]">Rp 61.000</span>
+                    <span id="ringkasanTotal" class="text-[28px] font-bold text-[#D96C00]">Rp 0</span>
                 </div>
             </div>
 
@@ -83,23 +59,23 @@
                         <path stroke-linecap="round" d="M9 8.25h6M9 11.25h6M9 14.25h3.75" />
                     </svg>
                     <span class="text-base">Rp</span>
-                    <input id="uangDiterima" name="amount_paid" type="text" inputmode="numeric" value="100.000"
+                    <input id="uangDiterima" name="amount_paid" type="text" inputmode="numeric" value=""
                         class="w-full bg-transparent text-base outline-none">
                 </div>
 
                 <!-- Nominal cepat -->
                 <div class="mt-4 flex flex-wrap gap-2">
                     <label class="cursor-pointer rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm transition has-checked:border-[#FF8000] has-checked:bg-[#FF8000] has-checked:text-white has-focus-visible:border-[#FF8000]">
-                        <input type="radio" name="uang_cepat" value="61000" class="sr-only">
-                        Uang Pas
+                        <input type="radio" name="uang_cepat" value="0" data-quick="pas" class="sr-only">
+                        <span data-quick-label="pas">Uang Pas</span>
                     </label>
                     <label class="cursor-pointer rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm transition has-checked:border-[#FF8000] has-checked:bg-[#FF8000] has-checked:text-white has-focus-visible:border-[#FF8000]">
-                        <input type="radio" name="uang_cepat" value="70000" class="sr-only">
-                        Rp 70.000
+                        <input type="radio" name="uang_cepat" value="0" data-quick="tengah" class="sr-only">
+                        <span data-quick-label="tengah">Rp 0</span>
                     </label>
                     <label class="cursor-pointer rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm transition has-checked:border-[#FF8000] has-checked:bg-[#FF8000] has-checked:text-white has-focus-visible:border-[#FF8000]">
-                        <input type="radio" name="uang_cepat" value="100000" class="sr-only" checked>
-                        Rp 100.000
+                        <input type="radio" name="uang_cepat" value="0" data-quick="penuh" class="sr-only">
+                        <span data-quick-label="penuh">Rp 0</span>
                     </label>
                 </div>
 
@@ -112,23 +88,16 @@
                         </svg>
                         Kembalian
                     </span>
-                    <span class="text-[32px] font-bold leading-none text-[#1F9D55]">Rp 39.000</span>
+                    <span id="kembalianTunai" class="text-[32px] font-bold leading-none text-[#1F9D55]">Rp 0</span>
                 </div>
 
                 <!-- Keypad -->
                 <div class="mt-4 grid grid-cols-3 gap-2.5">
-                    <button type="button" class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">1</button>
-                    <button type="button" class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">2</button>
-                    <button type="button" class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">3</button>
-                    <button type="button" class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">4</button>
-                    <button type="button" class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">5</button>
-                    <button type="button" class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">6</button>
-                    <button type="button" class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">7</button>
-                    <button type="button" class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">8</button>
-                    <button type="button" class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">9</button>
-                    <button type="button" class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">000</button>
-                    <button type="button" class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">0</button>
-                    <button type="button" aria-label="Hapus" class="grid h-14 place-items-center rounded-xl bg-[#F7F3EF] transition hover:bg-[#EDE6DF]">
+                    @foreach (['1', '2', '3', '4', '5', '6', '7', '8', '9', '000', '0'] as $key)
+                        <button type="button" data-key="{{ $key }}"
+                            class="h-14 rounded-xl bg-[#F7F3EF] text-xl font-semibold transition hover:bg-[#EDE6DF]">{{ $key }}</button>
+                    @endforeach
+                    <button type="button" data-key="del" aria-label="Hapus" class="grid h-14 place-items-center rounded-xl bg-[#F7F3EF] transition hover:bg-[#EDE6DF]">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
                             stroke="currentColor" class="h-6 w-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -142,10 +111,10 @@
                         class="grid w-[154px] place-items-center rounded-xl border border-[#EDE6DF] bg-white py-4 text-base font-semibold transition hover:border-[#A39B93]">
                         Cetak Struk
                     </a>
-                    <a href="#pembayaran-berhasil"
+                    <button type="button" onclick="prosesPembayaran()"
                         class="grid flex-1 place-items-center rounded-xl bg-[#FF8000] py-4 text-base font-semibold text-white transition hover:bg-[#D96C00]">
                         Selesaikan Pembayaran
-                    </a>
+                    </button>
                 </div>
             </div>
 
@@ -173,7 +142,7 @@
 
                 <div class="mt-5 w-full rounded-2xl bg-[#FFF3E6] p-5 text-center">
                     <p class="text-xs text-[#6B645D]">Pelanggan mengetik nominal</p>
-                    <p class="mt-1 text-[32px] font-bold leading-tight text-[#D96C00]">Rp 61.000</p>
+                    <p id="qrisTotal" class="mt-1 text-[32px] font-bold leading-tight text-[#D96C00]">Rp 0</p>
                 </div>
 
                 <div class="mt-4 w-full rounded-2xl bg-[#F7F3EF] p-4">
@@ -183,7 +152,7 @@
                             <input type="checkbox" class="h-4 w-4 accent-[#FF8000]"> Notifikasi dana masuk di aplikasi merchant
                         </label>
                         <label class="flex cursor-pointer items-center gap-2.5">
-                            <input type="checkbox" class="h-4 w-4 accent-[#FF8000]"> Nominal sesuai Rp 61.000
+                            <input type="checkbox" class="h-4 w-4 accent-[#FF8000]"> Nominal sesuai <span data-total-text>Rp 0</span>
                         </label>
                         <label class="flex cursor-pointer items-center gap-2.5">
                             <input type="checkbox" class="h-4 w-4 accent-[#FF8000]"> Waktu transaksi sesuai
@@ -192,14 +161,14 @@
                 </div>
 
                 <div class="mt-auto flex w-full gap-3 pt-6">
-                    <a href="#"
+                    <button type="button" onclick="tutupPembayaran()"
                         class="grid w-[102px] place-items-center rounded-xl border border-[#EDE6DF] bg-white py-4 text-base font-semibold transition hover:border-[#A39B93]">
                         Batal
-                    </a>
-                    <a href="#pembayaran-berhasil"
+                    </button>
+                    <button type="button" onclick="prosesPembayaran()"
                         class="grid flex-1 place-items-center rounded-xl bg-[#FF8000] py-4 text-base font-semibold text-white transition hover:bg-[#D96C00]">
                         Konfirmasi Pembayaran Diterima
-                    </a>
+                    </button>
                 </div>
             </div>
 
@@ -216,7 +185,7 @@
 
                 <div class="mt-4 rounded-2xl bg-[#FFF3E6] p-5 text-center">
                     <p class="text-xs text-[#6B645D]">Nominal transfer</p>
-                    <p class="mt-1 text-[32px] font-bold leading-tight text-[#D96C00]">Rp 61.000</p>
+                    <p id="transferTotal" class="mt-1 text-[32px] font-bold leading-tight text-[#D96C00]">Rp 0</p>
                 </div>
 
                 <div class="mt-4 rounded-2xl bg-[#F7F3EF] p-4">
@@ -226,20 +195,20 @@
                             <input type="checkbox" class="h-4 w-4 accent-[#FF8000]"> Dana masuk di mutasi rekening
                         </label>
                         <label class="flex cursor-pointer items-center gap-2.5">
-                            <input type="checkbox" class="h-4 w-4 accent-[#FF8000]"> Nominal sesuai Rp 61.000
+                            <input type="checkbox" class="h-4 w-4 accent-[#FF8000]"> Nominal sesuai <span data-total-text>Rp 0</span>
                         </label>
                     </div>
                 </div>
 
                 <div class="mt-auto flex gap-3 pt-6">
-                    <a href="#"
+                    <button type="button" onclick="tutupPembayaran()"
                         class="grid w-[102px] place-items-center rounded-xl border border-[#EDE6DF] bg-white py-4 text-base font-semibold transition hover:border-[#A39B93]">
                         Batal
-                    </a>
-                    <a href="#pembayaran-berhasil"
+                    </button>
+                    <button type="button" onclick="prosesPembayaran()"
                         class="grid flex-1 place-items-center rounded-xl bg-[#FF8000] py-4 text-base font-semibold text-white transition hover:bg-[#D96C00]">
                         Konfirmasi Pembayaran Diterima
-                    </a>
+                    </button>
                 </div>
             </div>
         </section>
@@ -255,55 +224,30 @@
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <h2 class="text-lg font-semibold">Ringkasan Pesanan</h2>
-                    <p class="text-xs text-[#6B645D]">#CK-0125 · 15.32 WIB</p>
+                    <p class="text-xs text-[#6B645D]"><span id="berhasilNomorHeader">—</span> · <span id="berhasilWaktuHeader">—</span></p>
                 </div>
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-xs font-medium text-[#D96C00]">
                     <span class="h-1.5 w-1.5 rounded-full bg-[#D96C00]"></span> Kasir
                 </span>
             </div>
 
-            <div class="mt-3.5 space-y-3.5">
-                <div class="flex items-center gap-3 rounded-2xl bg-[#F7F3EF] p-2.5">
-                    <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#FF8000]">
-                        <img src="/images/chikumi-1.png" alt="" class="h-11 w-auto object-contain">
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <p class="text-sm font-semibold">Reguler · Seasoning</p>
-                        <p class="truncate text-xs text-[#6B645D]">Mentaiko · BBQ + Sweetcorn</p>
-                    </div>
-                    <span class="text-sm text-[#6B645D]">2×</span>
-                    <span class="w-[72px] text-right text-sm font-semibold">Rp 40.000</span>
-                </div>
-
-                <div class="flex items-center gap-3 rounded-2xl bg-[#F7F3EF] p-2.5">
-                    <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#FF8000]">
-                        <img src="/images/chikumi-1.png" alt="" class="h-11 w-auto object-contain">
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <p class="text-sm font-semibold">Reguler · Dip Sauce</p>
-                        <p class="truncate text-xs text-[#6B645D]">Cream Cheese · Korean Spicy</p>
-                    </div>
-                    <span class="text-sm text-[#6B645D]">1×</span>
-                    <span class="w-[72px] text-right text-sm font-semibold">Rp 21.000</span>
-                </div>
-            </div>
+            <div id="ringkasanBerhasil" class="mt-3.5 space-y-3.5"></div>
 
             <div class="mt-3.5 border-t border-[#EDE6DF] pt-3.5">
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-[#6B645D]">Subtotal (3 pcs)</span>
-                    <span>Rp 61.000</span>
+                    <span id="berhasilSubtotalQty" class="text-[#6B645D]">Subtotal (0 pcs)</span>
+                    <span id="berhasilSubtotal">Rp 0</span>
                 </div>
                 <div class="mt-3.5 flex items-center justify-between">
                     <span class="text-lg font-bold">Total</span>
-                    <span class="text-[28px] font-bold text-[#D96C00]">Rp 61.000</span>
+                    <span id="berhasilGrandTotal" class="text-[28px] font-bold text-[#D96C00]">Rp 0</span>
                 </div>
             </div>
 
             <p class="mt-3.5 text-sm font-semibold">Metode Pembayaran</p>
             <div class="mt-3 flex flex-wrap gap-2">
-                <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Tunai</span>
-                <span class="rounded-full border border-[#FF8000] bg-[#FF8000] px-5 py-2.5 text-sm text-white">QRIS</span>
-                <span class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Transfer</span>
+                <span data-metode-chip="cash" class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Tunai</span>
+                <span data-metode-chip="non_cash" class="rounded-full border border-[#EDE6DF] bg-white px-5 py-2.5 text-sm">Non-tunai</span>
             </div>
         </section>
 
@@ -317,21 +261,21 @@
             </div>
 
             <h2 class="mt-6 text-[28px] font-bold">Pembayaran Berhasil</h2>
-            <p class="mt-2 text-sm text-[#6B645D]">QRIS · Rp 61.000 · 15.33 WIB</p>
+            <p class="mt-2 text-sm text-[#6B645D]"><span id="berhasilMetode">—</span> · <span id="berhasilTotal">Rp 0</span> · <span id="berhasilWaktu">—</span></p>
 
             <div class="mt-5 w-full max-w-[727px] space-y-3 rounded-2xl bg-[#F7F3EF] p-4 text-sm">
                 <div class="flex items-center justify-between">
                     <span class="text-[#6B645D]">No. Transaksi</span>
-                    <span class="font-semibold">#CK-0125</span>
+                    <span id="berhasilNomor" class="font-semibold">—</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-[#6B645D]">Ref. Pembayaran</span>
-                    <span class="font-semibold">QR-8F3K2-0091</span>
+                    <span id="berhasilRef" class="font-semibold">—</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <span class="text-[#6B645D]">Status</span>
                     <span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-xs font-medium text-[#1F9D55]">
-                        <span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span> Lunas
+                        <span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span> <span id="berhasilStatus">Lunas</span>
                     </span>
                 </div>
             </div>
@@ -343,10 +287,10 @@
                     class="grid flex-1 place-items-center rounded-xl border border-[#EDE6DF] bg-white py-4 text-base font-semibold transition hover:border-[#A39B93]">
                     Cetak Struk
                 </a>
-                <a href="#"
+                <button type="button" onclick="transaksiBaru()"
                     class="grid flex-1 place-items-center rounded-xl bg-[#FF8000] py-4 text-base font-semibold text-white transition hover:bg-[#D96C00]">
                     Transaksi Baru
-                </a>
+                </button>
             </div>
         </section>
     </div>

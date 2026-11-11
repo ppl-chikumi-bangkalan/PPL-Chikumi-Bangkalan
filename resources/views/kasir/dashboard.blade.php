@@ -15,6 +15,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css'])
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #kertasStruk, #kertasStruk * { visibility: visible; }
+            #kertasStruk { position: fixed; left: 0; top: 0; width: 302px; box-shadow: none; }
+        }
+    </style>
 </head>
 <body class="min-h-screen bg-[#FFF9F2] font-['Poppins'] text-[#1E1B18]">
     <!-- TOPBAR KASIR -->
@@ -407,18 +414,120 @@
             el('kembalian').textContent = bayar ? 'Kembalian: ' + rp(Math.max(0, bayar - total)) : '';
         }
 
-        async function bayar() {
+        const LABEL_METODE = {cash: 'Tunai', non_cash: 'Non-tunai'};
+        const angka = nilai => Number(String(nilai ?? '').replace(/\D/g, '') || 0);
+        const formatAngka = nilai => new Intl.NumberFormat('id-ID').format(angka(nilai));
+
+        let transaksiTerakhir = null;
+
+        function metodeBayar() {
+            return document.querySelector('#pembayaran input[name="payment_method"]:checked')?.value || 'cash';
+        }
+
+        function waktuSekarang() {
+            return new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'}).replace('.', ':') + ' WIB';
+        }
+
+        function barisRingkasan(nama, gambar, varian, qty, subtotal) {
+            return `
+                <div class="flex items-center gap-3 rounded-2xl bg-[#F7F3EF] p-2.5">
+                    <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#FF8000]">
+                        <img src="${esc(gambar || '')}" alt="" class="h-11 w-auto object-contain">
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm font-semibold">${esc(nama)}</p>
+                        <p class="truncate text-xs text-[#6B645D]">${esc(varian || 'Tanpa varian')}</p>
+                    </div>
+                    <span class="text-sm text-[#6B645D]">${qty}×</span>
+                    <span class="w-[72px] text-right text-sm font-semibold">${rp(subtotal)}</span>
+                </div>`;
+        }
+
+        function isiRingkasan(containerId, totalId, qtyId, subtotalId, baris, total, jumlah) {
+            el(containerId).innerHTML = baris;
+            el(qtyId).textContent = `Subtotal (${jumlah} pcs)`;
+            el(subtotalId).textContent = rp(total);
+            el(totalId).textContent = rp(total);
+        }
+
+        function aturNominalCepat(total) {
+            [
+                ['pas', total],
+                ['tengah', Math.ceil(total / 50000) * 50000],
+                ['penuh', Math.ceil(total / 100000) * 100000],
+            ].forEach(([kunci, nominal]) => {
+                const input = document.querySelector(`input[name="uang_cepat"][data-quick="${kunci}"]`);
+                if (!input) return;
+                input.value = nominal;
+                const label = document.querySelector(`[data-quick-label="${kunci}"]`);
+                if (label) label.textContent = kunci === 'pas' ? 'Uang Pas' : rp(nominal);
+            });
+        }
+
+        function perbaruiKembalianBayar() {
+            const total = totalKeranjang();
+            const metode = metodeBayar();
+            const input = el('uangDiterima');
+            input.readOnly = metode === 'non_cash';
+            if (metode === 'non_cash') input.value = formatAngka(total);
+            const bayar = angka(input.value);
+            el('kembalianTunai').textContent = rp(Math.max(0, bayar - total));
+        }
+
+        function bukaPembayaran() {
             if (!keranjang.length) {
                 alert('Pesanan masih kosong.');
                 return;
             }
             const total = totalKeranjang();
+            const jumlah = keranjang.reduce((t, k) => t + k.qty, 0);
+
+            el('bayarNomor').textContent = '—';
+            el('bayarWaktu').textContent = waktuSekarang();
+            isiRingkasan(
+                'ringkasanItem', 'ringkasanTotal', 'ringkasanSubtotalQty', 'ringkasanSubtotal',
+                keranjang.map(k => barisRingkasan(
+                    k.nama, k.gambar,
+                    k.varian.map(v => v.nama).join(' · '),
+                    k.qty, k.harga * k.qty
+                )).join(''),
+                total, jumlah
+            );
+            el('qrisTotal').textContent = rp(total);
+            el('transferTotal').textContent = rp(total);
+            document.querySelectorAll('[data-total-text]').forEach(node => node.textContent = rp(total));
+
             const metode = el('metodeBayar').value;
-            const dibayar = metode === 'non_cash' ? total : Number(el('jumlahBayar').value || 0);
+            const radio = document.querySelector(`#pembayaran input[name="payment_method"][value="${metode}"]`);
+            if (radio) radio.checked = true;
+
+            aturNominalCepat(total);
+            const awal = el('jumlahBayar').value;
+            el('uangDiterima').value = awal !== '' ? formatAngka(awal) : formatAngka(total);
+            perbaruiKembalianBayar();
+
+            location.hash = '#pembayaran';
+        }
+
+        function tutupPembayaran() {
+            location.hash = '';
+        }
+
+        async function prosesPembayaran() {
+            if (!keranjang.length) {
+                alert('Pesanan masih kosong.');
+                return;
+            }
+
+            const total = totalKeranjang();
+            const metode = metodeBayar();
+            const dibayar = metode === 'non_cash' ? total : angka(el('uangDiterima').value);
+
             if (dibayar < total) {
                 alert('Uang dibayar kurang dari total.');
                 return;
             }
+
             const headers = {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
@@ -426,6 +535,7 @@
             };
             if (CSRF) headers['X-CSRF-TOKEN'] = CSRF;
             if (DEV_KASIR) headers['X-Dev-Kasir'] = DEV_KASIR;
+
             try {
                 el('btnBayar').disabled = true;
                 const response = await fetch(API_URL, {
@@ -434,6 +544,7 @@
                     body: JSON.stringify({
                         payment_method: metode,
                         amount_paid: dibayar,
+                        customer_name: el('namaPelanggan').value.trim() || null,
                         items: keranjang.map(k => ({
                             product_size_id: k.ukuran_id,
                             quantity: k.qty,
@@ -445,15 +556,85 @@
                 if (!response.ok) {
                     throw new Error(hasil.message || 'Gagal menyimpan transaksi.');
                 }
-                alert(`${hasil.message || 'Transaksi berhasil.'}\nKembalian: ${rp(hasil.data.kembalian)}`);
+
+                transaksiTerakhir = hasil.data;
+                tampilkanBerhasil(hasil.data);
+                isiStruk(hasil.data);
                 keranjang = [];
                 renderKeranjang();
-                location.reload();
+                location.hash = '#pembayaran-berhasil';
             } catch (error) {
                 alert(error.message);
             } finally {
                 el('btnBayar').disabled = false;
             }
+        }
+
+        function tampilkanBerhasil(data) {
+            const jumlah = data.item.reduce((t, item) => t + item.quantity, 0);
+            el('berhasilNomorHeader').textContent = data.nomor;
+            el('berhasilWaktuHeader').textContent = data.tanggal;
+            isiRingkasan(
+                'ringkasanBerhasil', 'berhasilGrandTotal', 'berhasilSubtotalQty', 'berhasilSubtotal',
+                data.item.map(item => barisRingkasan(
+                    `${item.produk} · ${item.ukuran}`,
+                    item.gambar,
+                    item.varian.map(v => v.nama).join(' · '),
+                    item.quantity, item.subtotal
+                )).join(''),
+                data.total, jumlah
+            );
+            el('berhasilMetode').textContent = LABEL_METODE[data.metode_pembayaran] || data.metode_pembayaran;
+            el('berhasilTotal').textContent = rp(data.total);
+            el('berhasilWaktu').textContent = data.tanggal;
+            el('berhasilNomor').textContent = data.nomor;
+            el('berhasilRef').textContent = data.nomor;
+            el('berhasilStatus').textContent = data.status === 'paid' ? 'Lunas' : data.status;
+            document.querySelectorAll('[data-metode-chip]').forEach(chip => {
+                const aktif = chip.dataset.metodeChip === data.metode_pembayaran;
+                chip.classList.toggle('border-[#FF8000]', aktif);
+                chip.classList.toggle('bg-[#FF8000]', aktif);
+                chip.classList.toggle('text-white', aktif);
+            });
+        }
+
+        function isiStruk(data) {
+            const jumlah = data.item.reduce((t, item) => t + item.quantity, 0);
+            el('strukNomor').textContent = data.nomor;
+            el('strukTanggal').textContent = data.tanggal;
+            el('strukKasir').textContent = data.kasir || '-';
+            el('strukPelanggan').textContent = data.pelanggan || '-';
+            el('strukItem').innerHTML = data.item.map(item => `
+                <div>
+                    <p class="font-bold">${esc(item.produk)} · ${esc(item.ukuran)}</p>
+                    <p class="text-[11px] text-[#6B645D]">${esc(item.varian.map(v => v.nama).join(' · ') || 'Tanpa varian')}</p>
+                    <div class="flex justify-between">
+                        <span>${item.quantity} x ${formatAngka(item.harga_satuan)}</span>
+                        <span>${formatAngka(item.subtotal)}</span>
+                    </div>
+                </div>`).join('');
+            el('strukSubtotalQty').textContent = `Subtotal (${jumlah} pcs)`;
+            el('strukSubtotal').textContent = formatAngka(data.total);
+            el('strukTotal').textContent = rp(data.total);
+            el('strukMetode').textContent = LABEL_METODE[data.metode_pembayaran] || data.metode_pembayaran;
+            el('strukDibayar').textContent = formatAngka(data.dibayar);
+            el('strukKembalian').textContent = formatAngka(data.kembalian);
+            el('strukStatus').textContent = data.status === 'paid' ? 'LUNAS' : String(data.status).toUpperCase();
+        }
+
+        function cetakStruk() {
+            if (!transaksiTerakhir) {
+                alert('Belum ada transaksi untuk dicetak.');
+                return;
+            }
+            window.print();
+        }
+
+        function transaksiBaru() {
+            transaksiTerakhir = null;
+            keranjang = [];
+            renderKeranjang();
+            location.hash = '';
         }
 
         document.querySelectorAll('[data-produk-id]').forEach(button => {
@@ -487,7 +668,32 @@
             keranjang = [];
             renderKeranjang();
         });
-        el('btnBayar').addEventListener('click', bayar);
+        el('btnBayar').addEventListener('click', bukaPembayaran);
+
+        // Layar pembayaran (tunai / QRIS / transfer)
+        document.querySelectorAll('#pembayaran input[name="payment_method"]').forEach(input => {
+            input.addEventListener('change', perbaruiKembalianBayar);
+        });
+        el('uangDiterima').addEventListener('input', perbaruiKembalianBayar);
+        document.querySelectorAll('#pembayaran input[name="uang_cepat"]').forEach(input => {
+            input.addEventListener('change', () => {
+                el('uangDiterima').value = formatAngka(input.value);
+                perbaruiKembalianBayar();
+            });
+        });
+        document.querySelectorAll('#pembayaran [data-key]').forEach(button => {
+            button.addEventListener('click', () => {
+                if (metodeBayar() !== 'cash') return;
+                const sekarang = String(angka(el('uangDiterima').value));
+                const kunci = button.dataset.key;
+                const berikut = kunci === 'del'
+                    ? sekarang.slice(0, -1)
+                    : (sekarang + kunci).replace(/^0+(?=\d)/, '');
+                el('uangDiterima').value = formatAngka(berikut);
+                perbaruiKembalianBayar();
+            });
+        });
+
         renderKeranjang();
     </script>
 </body>

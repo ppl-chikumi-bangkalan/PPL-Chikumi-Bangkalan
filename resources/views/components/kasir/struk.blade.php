@@ -6,7 +6,7 @@
     <div class="relative flex max-h-[92vh] flex-col items-center gap-4">
 
         <!-- KERTAS STRUK -->
-        <div class="w-[302px] overflow-y-auto bg-white px-5 py-6 font-mono text-[12px] leading-relaxed text-[#1E1B18] shadow-xl">
+        <div id="kertasStruk" class="w-[302px] overflow-y-auto bg-white px-5 py-6 font-mono text-[12px] leading-relaxed text-[#1E1B18] shadow-xl">
 
             <!-- Kepala struk -->
             <div class="text-center">
@@ -20,52 +20,33 @@
 
             <!-- Info transaksi -->
             <div class="space-y-0.5">
-                <div class="flex justify-between"><span>No.</span><span>#CK-0125</span></div>
-                <div class="flex justify-between"><span>Tanggal</span><span>10/11/2026 15.33</span></div>
-                <div class="flex justify-between"><span>Kasir</span><span>Rina</span></div>
-                <div class="flex justify-between"><span>Pelanggan</span><span>-</span></div>
+                <div class="flex justify-between"><span>No.</span><span id="strukNomor">—</span></div>
+                <div class="flex justify-between"><span>Tanggal</span><span id="strukTanggal">—</span></div>
+                <div class="flex justify-between"><span>Kasir</span><span id="strukKasir">—</span></div>
+                <div class="flex justify-between"><span>Pelanggan</span><span id="strukPelanggan">—</span></div>
             </div>
 
             <div class="my-3 border-t border-dashed border-[#A39B93]"></div>
 
             <!-- Daftar item -->
-            <div class="space-y-2.5">
-                <div>
-                    <p class="font-bold">Chikumi Reguler · Seasoning</p>
-                    <p class="text-[11px] text-[#6B645D]">Mentaiko · BBQ + Sweetcorn</p>
-                    <div class="flex justify-between">
-                        <span>2 x 20.000</span>
-                        <span>40.000</span>
-                    </div>
-                </div>
-
-                <div>
-                    <p class="font-bold">Chikumi Reguler · Dip Sauce</p>
-                    <p class="text-[11px] text-[#6B645D]">Cream Cheese · Korean Spicy</p>
-                    <div class="flex justify-between">
-                        <span>1 x 21.000</span>
-                        <span>21.000</span>
-                    </div>
-                </div>
-            </div>
+            <div id="strukItem" class="space-y-2.5"></div>
 
             <div class="my-3 border-t border-dashed border-[#A39B93]"></div>
 
             <!-- Total -->
             <div class="space-y-0.5">
-                <div class="flex justify-between"><span>Subtotal (3 pcs)</span><span>61.000</span></div>
-                <div class="flex justify-between text-[14px] font-bold"><span>TOTAL</span><span>Rp 61.000</span></div>
+                <div class="flex justify-between"><span id="strukSubtotalQty">Subtotal (0 pcs)</span><span id="strukSubtotal">0</span></div>
+                <div class="flex justify-between text-[14px] font-bold"><span>TOTAL</span><span id="strukTotal">Rp 0</span></div>
             </div>
 
             <div class="my-3 border-t border-dashed border-[#A39B93]"></div>
 
             <!-- Pembayaran -->
             <div class="space-y-0.5">
-                <div class="flex justify-between"><span>Metode</span><span>QRIS</span></div>
-                <div class="flex justify-between"><span>Dibayar</span><span>61.000</span></div>
-                <div class="flex justify-between"><span>Kembalian</span><span>0</span></div>
-                <div class="flex justify-between"><span>Ref.</span><span>QR-8F3K2-0091</span></div>
-                <div class="flex justify-between"><span>Status</span><span class="font-bold">LUNAS</span></div>
+                <div class="flex justify-between"><span>Metode</span><span id="strukMetode">—</span></div>
+                <div class="flex justify-between"><span>Dibayar</span><span id="strukDibayar">0</span></div>
+                <div class="flex justify-between"><span>Kembalian</span><span id="strukKembalian">0</span></div>
+                <div class="flex justify-between"><span>Status</span><span id="strukStatus" class="font-bold">LUNAS</span></div>
             </div>
 
             <div class="my-3 border-t border-dashed border-[#A39B93]"></div>
@@ -83,8 +64,7 @@
                 class="grid flex-1 place-items-center rounded-xl border border-[#EDE6DF] bg-white py-3.5 text-sm font-semibold transition hover:border-[#A39B93]">
                 Kembali
             </a>
-            <!-- type="button" sementara; backend sambungkan ke fungsi cetak -->
-            <button type="button"
+            <button type="button" onclick="cetakStruk()"
                 class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FF8000] py-3.5 text-sm font-semibold text-white transition hover:bg-[#D96C00]">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
                     stroke="currentColor" class="h-5 w-5">

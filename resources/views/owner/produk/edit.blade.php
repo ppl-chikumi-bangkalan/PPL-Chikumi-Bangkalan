@@ -180,7 +180,8 @@
                             Pilihan Topping
                         </h4>
                         <p class="mt-1 text-xs text-stone-500">
-                            Pilih topping yang tersedia untuk produk ini.
+                            Centang topping yang tersedia untuk produk ini. Topping bertanda putus-putus
+                            belum dipakai produk ini — centang untuk menambahkannya.
                         </p>
                     </div>
 
@@ -194,7 +195,14 @@
 
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 
-                                @forelse ($produk->variants->where('type', $type) as $variant)
+                                @php
+                                    $milikProduk = $produk->variants->where('type', $type);
+                                    $namaMilik = $milikProduk->pluck('name');
+                                    $belumDimiliki = ($toppingMaster->get($type) ?? collect())
+                                        ->reject(fn ($topping) => $namaMilik->contains($topping->name));
+                                @endphp
+
+                                @foreach ($milikProduk as $variant)
                                     <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-stone-200 p-3 transition hover:border-[#FF8000]">
                                         <input type="checkbox" name="topping[]" value="{{ $variant->name }}"
                                             data-variant-id="{{ $variant->id }}"
@@ -203,9 +211,28 @@
                                             class="size-4 accent-[#FF8000]">
                                         <span class="text-sm text-stone-700">{{ $variant->name }}</span>
                                     </label>
-                                @empty
+                                @endforeach
+
+                                @foreach ($belumDimiliki as $topping)
+                                    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-stone-200 p-3 transition hover:border-[#FF8000]">
+                                        <input type="checkbox"
+                                            data-master="1"
+                                            data-type="{{ $type }}"
+                                            data-name="{{ $topping->name }}"
+                                            data-price="{{ (int) $topping->additional_price }}"
+                                            class="size-4 accent-[#FF8000]">
+                                        <span class="text-sm text-stone-700">
+                                            {{ $topping->name }}
+                                            @if ((float) $topping->additional_price > 0)
+                                                <span class="text-xs text-stone-400">+Rp {{ number_format((float) $topping->additional_price, 0, ',', '.') }}</span>
+                                            @endif
+                                        </span>
+                                    </label>
+                                @endforeach
+
+                                @if ($milikProduk->isEmpty() && $belumDimiliki->isEmpty())
                                     <p class="text-sm text-stone-400">Belum ada varian.</p>
-                                @endforelse
+                                @endif
 
                             </div>
                         </div>
@@ -299,6 +326,16 @@
                         is_available: available,
                     });
                 }
+            }
+
+            // Topping yang baru dicentang -> daftarkan sebagai varian produk ini
+            for (const input of document.querySelectorAll('[data-master]:checked')) {
+                await api('POST', `/owner/api/produk/${PRODUCT_ID}/varian`, {
+                    type: input.dataset.type,
+                    name: input.dataset.name,
+                    additional_price: Number(input.dataset.price || 0),
+                    is_available: true,
+                });
             }
 
             window.location.href = '{{ $back }}';

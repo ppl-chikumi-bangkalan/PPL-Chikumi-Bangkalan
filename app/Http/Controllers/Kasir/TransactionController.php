@@ -19,6 +19,7 @@ class TransactionController extends Controller
         $data = $request->validate([
             'payment_method' => ['required', 'in:cash,non_cash'],
             'amount_paid' => ['required', 'numeric', 'min:0'],
+            'customer_name' => ['nullable', 'string', 'max:100'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_size_id' => ['required', 'integer', 'exists:product_sizes,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
@@ -55,15 +56,23 @@ class TransactionController extends Controller
                 $stockOut[] = ['size' => $size, 'quantity' => $quantity];
             }
 
-            abort_if((float) $data['amount_paid'] < $total, 422, 'Uang dibayar kurang dari total.');
+            $paid = (float) $data['amount_paid'];
+
+            if ($data['payment_method'] === 'non_cash') {
+                abort_if($paid < $total, 422, 'Nominal non-tunai kurang dari total.');
+                $paid = $total; // non-tunai tidak ada kembalian
+            }
+
+            abort_if($paid < $total, 422, 'Uang dibayar kurang dari total.');
 
             $transaction = PosTransaction::create([
                 'transaction_number' => 'POS-'.now()->format('ymdHis').'-'.random_int(1000, 9999),
                 'cashier_id' => $cashierId,
+                'customer_name' => $data['customer_name'] ?? null,
                 'total_amount' => round($total, 2),
                 'payment_method' => $data['payment_method'],
-                'amount_paid' => round((float) $data['amount_paid'], 2),
-                'change_amount' => round((float) $data['amount_paid'] - $total, 2),
+                'amount_paid' => round($paid, 2),
+                'change_amount' => round($paid - $total, 2),
                 'status' => 'paid',
             ]);
 
@@ -110,6 +119,8 @@ class TransactionController extends Controller
         return [
             'id' => $transaction->id,
             'nomor' => $transaction->transaction_number,
+            'pelanggan' => $transaction->customer_name,
+            'kasir' => $transaction->cashier?->name,
             'metode_pembayaran' => $transaction->payment_method,
             'total' => (float) $transaction->total_amount,
             'dibayar' => (float) $transaction->amount_paid,
