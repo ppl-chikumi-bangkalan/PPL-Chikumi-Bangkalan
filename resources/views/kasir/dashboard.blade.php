@@ -299,22 +299,29 @@
             }));
         }
 
+        function hitungVarian() {
+            if (!ukuranAktif) return { harga: 0, qty: 1, total: 0 };
+            const harga = ukuranAktif.harga + pilihan().reduce((t, v) => t + v.harga, 0);
+            const qty = Math.min(99, Math.max(1, parseInt(el('kasirJumlah').value || '1', 10) || 1));
+            return { harga, qty, total: harga * qty };
+        }
+
         function perbaruiHargaVarian() {
             if (!ukuranAktif) return;
-            const total = ukuranAktif.harga + pilihan().reduce((t, v) => t + v.harga, 0);
+            const { harga, qty, total } = hitungVarian();
+            el('rincianPorsi').textContent = qty > 1 ? `${qty} porsi × ${rp(harga)}` : 'Harga per porsi';
             el('hargaPorsi').textContent = rp(total);
         }
 
         function tambah() {
             if (!produkAktif || !ukuranAktif) return;
-            const qty = Math.max(1, parseInt(el('kasirJumlah').value || '1', 10));
+            const { harga, qty } = hitungVarian();
             const varian = pilihan();
             const butuhFilling = produkAktif.varian.some(g => g.type === 'filling' && g.pilihan.some(v => v.tersedia));
             if (butuhFilling && !varian.some(v => v.type === 'filling')) {
                 alert('Pilih filling dulu.');
                 return;
             }
-            const harga = ukuranAktif.harga + varian.reduce((t, v) => t + v.harga, 0);
             const key = ukuranAktif.id + '|' + varian.map(v => v.id).sort((a, b) => a - b).join(',');
             const ada = keranjang.find(k => k.key === key);
             if (ada) {
@@ -453,6 +460,7 @@
             button.addEventListener('click', () => bukaVarian(Number(button.dataset.produkId), Number(button.dataset.ukuranId)));
         });
         el('bagianVarian').addEventListener('change', perbaruiHargaVarian);
+        el('kasirJumlah').addEventListener('input', perbaruiHargaVarian);
         el('daftarItem').addEventListener('click', event => {
             const button = event.target.closest('button');
             if (!button) return;
