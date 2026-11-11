@@ -31,7 +31,7 @@
                     class="mt-1 w-20 rounded-xl border border-[#EDE6DF] bg-white px-3 py-2 text-center text-sm font-semibold outline-none focus:border-[#FF8000]">
             </div>
             <div class="flex-1">
-             `  <p id="rincianPorsi" class="text-xs text-[#6B645D]">Harga per porsi</p>
+                <p id="rincianPorsi" class="text-xs text-[#6B645D]">Harga per porsi</p>
                 <p id="hargaPorsi" class="text-2xl font-bold text-[#D96C00]">Rp 0</p>
             </div>
             <button type="submit"
