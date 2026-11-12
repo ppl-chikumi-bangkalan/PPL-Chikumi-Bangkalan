@@ -54,7 +54,7 @@
 
                 <h1 class="flex-1 text-lg font-bold">Atur {{ $produk?->name ?? 'Chikumi' }}</h1>
 
-                <a href="#" aria-label="Keranjang"
+                <a href="/customer/keranjang" aria-label="Keranjang"
                     class="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#EDE6DF] bg-white">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
                         stroke="currentColor" class="h-5 w-5">
