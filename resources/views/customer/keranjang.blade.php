@@ -156,8 +156,8 @@
                 <p class="text-2xl font-bold text-[#D96C00]">Rp 61.000</p>
             </div>
 
-            <!-- Checkout → P6 (halaman belum dibuat) -->
-            <a href="#"
+            <!-- Checkout -->
+            <a href="/customer/checkout"
                 class="rounded-xl bg-[#FF8000] px-7 py-4 text-base font-semibold text-white transition hover:bg-[#D96C00]">
                 Checkout
             </a>
