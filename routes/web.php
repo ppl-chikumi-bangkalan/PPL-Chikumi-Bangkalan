@@ -79,6 +79,10 @@ Route::middleware('auth')->group(function () {
         return view('customer.keranjang');
     })->middleware('role:customer')->name('customer.keranjang');
 
+    Route::get('/customer/checkout', function () {
+        return view('customer.checkout');
+    })->middleware('role:customer')->name('customer.checkout');
+
     // Tanpa nama route: view lama memanggil route('customer.produk', ['ukuran'=>...])
     // yang tidak cocok parameternya -> UrlGenerationException loop. Saat wiring API,
     // pakai /customer/api/produk/{id_produk} langsung (lihat docs/API-KATALOG.md).
@@ -152,6 +156,10 @@ Route::get('/frontend/customer/keranjang', function () {
 
 Route::get('/frontend/kasir/dashboard', [KasirDashboardController::class, 'page'])
     ->name('frontend.kasir.dashboard');
+
+Route::get('/frontend/customer/checkout', function () {
+    return view('customer.checkout');
+})->name('frontend.customer.checkout');
 
 // API dev kasir (tanpa login; kirim header `X-Dev-Kasir: <id kasir/owner>`)
 Route::post('/frontend/kasir/api/transaksi', [KasirTransactionController::class, 'store']);
