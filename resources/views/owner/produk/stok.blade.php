@@ -328,6 +328,9 @@
                     </div>
                 </div>
 
+                <!-- RIWAYAT STOK -->
+                @include('components.owner.riwayat-stok')
+
                 <p class="py-6 text-center text-xs text-stone-400">
                     Chikumi Admin Dashboard · Data contoh frontend
                 </p>
