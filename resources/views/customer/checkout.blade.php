@@ -30,7 +30,7 @@
         - Kirim pesanan       : POST /customer/api/pesanan/checkout
           name="delivery_method" → "pickup" / "courier", address_id, payment_method → "qris" / "va"
           (payment_method disimpan di orders.payment_type)
-        - Ongkir mengikuti backend: flat Rp 5.000 (OrderController::ONGKIR_COURIER).
+        - Ongkir mengikuti backend: App\Support\DeliveryMethod (diantar flat Rp 5.000, ambil di tempat Rp 0).
     -->
 
     <form class="group">
@@ -64,7 +64,7 @@
                         <h2 class="text-base font-semibold">Cara Menerima Pesanan</h2>
 
                         <div class="mt-3 space-y-3">
-                            <label class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-[#EDE6DF] bg-white p-4 transition hover:border-[#FF8000] has-checked:border-[#FF8000] has-checked:bg-[#FFF3E6] has-focus-visible:border-[#FF8000]">
+                            <label data-metode="pickup" class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-[#EDE6DF] bg-white p-4 transition hover:border-[#FF8000] has-checked:border-[#FF8000] has-checked:bg-[#FFF3E6] has-focus-visible:border-[#FF8000]">
                                 <input type="radio" name="delivery_method" value="pickup" id="terima-pickup" class="peer sr-only">
                                 <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#F7F3EF] peer-checked:bg-[#FF8000] peer-checked:text-white">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-[18px] w-[18px]">
@@ -72,13 +72,13 @@
                                     </svg>
                                 </span>
                                 <span class="flex-1 peer-checked:text-[#D96C00]">
-                                    <span class="block text-sm font-semibold">Pick Up</span>
-                                    <span class="block text-xs text-[#6B645D]">Ambil di gerai Pecinan · gratis</span>
+                                    <span data-peran="label" class="block text-sm font-semibold">Pick Up</span>
+                                    <span data-peran="ket" class="block text-xs text-[#6B645D]">Ambil di gerai Pecinan · gratis</span>
                                 </span>
                                 <span class="h-5 w-5 shrink-0 rounded-full border-2 border-[#A39B93] peer-checked:border-[#FF8000] peer-checked:bg-[#FF8000]"></span>
                             </label>
 
-                            <label class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-[#EDE6DF] bg-white p-4 transition hover:border-[#FF8000] has-checked:border-[#FF8000] has-checked:bg-[#FFF3E6] has-focus-visible:border-[#FF8000]">
+                            <label data-metode="courier" class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-[#EDE6DF] bg-white p-4 transition hover:border-[#FF8000] has-checked:border-[#FF8000] has-checked:bg-[#FFF3E6] has-focus-visible:border-[#FF8000]">
                                 <input type="radio" name="delivery_method" value="courier" id="terima-delivery" class="peer sr-only" checked>
                                 <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#F7F3EF] peer-checked:bg-[#FF8000] peer-checked:text-white">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-[18px] w-[18px]">
@@ -87,8 +87,8 @@
                                     </svg>
                                 </span>
                                 <span class="flex-1 peer-checked:text-[#D96C00]">
-                                    <span class="block text-sm font-semibold">Delivery</span>
-                                    <span class="block text-xs text-[#6B645D]">Diantar kurir · ongkir sesuai area</span>
+                                    <span data-peran="label" class="block text-sm font-semibold">Delivery</span>
+                                    <span data-peran="ket" class="block text-xs text-[#6B645D]">Diantar kurir · ongkir sesuai area</span>
                                 </span>
                                 <span class="h-5 w-5 shrink-0 rounded-full border-2 border-[#A39B93] peer-checked:border-[#FF8000] peer-checked:bg-[#FF8000]"></span>
                             </label>
@@ -214,14 +214,13 @@
         const PAGE_BASE = @json($pageBase);
         const DEV_CUSTOMER = @json($devCustomerId);
         const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
-        // Samakan dengan OrderController::ONGKIR_COURIER di backend.
-        const ONGKIR = 5000;
 
         const btnBayar = document.getElementById('btnBayar');
         const rupiah = nilai => 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(nilai));
 
         let keranjang = { total_item: 0, subtotal: 0, item: [] };
         let alamat = null;
+        let metode = {};
 
         async function api(path, options = {}) {
             const headers = {
@@ -238,8 +237,23 @@
             return hasil;
         }
 
-        const metodeKirim = () =>
+        const kodeMetode = () =>
             document.querySelector('input[name="delivery_method"]:checked')?.value || 'courier';
+
+        const opsiMetode = kode => metode[kode] || { kode, ongkir: 0, butuh_alamat: false };
+
+        // Label & keterangan mengikuti GET /metode-penerimaan.
+        function renderMetode() {
+            document.querySelectorAll('[data-metode]').forEach(label => {
+                const opsi = metode[label.dataset.metode];
+                if (!opsi) return;
+
+                label.querySelector('[data-peran="label"]').textContent = opsi.label;
+                label.querySelector('[data-peran="ket"]').textContent = opsi.butuh_alamat
+                    ? `Diantar kurir · ongkir ${rupiah(opsi.ongkir)}`
+                    : 'Ambil di gerai Pecinan · gratis';
+            });
+        }
 
         function renderAlamat() {
             const terisi = document.getElementById('alamatTerisi');
@@ -257,17 +271,17 @@
             document.getElementById('detailAlamat').textContent = [alamat.detail, alamat.kota, alamat.kode_pos]
                 .filter(Boolean).join(', ');
             document.getElementById('kotaAlamat').textContent = `Area ${alamat.kota}`;
-            document.getElementById('ongkirAlamat').textContent = rupiah(ONGKIR);
+            document.getElementById('ongkirAlamat').textContent = rupiah(opsiMetode('courier').ongkir);
         }
 
         function renderRingkasan() {
             const subtotal = Number(keranjang.subtotal || 0);
-            const ongkir = metodeKirim() === 'courier' ? ONGKIR : 0;
+            const ongkir = Number(opsiMetode(kodeMetode()).ongkir || 0);
             const total = subtotal + ongkir;
 
             document.getElementById('totalItemTeks').textContent = keranjang.total_item || 0;
             document.getElementById('subtotalTeks').textContent = rupiah(subtotal);
-            document.getElementById('ongkirTeks').textContent = rupiah(ONGKIR);
+            document.getElementById('ongkirTeks').textContent = rupiah(ongkir);
             document.getElementById('totalTeks').textContent = rupiah(total);
             document.getElementById('totalBarTeks').textContent = rupiah(total);
 
@@ -279,9 +293,10 @@
         });
 
         btnBayar.addEventListener('click', async () => {
-            const metode = metodeKirim();
+            const kode = kodeMetode();
+            const opsi = opsiMetode(kode);
             if (!(keranjang.item || []).length) return alert('Keranjang masih kosong.');
-            if (metode === 'courier' && !alamat) return alert('Simpan alamat pengiriman dulu.');
+            if (opsi.butuh_alamat && !alamat) return alert('Simpan alamat pengiriman dulu.');
 
             const pembayaran = document.querySelector('input[name="payment_method"]:checked')?.value || 'qris';
 
@@ -290,9 +305,9 @@
                 const hasil = await api('/pesanan/checkout', {
                     method: 'POST',
                     body: JSON.stringify({
-                        delivery_method: metode,
+                        delivery_method: kode,
                         payment_method: pembayaran,
-                        address_id: metode === 'courier' ? alamat?.id : null,
+                        address_id: opsi.butuh_alamat ? alamat?.id : null,
                     }),
                 });
 
@@ -306,14 +321,17 @@
 
         (async () => {
             try {
-                const [isiKeranjang, daftarAlamat] = await Promise.all([
+                const [isiKeranjang, daftarAlamat, daftarMetode] = await Promise.all([
                     api('/keranjang'),
                     api('/alamat'),
+                    api('/metode-penerimaan'),
                 ]);
 
                 keranjang = isiKeranjang.data;
                 alamat = daftarAlamat.data.alamat?.[0] ?? null;
+                metode = Object.fromEntries((daftarMetode.data.metode || []).map(m => [m.kode, m]));
 
+                renderMetode();
                 renderAlamat();
                 renderRingkasan();
             } catch (error) {
