@@ -1,9 +1,16 @@
+@php
+    $apiBase = auth()->check() ? '/customer/api' : '/frontend/customer/api';
+    $pageBase = auth()->check() ? '/customer' : '/frontend/customer';
+    $devCustomerId = auth()->check() ? null : 3;
+@endphp
+
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Checkout - Chikumi</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,18 +24,13 @@
 
     <!--
         P6 · CHECKOUT (Figma CHIKUMI) — WBS 1.3.11.2
-        Tampilan saja, isi masih DATA CONTOH dari Figma.
-        Pilihan memakai input HTML + Tailwind (tanpa JavaScript):
-        - Pilih Pick Up  → kartu Alamat & baris Ongkos kirim disembunyikan, total Rp 61.000
-        - Pilih Delivery → kartu Alamat tampil, ongkir Rp 8.000, total Rp 69.000
-
-        CATATAN UNTUK BACKEND (lihat docs/API-KATALOG.md):
-        - Kirim pesanan : POST /customer/api/pesanan/checkout
-          name="delivery_method" → "pickup" / "courier" (sudah sama dengan validasi backend)
-        - name="payment_method" → "qris" / "va" (belum ada di backend; dipakai di Sprint 3 pembayaran online)
-        - Alamat        : GET /customer/api/alamat (alamat terbaru)
-        - Ongkir di Figma Rp 8.000, di backend sekarang flat Rp 5.000 (ONGKIR_COURIER) — sesuaikan salah satunya
-        - Tombol "Bayar Sekarang" → halaman P7 Pembayaran QRIS (belum dibuat)
+        Data diambil dari backend (lihat docs/API-KATALOG.md):
+        - Ringkasan keranjang : GET  /customer/api/keranjang
+        - Alamat terbaru      : GET  /customer/api/alamat
+        - Kirim pesanan       : POST /customer/api/pesanan/checkout
+          name="delivery_method" → "pickup" / "courier"
+        - name="payment_method" → "qris" / "va" (belum diproses backend; Sprint 3 pembayaran online)
+        - Ongkir mengikuti backend: flat Rp 5.000 (OrderController::ONGKIR_COURIER).
     -->
 
     <form class="group">
@@ -37,7 +39,7 @@
 
             <!-- APP BAR -->
             <header class="flex items-center gap-3 py-1.5">
-                <a href="/customer/keranjang" aria-label="Kembali"
+                <a href="{{ $pageBase }}/keranjang" aria-label="Kembali"
                     class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#EDE6DF] bg-white">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                         stroke="currentColor" class="h-5 w-5">
@@ -97,35 +99,33 @@
                     <section class="rounded-2xl border border-[#EDE6DF] bg-white p-[18px] group-has-[#terima-pickup:checked]:hidden">
                         <div class="flex items-center justify-between">
                             <h2 class="text-base font-semibold">Alamat Pengantaran</h2>
-                            <!-- Ganti → halaman P11 Alamat (belum dibuat) -->
-                            <a href="/customer/alamat#dari-checkout" class="text-sm font-semibold text-[#FF8000] hover:underline">Ganti</a>
+                            <a id="ubahAlamat" href="{{ $pageBase }}/alamat#dari-checkout" class="text-sm font-semibold text-[#FF8000] hover:underline">Ganti</a>
                         </div>
 
-                        <div class="mt-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
-                                stroke="currentColor" class="h-4 w-4 text-[#FF8000]">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                            </svg>
-                            <p class="text-sm font-semibold">Rumah</p>
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-[11px] font-medium text-[#D96C00]">
-                                <span class="h-1.5 w-1.5 rounded-full bg-[#D96C00]"></span> Utama
-                            </span>
-                        </div>
-
-                        <p class="mt-3 text-xs">Budi Santoso · 0823 xxxx xxxx</p>
-                        <p class="mt-3 text-xs text-[#6B645D]">Jl. Trunojoyo No. 12, dekat masjid</p>
-
-                        <div class="mt-3 flex items-center justify-between gap-3 rounded-xl bg-[#FFF3E6] px-3 py-3 text-xs">
-                            <span class="flex items-center gap-1.5 text-[#D96C00]">
+                        <div id="alamatTerisi" class="hidden">
+                            <div class="mt-3 flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
-                                    stroke="currentColor" class="h-4 w-4 shrink-0">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                    stroke="currentColor" class="h-4 w-4 text-[#FF8000]">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                                 </svg>
-                                Area Bangkalan Kota
-                            </span>
-                            <span class="font-semibold text-[#D96C00]">Ongkir Rp 8.000</span>
+                                <p id="labelAlamat" class="text-sm font-semibold">Rumah</p>
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-[11px] font-medium text-[#D96C00]">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-[#D96C00]"></span> Utama
+                                </span>
+                            </div>
+
+                            <p id="penerimaAlamat" class="mt-3 text-xs"></p>
+                            <p id="detailAlamat" class="mt-3 text-xs text-[#6B645D]"></p>
+
+                            <div class="mt-3 flex items-center justify-between gap-3 rounded-xl bg-[#FFF3E6] px-3 py-3 text-xs">
+                                <span id="kotaAlamat" class="flex items-center gap-1.5 text-[#D96C00]"></span>
+                                <span class="font-semibold text-[#D96C00]">Ongkir <span id="ongkirAlamat"></span></span>
+                            </div>
+                        </div>
+
+                        <div id="alamatKosong" class="mt-3 rounded-xl bg-[#FFF3E6] px-3 py-3 text-xs text-[#D96C00]">
+                            Belum ada alamat pengiriman. <a href="{{ $pageBase }}/alamat" class="font-semibold underline">Tambah alamat</a>.
                         </div>
                     </section>
 
@@ -174,22 +174,19 @@
                     <h2 class="text-base font-semibold">Ringkasan Pembayaran</h2>
 
                     <div class="mt-3 flex items-center justify-between text-sm">
-                        <span class="text-[#6B645D]">Subtotal (3 pcs)</span>
-                        <span>Rp 61.000</span>
+                        <span class="text-[#6B645D]">Subtotal (<span id="totalItemTeks">0</span> pcs)</span>
+                        <span id="subtotalTeks">Rp 0</span>
                     </div>
 
                     <!-- Ongkos kirim hanya untuk Delivery -->
                     <div class="mt-3 flex items-center justify-between text-sm group-has-[#terima-pickup:checked]:hidden">
                         <span class="text-[#6B645D]">Ongkos kirim</span>
-                        <span>Rp 8.000</span>
+                        <span id="ongkirTeks">Rp 0</span>
                     </div>
 
                     <div class="mt-3 flex items-center justify-between border-t border-[#EDE6DF] pt-3">
                         <span class="text-base font-bold">Total Bayar</span>
-                        <span class="text-xl font-bold text-[#D96C00]">
-                            <span class="group-has-[#terima-pickup:checked]:hidden">Rp 69.000</span>
-                            <span class="hidden group-has-[#terima-pickup:checked]:inline">Rp 61.000</span>
-                        </span>
+                        <span id="totalTeks" class="text-xl font-bold text-[#D96C00]">Rp 0</span>
                     </div>
                 </section>
             </div>
@@ -200,21 +197,126 @@
             <div class="mx-auto flex max-w-md items-center justify-between gap-3 px-4 py-4 min-[380px]:px-5 sm:max-w-xl md:max-w-3xl md:px-8 lg:max-w-6xl">
                 <div>
                     <p class="text-xs text-[#6B645D]">Total</p>
-                    <p class="text-2xl font-bold text-[#D96C00]">
-                        <span class="group-has-[#terima-pickup:checked]:hidden">Rp 69.000</span>
-                        <span class="hidden group-has-[#terima-pickup:checked]:inline">Rp 61.000</span>
-                    </p>
+                    <p id="totalBarTeks" class="text-2xl font-bold text-[#D96C00]">Rp 0</p>
                 </div>
 
-                <!-- type="button" sementara; backend kirim ke POST /customer/api/pesanan/checkout lalu buka P7 -->
-                <button type="button"
-                    class="rounded-xl bg-[#FF8000] px-7 py-4 text-base font-semibold text-white transition hover:bg-[#D96C00]">
+                <button type="button" id="btnBayar"
+                    class="rounded-xl bg-[#FF8000] px-7 py-4 text-base font-semibold text-white transition hover:bg-[#D96C00] disabled:cursor-not-allowed disabled:opacity-60">
                     Bayar Sekarang
                 </button>
             </div>
         </div>
 
     </form>
+
+    <script>
+        const API_BASE = @json($apiBase);
+        const PAGE_BASE = @json($pageBase);
+        const DEV_CUSTOMER = @json($devCustomerId);
+        const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        // Samakan dengan OrderController::ONGKIR_COURIER di backend.
+        const ONGKIR = 5000;
+
+        const btnBayar = document.getElementById('btnBayar');
+        const rupiah = nilai => 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(nilai));
+
+        let keranjang = { total_item: 0, subtotal: 0, item: [] };
+        let alamat = null;
+
+        async function api(path, options = {}) {
+            const headers = {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+                ...(CSRF ? { 'X-CSRF-TOKEN': CSRF } : {}),
+                ...(DEV_CUSTOMER ? { 'X-Dev-Customer': DEV_CUSTOMER } : {}),
+            };
+
+            const response = await fetch(API_BASE + path, { ...options, headers });
+            const hasil = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(hasil.message || 'Terjadi kesalahan.');
+            return hasil;
+        }
+
+        const metodeKirim = () =>
+            document.querySelector('input[name="delivery_method"]:checked')?.value || 'courier';
+
+        function renderAlamat() {
+            const terisi = document.getElementById('alamatTerisi');
+            const kosong = document.getElementById('alamatKosong');
+            const ubah = document.getElementById('ubahAlamat');
+
+            terisi.classList.toggle('hidden', !alamat);
+            kosong.classList.toggle('hidden', !!alamat);
+            ubah.textContent = alamat ? 'Ganti' : 'Tambah';
+
+            if (!alamat) return;
+
+            document.getElementById('labelAlamat').textContent = alamat.label || 'Alamat';
+            document.getElementById('penerimaAlamat').textContent = `${alamat.penerima} · ${alamat.telepon}`;
+            document.getElementById('detailAlamat').textContent = [alamat.detail, alamat.kota, alamat.kode_pos]
+                .filter(Boolean).join(', ');
+            document.getElementById('kotaAlamat').textContent = `Area ${alamat.kota}`;
+            document.getElementById('ongkirAlamat').textContent = rupiah(ONGKIR);
+        }
+
+        function renderRingkasan() {
+            const subtotal = Number(keranjang.subtotal || 0);
+            const ongkir = metodeKirim() === 'courier' ? ONGKIR : 0;
+            const total = subtotal + ongkir;
+
+            document.getElementById('totalItemTeks').textContent = keranjang.total_item || 0;
+            document.getElementById('subtotalTeks').textContent = rupiah(subtotal);
+            document.getElementById('ongkirTeks').textContent = rupiah(ONGKIR);
+            document.getElementById('totalTeks').textContent = rupiah(total);
+            document.getElementById('totalBarTeks').textContent = rupiah(total);
+
+            btnBayar.disabled = !(keranjang.item || []).length;
+        }
+
+        document.querySelectorAll('input[name="delivery_method"]').forEach(input => {
+            input.addEventListener('change', renderRingkasan);
+        });
+
+        btnBayar.addEventListener('click', async () => {
+            const metode = metodeKirim();
+            if (!(keranjang.item || []).length) return alert('Keranjang masih kosong.');
+            if (metode === 'courier' && !alamat) return alert('Simpan alamat pengiriman dulu.');
+
+            const pembayaran = document.querySelector('input[name="payment_method"]:checked')?.value || 'qris';
+
+            btnBayar.disabled = true;
+            try {
+                const hasil = await api('/pesanan/checkout', {
+                    method: 'POST',
+                    body: JSON.stringify({ delivery_method: metode, payment_method: pembayaran }),
+                });
+
+                alert(`Pesanan ${hasil.data.nomor} berhasil dibuat. Total ${rupiah(hasil.data.total)}.`);
+                location.href = PAGE_BASE + '/dashboard';
+            } catch (error) {
+                alert(error.message);
+                btnBayar.disabled = false;
+            }
+        });
+
+        (async () => {
+            try {
+                const [isiKeranjang, daftarAlamat] = await Promise.all([
+                    api('/keranjang'),
+                    api('/alamat'),
+                ]);
+
+                keranjang = isiKeranjang.data;
+                alamat = daftarAlamat.data.alamat?.[0] ?? null;
+
+                renderAlamat();
+                renderRingkasan();
+            } catch (error) {
+                alert(error.message);
+            }
+        })();
+    </script>
 </body>
 
 </html>

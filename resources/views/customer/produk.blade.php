@@ -1,5 +1,6 @@
 @php
     $apiBase = auth()->check() ? '/customer/api' : '/frontend/customer/api';
+    $pageBase = auth()->check() ? '/customer' : '/frontend/customer';
     $devCustomerId = auth()->check() ? null : 3;
     $rupiah = fn ($angka) => 'Rp ' . number_format((float) $angka, 0, ',', '.');
 
@@ -44,7 +45,7 @@
 
             <!-- APP BAR -->
             <header class="flex items-center gap-3 py-1.5">
-                <a href="/customer/dashboard" aria-label="Kembali"
+                <a href="{{ $pageBase }}/dashboard" aria-label="Kembali"
                     class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#EDE6DF] bg-white">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                         stroke="currentColor" class="h-5 w-5">
@@ -54,7 +55,7 @@
 
                 <h1 class="flex-1 text-lg font-bold">Atur {{ $produk?->name ?? 'Chikumi' }}</h1>
 
-                <a href="/customer/keranjang" aria-label="Keranjang"
+                <a href="{{ $pageBase }}/keranjang" aria-label="Keranjang"
                     class="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#EDE6DF] bg-white">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
                         stroke="currentColor" class="h-5 w-5">
