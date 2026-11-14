@@ -18,6 +18,7 @@ class Order extends Model
         'subtotal',
         'shipping_cost',
         'grand_total',
+        'payment_type',
         'status',
     ];
 

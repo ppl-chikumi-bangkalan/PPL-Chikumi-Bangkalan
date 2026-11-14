@@ -34,6 +34,7 @@ class OrderController extends Controller
                 'subtotal' => (float) $o->subtotal,
                 'ongkir' => (float) $o->shipping_cost,
                 'total' => (float) $o->grand_total,
+                'pembayaran' => $o->payment_type,
                 'status' => $o->status,
                 'tanggal' => $o->created_at->format('Y-m-d H:i'),
                 'item' => $o->items->map(fn (OrderItem $i) => [
@@ -56,14 +57,20 @@ class OrderController extends Controller
     {
         $data = $request->validate([
             'delivery_method' => ['required', 'in:courier,pickup'],
+            'address_id' => ['nullable', 'integer'],
+            'payment_method' => ['nullable', 'in:qris,va'],
         ]);
         $customerId = $this->customerId($request);
 
         $alamat = null;
         $ongkir = 0.0;
         if ($data['delivery_method'] === 'courier') {
-            $address = Address::where('customer_id', $customerId)->latest('id')->first();
-            abort_if(! $address, 422, 'Simpan alamat pengiriman dulu.');
+            // Alamat pilihan akun; tanpa address_id pakai alamat terbaru.
+            $address = Address::where('customer_id', $customerId)
+                ->when($data['address_id'] ?? null, fn ($q, $id) => $q->whereKey($id))
+                ->latest('id')
+                ->first();
+            abort_if(! $address, 422, 'Alamat pengiriman tidak ditemukan untuk akun ini.');
             $alamat = trim("{$address->recipient_name} ({$address->phone}) — {$address->detail}, {$address->city} {$address->postal_code}");
             $ongkir = self::ONGKIR_COURIER;
         }
@@ -82,6 +89,7 @@ class OrderController extends Controller
                 'subtotal' => 0,
                 'shipping_cost' => $ongkir,
                 'grand_total' => 0,
+                'payment_type' => $data['payment_method'] ?? null,
                 'status' => 'unpaid',
             ]);
 

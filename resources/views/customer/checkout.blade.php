@@ -28,8 +28,8 @@
         - Ringkasan keranjang : GET  /customer/api/keranjang
         - Alamat terbaru      : GET  /customer/api/alamat
         - Kirim pesanan       : POST /customer/api/pesanan/checkout
-          name="delivery_method" → "pickup" / "courier"
-        - name="payment_method" → "qris" / "va" (belum diproses backend; Sprint 3 pembayaran online)
+          name="delivery_method" → "pickup" / "courier", address_id, payment_method → "qris" / "va"
+          (payment_method disimpan di orders.payment_type)
         - Ongkir mengikuti backend: flat Rp 5.000 (OrderController::ONGKIR_COURIER).
     -->
 
@@ -289,7 +289,11 @@
             try {
                 const hasil = await api('/pesanan/checkout', {
                     method: 'POST',
-                    body: JSON.stringify({ delivery_method: metode, payment_method: pembayaran }),
+                    body: JSON.stringify({
+                        delivery_method: metode,
+                        payment_method: pembayaran,
+                        address_id: metode === 'courier' ? alamat?.id : null,
+                    }),
                 });
 
                 alert(`Pesanan ${hasil.data.nomor} berhasil dibuat. Total ${rupiah(hasil.data.total)}.`);
