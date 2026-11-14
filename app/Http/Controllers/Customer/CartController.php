@@ -98,6 +98,7 @@ class CartController extends Controller
                 return [
                     'id' => $cart->id,
                     'produk' => $size->product->name,
+                    'produk_id' => $size->product->id,
                     'gambar' => $size->product->image_url,
                     'ukuran' => $size->size_name,
                     'product_size_id' => $size->id,

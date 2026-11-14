@@ -18,7 +18,7 @@ Harga total per item = `harga_dasar + Σ tambahan_harga` (frontend menampilkan s
 ## Keranjang
 | Metode | Endpoint | Keterangan |
 |---|---|---|
-| GET | `/keranjang` | Isi keranjang user login. `data = {total_item, subtotal, item[]}`; item: `{id, produk, gambar, ukuran, product_size_id, varian[], harga_satuan, quantity, subtotal, stok_cukup}` |
+| GET | `/keranjang` | Isi keranjang user login. `data = {total_item, subtotal, item[]}`; item: `{id, produk, produk_id, gambar, ukuran, product_size_id, varian[], harga_satuan, quantity, subtotal, stok_cukup}` |
 | POST | `/keranjang` | Tambah. body: `product_size_id`*, `quantity`*, `variant_ids[]` (opsional). Tolak 422 bila: stok kurang, varian beda produk / tak tersedia, >1 varian tipe sama. Baris identik (ukuran+varian sama) otomatis ditumpuk. |
 | PUT | `/keranjang/{id}` | Ubah jumlah. body: `quantity`* (validasi stok) |
 | DELETE | `/keranjang/{id}` | Hapus item |
