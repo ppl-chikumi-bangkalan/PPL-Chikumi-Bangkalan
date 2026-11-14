@@ -7,6 +7,7 @@ use App\Http\Controllers\Customer\AddressController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CatalogController;
 use App\Http\Controllers\Customer\DashboardController;
+use App\Http\Controllers\Customer\DeliveryMethodController;
 use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Kasir\DashboardController as KasirDashboardController;
@@ -97,6 +98,7 @@ Route::middleware('auth')->group(function () {
         Route::post('keranjang', [CartController::class, 'store'])->name('customer.keranjang.store');
         Route::put('keranjang/{keranjang}', [CartController::class, 'update'])->whereNumber('keranjang')->name('customer.keranjang.update');
         Route::delete('keranjang/{keranjang}', [CartController::class, 'destroy'])->whereNumber('keranjang')->name('customer.keranjang.destroy');
+        Route::get('metode-penerimaan', [DeliveryMethodController::class, 'index'])->name('customer.metode-penerimaan');
         Route::get('pesanan', [OrderController::class, 'index'])->name('customer.pesanan.index');
         Route::post('pesanan/checkout', [OrderController::class, 'checkout'])->name('customer.pesanan.checkout');
         Route::patch('pesanan/{pesanan}/batal', [OrderController::class, 'cancel'])->whereNumber('pesanan')->name('customer.pesanan.batal');
@@ -180,6 +182,7 @@ Route::prefix('frontend/customer/api')->group(function () {
     Route::post('keranjang', [CartController::class, 'store']);
     Route::put('keranjang/{keranjang}', [CartController::class, 'update'])->whereNumber('keranjang');
     Route::delete('keranjang/{keranjang}', [CartController::class, 'destroy'])->whereNumber('keranjang');
+    Route::get('metode-penerimaan', [DeliveryMethodController::class, 'index']);
     Route::get('pesanan', [OrderController::class, 'index']);
     Route::post('pesanan/checkout', [OrderController::class, 'checkout']);
     Route::patch('pesanan/{pesanan}/batal', [OrderController::class, 'cancel'])->whereNumber('pesanan');

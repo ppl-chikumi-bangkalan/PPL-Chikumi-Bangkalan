@@ -23,6 +23,11 @@ Harga total per item = `harga_dasar + Σ tambahan_harga` (frontend menampilkan s
 | PUT | `/keranjang/{id}` | Ubah jumlah. body: `quantity`* (validasi stok) |
 | DELETE | `/keranjang/{id}` | Hapus item |
 
+## Metode Penerimaan
+| Metode | Endpoint | Keterangan |
+|---|---|---|
+| GET | `/metode-penerimaan` | Opsi cara menerima pesanan: `data.metode[] = {kode, label, ongkir, butuh_alamat}` — `courier` (Diantar, ongkir 5000, butuh alamat) dan `pickup` (Ambil di tempat, ongkir 0). Sumber tarif tunggal: `App\Support\DeliveryMethod`. |
+
 ## Pesanan
 | Metode | Endpoint | Keterangan |
 |---|---|---|

@@ -9,16 +9,15 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductSize;
 use App\Models\StockHistory;
+use App\Support\DeliveryMethod;
 use App\Support\PriceCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
     use ResolvesCustomer;
-
-    // ponytail: ongkir courier flat; pindah ke tabel/config saat tarif per kota diperlukan.
-    private const ONGKIR_COURIER = 5000.0;
 
     public function index(Request $request)
     {
@@ -56,15 +55,15 @@ class OrderController extends Controller
     public function checkout(Request $request)
     {
         $data = $request->validate([
-            'delivery_method' => ['required', 'in:courier,pickup'],
+            'delivery_method' => ['required', Rule::in(DeliveryMethod::codes())],
             'address_id' => ['nullable', 'integer'],
             'payment_method' => ['nullable', 'in:qris,va'],
         ]);
         $customerId = $this->customerId($request);
 
         $alamat = null;
-        $ongkir = 0.0;
-        if ($data['delivery_method'] === 'courier') {
+        $ongkir = DeliveryMethod::shippingCost($data['delivery_method']);
+        if (DeliveryMethod::requiresAddress($data['delivery_method'])) {
             // Alamat pilihan akun; tanpa address_id pakai alamat terbaru.
             $address = Address::where('customer_id', $customerId)
                 ->when($data['address_id'] ?? null, fn ($q, $id) => $q->whereKey($id))
@@ -72,7 +71,6 @@ class OrderController extends Controller
                 ->first();
             abort_if(! $address, 422, 'Alamat pengiriman tidak ditemukan untuk akun ini.');
             $alamat = trim("{$address->recipient_name} ({$address->phone}) — {$address->detail}, {$address->city} {$address->postal_code}");
-            $ongkir = self::ONGKIR_COURIER;
         }
 
         $carts = Cart::with(['productSize', 'variants:id,additional_price,is_available'])
