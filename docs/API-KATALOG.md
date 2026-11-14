@@ -26,8 +26,8 @@ Harga total per item = `harga_dasar + Σ tambahan_harga` (frontend menampilkan s
 ## Pesanan
 | Metode | Endpoint | Keterangan |
 |---|---|---|
-| GET | `/pesanan` | Riwayat pesanan user login (`data = {total, pesanan[]}`; tiap pesanan: `id, nomor, metode, alamat, subtotal, ongkir, total, status, tanggal, item[]`) |
-| POST | `/pesanan/checkout` | Buat pesanan dari keranjang. body: `delivery_method`* = `courier` \| `pickup`. `courier` pakai alamat terbaru (harus ada, else 422) + ongkir flat 5000; `pickup` tanpa ongkir. Transaksi: stok dikurangi (aman dari balapan), keranjang dikosongkan, status awal `unpaid`. |
+| GET | `/pesanan` | Riwayat pesanan user login (`data = {total, pesanan[]}`; tiap pesanan: `id, nomor, metode, alamat, subtotal, ongkir, total, pembayaran, status, tanggal, item[]`) |
+| POST | `/pesanan/checkout` | Buat pesanan dari keranjang atas nama akun login. body: `delivery_method`* = `courier` \| `pickup`, `address_id?` (alamat milik akun; tanpa ini pakai alamat terbaru), `payment_method?` = `qris` \| `va` (disimpan di `orders.payment_type`). `courier` wajib punya alamat milik akun (else 422) + ongkir flat 5000; `pickup` tanpa ongkir. Transaksi: stok dikurangi (aman dari balapan), keranjang dikosongkan, status awal `unpaid`. |
 | PATCH | `/pesanan/{id}/batal` | Batalkan — hanya pesanan sendiri & masih `unpaid`; stok otomatis dikembalikan. |
 
 ## Alamat
@@ -42,7 +42,7 @@ Harga total per item = `harga_dasar + Σ tambahan_harga` (frontend menampilkan s
 1. Katalog (`/katalog`) → kartu produk → klik "atur" → `/produk/{id}` untuk pilih ukuran + varian.
 2. Pilihan user → `POST /keranjang`.
 3. Halaman keranjang → `GET /keranjang` (tombol +/- = `PUT`, hapus = `DELETE`).
-4. Checkout → (`POST /alamat` bila belum ada) → `POST /pesanan/checkout`.
+4. Checkout → (`POST /alamat` bila belum ada) → `POST /pesanan/checkout` (kirim `address_id` pilihan & `payment_method`).
 5. Halaman pesanan → `GET /pesanan`; tombol batal → `PATCH /pesanan/{id}/batal`.
 
 ## Self-check backend
