@@ -98,7 +98,7 @@
                         <div class="flex items-center justify-between">
                             <h2 class="text-base font-semibold">Alamat Pengantaran</h2>
                             <!-- Ganti → halaman P11 Alamat (belum dibuat) -->
-                            <a href="#" class="text-sm font-semibold text-[#FF8000] hover:underline">Ganti</a>
+                            <a href="/customer/alamat#dari-checkout" class="text-sm font-semibold text-[#FF8000] hover:underline">Ganti</a>
                         </div>
 
                         <div class="mt-3 flex items-center gap-2">
