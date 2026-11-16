@@ -141,9 +141,9 @@
                     </svg>
 
                     <div>
-                        <p class="font-semibold">Perhatian! Ada komponen yang perlu ditambah.</p>
+                        <p class="font-semibold">{{ $summary['empty'] }} komponen habis &amp; {{ $summary['low'] }} di bawah minimum</p>
                         <p class="mt-1 text-xs">
-                            Periksa komponen dengan status menipis atau habis sebelum persiapan penjualan berikutnya.
+                            Isi kolom Tambah pada baris merah, lalu tekan Simpan Stok.
                         </p>
                     </div>
 
