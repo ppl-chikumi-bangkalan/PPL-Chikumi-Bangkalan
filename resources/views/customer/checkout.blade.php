@@ -119,7 +119,12 @@
                             <p id="detailAlamat" class="mt-3 text-xs text-[#6B645D]"></p>
 
                             <div class="mt-3 flex items-center justify-between gap-3 rounded-xl bg-[#FFF3E6] px-3 py-3 text-xs">
-                                <span id="kotaAlamat" class="flex items-center gap-1.5 text-[#D96C00]"></span>
+                                <span class="flex items-center gap-1.5 text-[#D96C00]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-4 w-4 shrink-0">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                    </svg>
+                                    <span id="kotaAlamat"></span>
+                                </span>
                                 <span class="font-semibold text-[#D96C00]">Ongkir <span id="ongkirAlamat"></span></span>
                             </div>
                         </div>
