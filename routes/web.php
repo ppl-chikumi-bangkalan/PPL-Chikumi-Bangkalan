@@ -62,6 +62,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/kasir/api/transaksi', [KasirTransactionController::class, 'store'])
         ->middleware('role:owner,cashier')->name('kasir.transaksi.store');
 
+    Route::get('/kasir/riwayat', function () {
+        return view('kasir.riwayat');
+    })->middleware('role:owner,cashier')->name('kasir.riwayat');
+
     Route::get('/customer/dashboard', [DashboardController::class, 'page'])
         ->middleware('role:customer')->name('customer.dashboard');
     Route::get('/customer/api/katalog', [CatalogController::class, 'index'])->name('customer.katalog');
@@ -162,6 +166,10 @@ Route::get('/frontend/customer/keranjang', function () {
 
 Route::get('/frontend/kasir/dashboard', [KasirDashboardController::class, 'page'])
     ->name('frontend.kasir.dashboard');
+
+Route::get('/frontend/kasir/riwayat', function () {
+    return view('kasir.riwayat');
+})->name('frontend.kasir.riwayat');
 
 Route::get('/frontend/customer/checkout', function () {
     return view('customer.checkout');
