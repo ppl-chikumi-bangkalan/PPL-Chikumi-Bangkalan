@@ -157,7 +157,7 @@
                             </p>
                         </div>
 
-                        <a href="{{ route('owner.produk') }}"
+                        <a href="{{ route('owner.stok') }}"
                             class="text-xs font-semibold text-[#FF8000] hover:underline">
                             Lihat Produk & Stok →
                         </a>
