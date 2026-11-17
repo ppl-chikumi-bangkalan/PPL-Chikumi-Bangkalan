@@ -61,9 +61,3 @@ Contoh respons konfirmasi:
 - `orders` tambahan: `shipping_origin_id`, `courier_id`, `shipping_confirmed_at`, `shipping_confirmed_by`.
 
 `database/seed.php` mengisi dua titik asal dan dua kurir contoh.
-
-## Test
-
-```bash
-php vendor/bin/phpunit --filter KonfirmasiPengirimanTest
-```
