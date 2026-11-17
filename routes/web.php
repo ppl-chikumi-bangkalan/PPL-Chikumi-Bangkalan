@@ -10,6 +10,7 @@ use App\Http\Controllers\Customer\DashboardController;
 use App\Http\Controllers\Customer\DeliveryMethodController;
 use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
+use App\Http\Controllers\Customer\ShippingCostController;
 use App\Http\Controllers\Kasir\DashboardController as KasirDashboardController;
 use App\Http\Controllers\Kasir\TransactionController as KasirTransactionController;
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboardController;
@@ -107,6 +108,8 @@ Route::middleware('auth')->group(function () {
         Route::put('keranjang/{keranjang}', [CartController::class, 'update'])->whereNumber('keranjang')->name('customer.keranjang.update');
         Route::delete('keranjang/{keranjang}', [CartController::class, 'destroy'])->whereNumber('keranjang')->name('customer.keranjang.destroy');
         Route::get('metode-penerimaan', [DeliveryMethodController::class, 'index'])->name('customer.metode-penerimaan');
+        Route::get('ongkir', [ShippingCostController::class, 'quote'])->name('customer.ongkir');
+        Route::get('kota', [ShippingCostController::class, 'cities'])->name('customer.kota');
         Route::get('pesanan', [OrderController::class, 'index'])->name('customer.pesanan.index');
         Route::post('pesanan/checkout', [OrderController::class, 'checkout'])->name('customer.pesanan.checkout');
         Route::patch('pesanan/{pesanan}/batal', [OrderController::class, 'cancel'])->whereNumber('pesanan')->name('customer.pesanan.batal');
@@ -199,6 +202,8 @@ Route::prefix('frontend/customer/api')->group(function () {
     Route::put('keranjang/{keranjang}', [CartController::class, 'update'])->whereNumber('keranjang');
     Route::delete('keranjang/{keranjang}', [CartController::class, 'destroy'])->whereNumber('keranjang');
     Route::get('metode-penerimaan', [DeliveryMethodController::class, 'index']);
+    Route::get('ongkir', [ShippingCostController::class, 'quote']);
+    Route::get('kota', [ShippingCostController::class, 'cities']);
     Route::get('pesanan', [OrderController::class, 'index']);
     Route::post('pesanan/checkout', [OrderController::class, 'checkout']);
     Route::patch('pesanan/{pesanan}/batal', [OrderController::class, 'cancel'])->whereNumber('pesanan');

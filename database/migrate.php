@@ -178,6 +178,7 @@ try {
         phone VARCHAR(20) NOT NULL,
         detail TEXT NOT NULL,
         city VARCHAR(100) NOT NULL,
+        city_id BIGINT NULL,
         postal_code VARCHAR(10) NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -219,6 +220,17 @@ try {
         CONSTRAINT fk_pos_item_variant_variant FOREIGN KEY (variant_id) REFERENCES variants(id) ON DELETE CASCADE
     ) ENGINE=InnoDB;');
 
+    // 11. Cache (CACHE_STORE=database)
+    $pdo->exec('CREATE TABLE cache (
+        `key` VARCHAR(255) NOT NULL PRIMARY KEY,
+        `value` MEDIUMTEXT NOT NULL,
+        `expiration` INT NOT NULL
+    ) ENGINE=InnoDB;');
+    $pdo->exec('CREATE TABLE cache_locks (
+        `key` VARCHAR(255) NOT NULL PRIMARY KEY,
+        `owner` VARCHAR(255) NOT NULL,
+        `expiration` INT NOT NULL
+    ) ENGINE=InnoDB;');
     echo 'Migration berhasil: Semua tabel dan relasi MySQL berhasil dibuat!<br>';
 
 } catch (PDOException $e) {

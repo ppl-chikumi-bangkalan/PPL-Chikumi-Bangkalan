@@ -9,7 +9,7 @@ class Address extends Model
 {
     protected $table = 'delivery_addresses';
 
-    protected $fillable = ['customer_id', 'label', 'recipient_name', 'phone', 'detail', 'city', 'postal_code'];
+    protected $fillable = ['customer_id', 'label', 'recipient_name', 'phone', 'detail', 'city', 'city_id', 'postal_code'];
 
     public function customer(): BelongsTo
     {

@@ -11,6 +11,7 @@ use App\Models\ProductSize;
 use App\Models\StockHistory;
 use App\Support\DeliveryMethod;
 use App\Support\PriceCalculator;
+use App\Support\ShippingCost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -71,6 +72,8 @@ class OrderController extends Controller
                 ->first();
             abort_if(! $address, 422, 'Alamat pengiriman tidak ditemukan untuk akun ini.');
             $alamat = trim("{$address->recipient_name} ({$address->phone}) — {$address->detail}, {$address->city} {$address->postal_code}");
+            // Ongkir dari API; fallback tarif flat bila kota belum terpetakan atau API gagal.
+            $ongkir = ShippingCost::quote($address->city_id)['ongkir'];
         }
 
         $carts = Cart::with(['productSize', 'variants:id,additional_price,is_available'])
