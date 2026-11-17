@@ -15,6 +15,10 @@ class Order extends Model
         'customer_id',
         'delivery_method',
         'shipping_address',
+        'shipping_origin_id',
+        'courier_id',
+        'shipping_confirmed_at',
+        'shipping_confirmed_by',
         'subtotal',
         'shipping_cost',
         'grand_total',
@@ -28,6 +32,7 @@ class Order extends Model
             'subtotal' => 'decimal:2',
             'shipping_cost' => 'decimal:2',
             'grand_total' => 'decimal:2',
+            'shipping_confirmed_at' => 'datetime',
         ];
     }
 
@@ -39,5 +44,20 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function shippingOrigin(): BelongsTo
+    {
+        return $this->belongsTo(ShippingOrigin::class);
+    }
+
+    public function courier(): BelongsTo
+    {
+        return $this->belongsTo(Courier::class);
+    }
+
+    public function shippingConfirmer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'shipping_confirmed_by');
     }
 }

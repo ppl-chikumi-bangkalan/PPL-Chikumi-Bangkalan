@@ -16,6 +16,14 @@ try {
         ON DUPLICATE KEY UPDATE name=VALUES(name);");
     $stmt->execute([$ownerPass, $cashierPass, $custPass]);
 
+    // 1b. Seed master titik asal pengiriman & kurir
+    $pdo->exec("INSERT INTO shipping_origins (name, address, is_active) VALUES
+        ('Dapur Chikumi Bangkalan', 'Jl. Raya Bangkalan No. 1, Bangkalan', 1),
+        ('Outlet Chikumi Kota', 'Jl. Soekarno Hatta No. 10, Bangkalan', 1);");
+    $pdo->exec("INSERT INTO couriers (name, phone, is_active) VALUES
+        ('Kurir Toko Chikumi', '081234567892', 1),
+        ('Kurir Mitra Bangkalan', '081234567893', 1);");
+
     // 2. Seed Kategori
     $pdo->exec("INSERT INTO categories (name) VALUES ('Chikumi Main Menu');");
     $catId = $pdo->lastInsertId();

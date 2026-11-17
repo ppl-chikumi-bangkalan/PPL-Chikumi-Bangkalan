@@ -15,6 +15,7 @@ use App\Http\Controllers\Kasir\TransactionController as KasirTransactionControll
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboardController;
 use App\Http\Controllers\Owner\ProductController;
 use App\Http\Controllers\Owner\ProductSizeController;
+use App\Http\Controllers\Owner\ShippingConfirmationController;
 use App\Http\Controllers\Owner\VariantController;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -144,6 +145,15 @@ Route::middleware('auth')->group(function () {
         Route::put('varian/{varian}', [VariantController::class, 'update'])->whereNumber('varian')->name('owner.varian.update');
         Route::patch('varian/{varian}/status', [VariantController::class, 'updateStatus'])->whereNumber('varian')->name('owner.varian.status');
         Route::delete('varian/{varian}', [VariantController::class, 'destroy'])->whereNumber('varian')->name('owner.varian.destroy');
+        Route::get('titik-asal', [ShippingConfirmationController::class, 'origins'])->name('owner.titik-asal.index');
+        Route::post('titik-asal', [ShippingConfirmationController::class, 'storeOrigin'])->name('owner.titik-asal.store');
+        Route::put('titik-asal/{origin}', [ShippingConfirmationController::class, 'updateOrigin'])->whereNumber('origin')->name('owner.titik-asal.update');
+        Route::get('kurir', [ShippingConfirmationController::class, 'couriers'])->name('owner.kurir.index');
+        Route::post('kurir', [ShippingConfirmationController::class, 'storeCourier'])->name('owner.kurir.store');
+        Route::put('kurir/{courier}', [ShippingConfirmationController::class, 'updateCourier'])->whereNumber('courier')->name('owner.kurir.update');
+        Route::get('pesanan', [ShippingConfirmationController::class, 'orders'])->name('owner.pesanan.index');
+        Route::patch('pesanan/{pesanan}/konfirmasi-pengiriman', [ShippingConfirmationController::class, 'confirm'])
+            ->whereNumber('pesanan')->name('owner.pesanan.konfirmasi-pengiriman');
     });
 });
 
