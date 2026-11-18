@@ -15,6 +15,7 @@ try {
         'delivery_addresses',
         'expenses', 'stock_histories',
         'product_sizes', 'variants', 'products', 'categories', 'users',
+        'shipping_origins', 'couriers',
     ];
 
     foreach ($tables as $table) {
@@ -130,6 +131,23 @@ try {
         CONSTRAINT fk_cart_item_variant_variant FOREIGN KEY (variant_id) REFERENCES variants(id) ON DELETE CASCADE
     ) ENGINE=InnoDB;');
 
+    // 8b. Shipping Origins & Couriers (Master data konfirmasi pengiriman)
+    $pdo->exec('CREATE TABLE shipping_origins (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        address TEXT NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB;');
+    $pdo->exec('CREATE TABLE couriers (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        phone VARCHAR(20) NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB;');
     // 9. Orders & Order Items (Pesanan Online)
     $pdo->exec("CREATE TABLE orders (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -137,6 +155,10 @@ try {
         customer_id BIGINT NOT NULL,
         delivery_method ENUM('courier', 'pickup') NOT NULL,
         shipping_address TEXT NULL,
+        shipping_origin_id BIGINT NULL,
+        courier_id BIGINT NULL,
+        shipping_confirmed_at TIMESTAMP NULL,
+        shipping_confirmed_by BIGINT NULL,
         subtotal DECIMAL(12, 2) NOT NULL,
         shipping_cost DECIMAL(12, 2) DEFAULT 0.00,
         grand_total DECIMAL(12, 2) NOT NULL,
@@ -146,7 +168,10 @@ try {
         paid_at TIMESTAMP NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        CONSTRAINT fk_order_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE
+        CONSTRAINT fk_order_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE,
+        CONSTRAINT fk_order_shipping_origin FOREIGN KEY (shipping_origin_id) REFERENCES shipping_origins(id) ON DELETE SET NULL,
+        CONSTRAINT fk_order_courier FOREIGN KEY (courier_id) REFERENCES couriers(id) ON DELETE SET NULL,
+        CONSTRAINT fk_order_shipping_confirmer FOREIGN KEY (shipping_confirmed_by) REFERENCES users(id) ON DELETE SET NULL
     ) ENGINE=InnoDB;");
 
     $pdo->exec('CREATE TABLE order_items (
