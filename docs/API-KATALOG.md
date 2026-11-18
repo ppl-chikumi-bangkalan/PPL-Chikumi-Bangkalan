@@ -27,19 +27,21 @@ Harga total per item = `harga_dasar + Σ tambahan_harga` (frontend menampilkan s
 | Metode | Endpoint | Keterangan |
 |---|---|---|
 | GET | `/metode-penerimaan` | Opsi cara menerima pesanan: `data.metode[] = {kode, label, ongkir, butuh_alamat}` — `courier` (Diantar, ongkir 5000, butuh alamat) dan `pickup` (Ambil di tempat, ongkir 0). Sumber tarif tunggal: `App\Support\DeliveryMethod`. |
+| GET | `/ongkir` | Estimasi ongkir via RajaOngkir (Komerce API v1). Query: `address_id?` (tanpa ini pakai alamat terbaru) **atau** `city_id?` (langsung, untuk pratinjau di form alamat), `berat?` (gram, default 1000). Respons `data = {ongkir, sumber, etd, alamat_id}`; `sumber` = `rajaongkir` atau `flat` (fallback 5000 bila `city_id` kosong, key belum diisi, atau API gagal/timeout). Hasil sukses di-cache 10 menit. |
+| GET | `/kota` | Pencarian kota/kecamatan tujuan untuk form alamat. Query: `q`* (min 3 huruf). Respons `data[] = {id, label, kota, kecamatan, kode_pos}`. Kosong bila `RAJAONGKIR_API_KEY` belum diisi. Hasil di-cache 1 hari. |
 
 ## Pesanan
 | Metode | Endpoint | Keterangan |
 |---|---|---|
 | GET | `/pesanan` | Riwayat pesanan user login (`data = {total, pesanan[]}`; tiap pesanan: `id, nomor, metode, alamat, subtotal, ongkir, total, pembayaran, status, tanggal, item[]`) |
-| POST | `/pesanan/checkout` | Buat pesanan dari keranjang atas nama akun login. body: `delivery_method`* = `courier` \| `pickup`, `address_id?` (alamat milik akun; tanpa ini pakai alamat terbaru), `payment_method?` = `qris` \| `va` (disimpan di `orders.payment_type`). `courier` wajib punya alamat milik akun (else 422) + ongkir flat 5000; `pickup` tanpa ongkir. Transaksi: stok dikurangi (aman dari balapan), keranjang dikosongkan, status awal `unpaid`. |
+| POST | `/pesanan/checkout` | Buat pesanan dari keranjang atas nama akun login. body: `delivery_method`* = `courier` \| `pickup`, `address_id?` (alamat milik akun; tanpa ini pakai alamat terbaru), `payment_method?` = `qris` \| `va` (disimpan di `orders.payment_type`). `courier` wajib punya alamat milik akun (else 422) + ongkir dari `App\Support\ShippingCost` (RajaOngkir, fallback flat 5000); `pickup` tanpa ongkir. Transaksi: stok dikurangi (aman dari balapan), keranjang dikosongkan, status awal `unpaid`. |
 | PATCH | `/pesanan/{id}/batal` | Batalkan — hanya pesanan sendiri & masih `unpaid`; stok otomatis dikembalikan. |
 
 ## Alamat
 | Metode | Endpoint | Keterangan |
 |---|---|---|
-| GET | `/alamat` | Daftar alamat (`data.alamat[] = {id, label, penerima, telepon, detail, kota, kode_pos}`) |
-| POST | `/alamat` | Simpan. body: `recipient_name`*, `phone`*, `detail`*, `city`*, `label?`, `postal_code?` |
+| GET | `/alamat` | Daftar alamat (`data.alamat[] = {id, label, penerima, telepon, detail, kota, kota_id, kode_pos}`) |
+| POST | `/alamat` | Simpan. body: `recipient_name`*, `phone`*, `detail`*, `city`*, `city_id?` (id kota RajaOngkir, dipakai hitung ongkir), `label?`, `postal_code?` |
 | PUT | `/alamat/{id}` | Ubah (field sama) |
 | DELETE | `/alamat/{id}` | Hapus |
 
@@ -56,3 +58,15 @@ Jalankan dengan server dev aktif:
 php artisan serve --port=8123 &   # terminal lain
 php database/test-katalog.php     # exit 0 = semua lulus
 ```
+
+## Konfigurasi Ongkir (RajaOngkir)
+Isi di `.env` lalu jalankan `php artisan config:clear` + `php artisan cache:clear`.
+
+| Variabel | Keterangan |
+|---|---|
+| `RAJAONGKIR_API_KEY` | Key **Shipping Cost** dari dashboard https://rajaongkir.komerce.id. Kosong -> semua ongkir memakai tarif flat Rp 5.000. |
+| `RAJAONGKIR_ORIGIN_ID` | ID desa/kecamatan asal pengiriman (Chikumi = `70205`, Pejagan, Bangkalan). Cari ID lain dengan `php artisan tinker --execute="print_r(App\Support\ShippingCost::cities('Bangkalan'));"`. |
+| `RAJAONGKIR_COURIER` | Kode kurir: `jne`, `jnt`, `sicepat`, `pos`, `tiki`. |
+| `RAJAONGKIR_TIMEOUT` | Batas waktu panggilan API (detik). Lewat dari ini -> fallback flat. |
+
+Tarif yang dipakai adalah **service termurah** dari respons API. Hasil sukses di-cache 10 menit per (tujuan, berat).

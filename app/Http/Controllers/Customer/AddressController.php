@@ -54,6 +54,7 @@ class AddressController extends Controller
             'phone' => ['required', 'string', 'max:20'],
             'detail' => ['required', 'string', 'max:500'],
             'city' => ['required', 'string', 'max:100'],
+            'city_id' => ['nullable', 'integer', 'min:1'],
             'postal_code' => ['nullable', 'string', 'max:10'],
         ]);
     }
@@ -67,6 +68,7 @@ class AddressController extends Controller
             'telepon' => $a->phone,
             'detail' => $a->detail,
             'kota' => $a->city,
+            'kota_id' => $a->city_id,
             'kode_pos' => $a->postal_code,
         ];
     }

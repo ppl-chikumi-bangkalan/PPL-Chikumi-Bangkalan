@@ -30,7 +30,7 @@
         - Kirim pesanan       : POST /customer/api/pesanan/checkout
           name="delivery_method" → "pickup" / "courier", address_id, payment_method → "qris" / "va"
           (payment_method disimpan di orders.payment_type)
-        - Ongkir mengikuti backend: App\Support\DeliveryMethod (diantar flat Rp 5.000, ambil di tempat Rp 0).
+        - Ongkir courier     : GET  /customer/api/ongkir (RajaOngkir, fallback flat Rp 5.000); pickup Rp 0.
     -->
 
     <form class="group">
@@ -226,6 +226,7 @@
         let keranjang = { total_item: 0, subtotal: 0, item: [] };
         let alamat = null;
         let metode = {};
+        let ongkirDinamis = null;
 
         async function api(path, options = {}) {
             const headers = {
@@ -246,6 +247,11 @@
             document.querySelector('input[name="delivery_method"]:checked')?.value || 'courier';
 
         const opsiMetode = kode => metode[kode] || { kode, ongkir: 0, butuh_alamat: false };
+        // Ongkir courier mengikuti API bila alamat punya kota terpetakan.
+        const ongkirAktif = () =>
+            kodeMetode() === 'courier' && ongkirDinamis !== null
+                ? ongkirDinamis
+                : Number(opsiMetode(kodeMetode()).ongkir || 0);
 
         // Label & keterangan mengikuti GET /metode-penerimaan.
         function renderMetode() {
@@ -276,12 +282,12 @@
             document.getElementById('detailAlamat').textContent = [alamat.detail, alamat.kota, alamat.kode_pos]
                 .filter(Boolean).join(', ');
             document.getElementById('kotaAlamat').textContent = `Area ${alamat.kota}`;
-            document.getElementById('ongkirAlamat').textContent = rupiah(opsiMetode('courier').ongkir);
+            document.getElementById('ongkirAlamat').textContent = rupiah(ongkirAktif());
         }
 
         function renderRingkasan() {
             const subtotal = Number(keranjang.subtotal || 0);
-            const ongkir = Number(opsiMetode(kodeMetode()).ongkir || 0);
+            const ongkir = ongkirAktif();
             const total = subtotal + ongkir;
 
             document.getElementById('totalItemTeks').textContent = keranjang.total_item || 0;
@@ -335,6 +341,14 @@
                 keranjang = isiKeranjang.data;
                 alamat = daftarAlamat.data.alamat?.[0] ?? null;
                 metode = Object.fromEntries((daftarMetode.data.metode || []).map(m => [m.kode, m]));
+                if (alamat) {
+                    try {
+                        const ongkir = await api(`/ongkir?address_id=${alamat.id}`);
+                        ongkirDinamis = Number(ongkir.data.ongkir);
+                    } catch {
+                        ongkirDinamis = null;
+                    }
+                }
 
                 renderMetode();
                 renderAlamat();
