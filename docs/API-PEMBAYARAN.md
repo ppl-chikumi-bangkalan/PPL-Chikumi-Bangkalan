@@ -89,9 +89,11 @@ Tanpa keduanya, semua endpoint tetap jalan dalam **mode simulasi** (nomor VA pal
 
 | Sumber | Nilai | Aksi |
 |---|---|---|
-| Callback `resultCode` | `00` | `status = processing`, `paid_at = now()` |
+| Callback `resultCode` | `00` | `status = processing` (Diproses), `paid_at = now()`. Nominal callback wajib sama dengan `grand_total`, kalau beda dibalas **400** |
 | Cek transaksi `statusCode` | `00` sukses · `01` proses · `02` gagal | `00` → `processing`; `02` → `cancelled` + stok dikembalikan |
 | Redirect `resultCode` | `00` sukses · `01` pending · `02` batal | hanya info; jangan dipakai update status |
+
+**Stok dipotong saat checkout** (`POST /pesanan/checkout`), bukan saat webhook. Webhook hanya memindahkan status ke Diproses, dan idempoten (callback berulang tidak mengubah apa pun). Pembatalan pesanan `unpaid` mengembalikan stok; pembayaran yang masuk untuk pesanan yang sudah dibatalkan hanya dicatat di log untuk tindak lanjut manual.
 
 ## Alur frontend
 
