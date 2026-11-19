@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: [
             'login',
+            'payment/callback',
             'frontend/customer/api/*',
             'frontend/kasir/api/*',
         ]);

@@ -23,6 +23,8 @@ class Order extends Model
         'shipping_cost',
         'grand_total',
         'payment_type',
+        'snap_token',
+        'paid_at',
         'status',
     ];
 
@@ -33,6 +35,7 @@ class Order extends Model
             'shipping_cost' => 'decimal:2',
             'grand_total' => 'decimal:2',
             'shipping_confirmed_at' => 'datetime',
+            'paid_at' => 'datetime',
         ];
     }
 

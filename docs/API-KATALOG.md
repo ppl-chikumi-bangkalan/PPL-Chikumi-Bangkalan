@@ -34,7 +34,7 @@ Harga total per item = `harga_dasar + Σ tambahan_harga` (frontend menampilkan s
 | Metode | Endpoint | Keterangan |
 |---|---|---|
 | GET | `/pesanan` | Riwayat pesanan user login (`data = {total, pesanan[]}`; tiap pesanan: `id, nomor, metode, alamat, subtotal, ongkir, total, pembayaran, status, tanggal, item[]`) |
-| POST | `/pesanan/checkout` | Buat pesanan dari keranjang atas nama akun login. body: `delivery_method`* = `courier` \| `pickup`, `address_id?` (alamat milik akun; tanpa ini pakai alamat terbaru), `payment_method?` = `qris` \| `va` (disimpan di `orders.payment_type`). `courier` wajib punya alamat milik akun (else 422) + ongkir dari `App\Support\ShippingCost` (RajaOngkir, fallback flat 5000); `pickup` tanpa ongkir. Transaksi: stok dikurangi (aman dari balapan), keranjang dikosongkan, status awal `unpaid`. |
+| POST | `/pesanan/checkout` | Buat pesanan dari keranjang atas nama akun login. body: `delivery_method`* = `courier` \| `pickup`, `address_id?` (alamat milik akun; tanpa ini pakai alamat terbaru), `payment_method?` = `qris` \| `va` (disimpan di `orders.payment_type`). `courier` wajib punya alamat milik akun (else 422) + ongkir dari `App\Support\ShippingCost` (RajaOngkir, fallback flat 5000); `pickup` tanpa ongkir. Transaksi: stok dikurangi (aman dari balapan), keranjang dikosongkan, status awal `unpaid`. Setelah itu frontend diarahkan ke `/customer/pembayaran?pesanan={id}` (lihat `docs/API-PEMBAYARAN.md`). |
 | PATCH | `/pesanan/{id}/batal` | Batalkan — hanya pesanan sendiri & masih `unpaid`; stok otomatis dikembalikan. |
 
 ## Alamat
@@ -49,7 +49,7 @@ Harga total per item = `harga_dasar + Σ tambahan_harga` (frontend menampilkan s
 1. Katalog (`/katalog`) → kartu produk → klik "atur" → `/produk/{id}` untuk pilih ukuran + varian.
 2. Pilihan user → `POST /keranjang`.
 3. Halaman keranjang → `GET /keranjang` (tombol +/- = `PUT`, hapus = `DELETE`).
-4. Checkout → (`POST /alamat` bila belum ada) → `POST /pesanan/checkout` (kirim `address_id` pilihan & `payment_method`).
+4. Checkout → (`POST /alamat` bila belum ada) → `POST /pesanan/checkout` (kirim `address_id` pilihan & `payment_method`) → `/customer/pembayaran?pesanan={id}` untuk membayar (QRIS/VA via Duitku).
 5. Halaman pesanan → `GET /pesanan`; tombol batal → `PATCH /pesanan/{id}/batal`.
 
 ## Self-check backend
