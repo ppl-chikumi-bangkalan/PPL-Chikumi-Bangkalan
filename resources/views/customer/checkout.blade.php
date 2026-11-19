@@ -323,7 +323,7 @@
                 });
 
                 alert(`Pesanan ${hasil.data.nomor} berhasil dibuat. Total ${rupiah(hasil.data.total)}.`);
-                location.href = PAGE_BASE + '/dashboard';
+                location.href = PAGE_BASE + '/pembayaran?pesanan=' + hasil.data.id;
             } catch (error) {
                 alert(error.message);
                 btnBayar.disabled = false;

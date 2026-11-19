@@ -9,6 +9,7 @@ use App\Http\Controllers\Customer\CatalogController;
 use App\Http\Controllers\Customer\DashboardController;
 use App\Http\Controllers\Customer\DeliveryMethodController;
 use App\Http\Controllers\Customer\OrderController;
+use App\Http\Controllers\Customer\PaymentController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Customer\ShippingCostController;
 use App\Http\Controllers\Kasir\DashboardController as KasirDashboardController;
@@ -114,6 +115,10 @@ Route::middleware('auth')->group(function () {
         Route::get('pesanan', [OrderController::class, 'index'])->name('customer.pesanan.index');
         Route::post('pesanan/checkout', [OrderController::class, 'checkout'])->name('customer.pesanan.checkout');
         Route::patch('pesanan/{pesanan}/batal', [OrderController::class, 'cancel'])->whereNumber('pesanan')->name('customer.pesanan.batal');
+        Route::get('pesanan/{pesanan}/pembayaran', [PaymentController::class, 'show'])->whereNumber('pesanan')->name('customer.pesanan.pembayaran');
+        Route::post('pesanan/{pesanan}/bayar', [PaymentController::class, 'charge'])->whereNumber('pesanan')->name('customer.pesanan.bayar');
+        Route::get('pesanan/{pesanan}/status-pembayaran', [PaymentController::class, 'status'])->whereNumber('pesanan')->name('customer.pesanan.status-pembayaran');
+        Route::get('pesanan/{pesanan}/qr', [PaymentController::class, 'qr'])->whereNumber('pesanan')->name('customer.pesanan.qr');
         Route::get('alamat', [AddressController::class, 'index'])->name('customer.alamat.index');
         Route::post('alamat', [AddressController::class, 'store'])->name('customer.alamat.store');
         Route::put('alamat/{alamat}', [AddressController::class, 'update'])->whereNumber('alamat')->name('customer.alamat.update');
@@ -217,8 +222,15 @@ Route::prefix('frontend/customer/api')->group(function () {
     Route::get('pesanan', [OrderController::class, 'index']);
     Route::post('pesanan/checkout', [OrderController::class, 'checkout']);
     Route::patch('pesanan/{pesanan}/batal', [OrderController::class, 'cancel'])->whereNumber('pesanan');
+    Route::get('pesanan/{pesanan}/pembayaran', [PaymentController::class, 'show'])->whereNumber('pesanan');
+    Route::post('pesanan/{pesanan}/bayar', [PaymentController::class, 'charge'])->whereNumber('pesanan');
+    Route::get('pesanan/{pesanan}/status-pembayaran', [PaymentController::class, 'status'])->whereNumber('pesanan');
+    Route::get('pesanan/{pesanan}/qr', [PaymentController::class, 'qr'])->whereNumber('pesanan');
     Route::get('alamat', [AddressController::class, 'index']);
     Route::post('alamat', [AddressController::class, 'store']);
     Route::put('alamat/{alamat}', [AddressController::class, 'update'])->whereNumber('alamat');
     Route::delete('alamat/{alamat}', [AddressController::class, 'destroy'])->whereNumber('alamat');
 });
+
+// CALLBACK DUITKU (tanpa login; keaslian dicek lewat signature HMAC)
+Route::post('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
