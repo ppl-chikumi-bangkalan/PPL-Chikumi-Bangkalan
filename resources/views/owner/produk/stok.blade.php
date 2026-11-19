@@ -25,17 +25,20 @@
         foreach ($sizes as $size) {
             $low = $size->stock > 0 && $size->stock <= $size->min_stock;
             $empty = $size->stock <= 0;
-            $suggestion = max(0, $size->min_stock - $size->stock);
+            $rata = (float) ($rataHarian[$size->id] ?? 0);
+            $suggestion = \App\Support\MovingAverage::saran($size->stock, $size->min_stock, $rata);
+            $cukup = \App\Support\MovingAverage::cukupHari($size->stock, $rata);
 
             $rows->push([
                 'name' => trim($size->product->name . ' ' . $size->size_name),
                 'category' => 'Kulit',
                 'stock' => $size->stock . ' pcs',
                 'min' => $size->min_stock . ' pcs',
-                'used' => '-',
-                'suggestion' => $empty || $low ? $suggestion . ' pcs' : '-',
-                'suggestion_class' => $empty ? 'text-red-600' : ($low ? 'text-orange-600' : ''),
-                'add' => $empty || $low ? $suggestion : 0,
+                'used' => $rata > 0 ? number_format($rata, 1, ',', '.') . ' pcs' : '-',
+                'suggestion' => $suggestion > 0 ? $suggestion . ' pcs' : '-',
+                'suggestion_class' => $empty ? 'text-red-600' : ($low || $suggestion > 0 ? 'text-orange-600' : ''),
+                'cukup' => $cukup === null ? '-' : $cukup . ' hari',
+                'add' => $suggestion,
                 'size_id' => $size->id,
                 'row_class' => $empty || $low ? 'bg-red-50/60' : '',
                 'status' => $empty ? 'Habis' : ($low ? 'Menipis' : 'Aman'),
@@ -54,6 +57,7 @@
                 'used' => '-',
                 'suggestion' => '-',
                 'suggestion_class' => '',
+                'cukup' => '-',
                 'add' => 0,
                 'size_id' => null,
                 'row_class' => $variant->is_available ? '' : 'bg-red-50/60',
@@ -186,7 +190,10 @@
                     <div class="border-b border-orange-100 p-5">
                         <h3 class="text-base font-bold">Disiapkan Harian - Kulit & Filling</h3>
                         <p class="mt-1 text-xs text-stone-500">
-                            Stok produk siap jual dan kebutuhan persiapan harian.
+                            Stok produk siap jual dan kebutuhan persiapan harian. Terpakai/hari = rata-rata penjualan 3 minggu terakhir (kasir + pesanan online lunas).
+                        </p>
+                        <p class="mt-1 text-xs text-stone-400">
+                            Saran restock = kebutuhan 7 hari − sisa stok (minimal mengikuti minimum stok). Kosong bila stok sudah cukup.
                         </p>
                     </div>
 
@@ -200,7 +207,7 @@
                                     <th class="p-4">SISA STOK</th>
                                     <th class="p-4">MINIMUM</th>
                                     <th class="p-4">TERPAKAI / HARI</th>
-                                    <th class="p-4">SARAN BESOK</th>
+                                    <th class="p-4">SARAN RESTOCK</th>
                                     <th class="p-4">TAMBAH</th>
                                     <th class="p-4">STATUS</th>
                                 </tr>
@@ -216,12 +223,12 @@
                                         <td class="p-4 font-semibold {{ $row['suggestion_class'] }}">{{ $row['suggestion'] }}</td>
                                         <td class="p-4">
                                             @if ($row['size_id'])
-                                                <input type="number" min="0" value="{{ $row['add'] }}"
+                                                <input type="number" min="0" placeholder="0" value="{{ $row['add'] }}"
+                                                    title="Bisa diisi manual bila ingin menambah lebih banyak dari saran"
                                                     data-size-id="{{ $row['size_id'] }}" data-default="{{ $row['add'] }}"
                                                     class="stock-input w-20 rounded-lg border border-orange-200 px-2 py-2 text-center text-sm outline-none focus:border-[#FF8000]">
                                             @else
-                                                <input type="number" min="0" value="0" disabled
-                                                    class="stock-input w-20 rounded-lg border border-stone-200 bg-stone-50 px-2 py-2 text-center text-sm text-stone-400 outline-none">
+                                                <span class="text-xs text-stone-400">tidak dilacak</span>
                                             @endif
                                         </td>
                                         <td class="p-4">
@@ -245,7 +252,7 @@
                     <div class="border-b border-orange-100 p-5">
                         <h3 class="text-base font-bold">Restock Bila Menipis - Dip Sauce & Seasoning</h3>
                         <p class="mt-1 text-xs text-stone-500">
-                            Persediaan bumbu dan saus untuk kebutuhan penjualan.
+                            Persediaan bumbu dan saus untuk kebutuhan penjualan. Varian belum punya pencatatan stok, jadi statusnya mengikuti ketersediaan.
                         </p>
                     </div>
 
@@ -272,15 +279,15 @@
                                         <td class="p-4">{{ $row['stock'] }}</td>
                                         <td class="p-4">{{ $row['min'] }}</td>
                                         <td class="p-4">{{ $row['used'] }}</td>
-                                        <td class="p-4 font-semibold {{ $row['suggestion_class'] }}">{{ $row['suggestion'] }}</td>
+                                        <td class="p-4 font-semibold {{ $row['suggestion_class'] }}">{{ $row['cukup'] }}</td>
                                         <td class="p-4">
                                             @if ($row['size_id'])
-                                                <input type="number" min="0" value="{{ $row['add'] }}"
+                                                <input type="number" min="0" placeholder="0" value="{{ $row['add'] }}"
+                                                    title="Bisa diisi manual bila ingin menambah lebih banyak dari saran"
                                                     data-size-id="{{ $row['size_id'] }}" data-default="{{ $row['add'] }}"
                                                     class="stock-input w-20 rounded-lg border border-orange-200 px-2 py-2 text-center text-sm outline-none focus:border-[#FF8000]">
                                             @else
-                                                <input type="number" min="0" value="0" disabled
-                                                    class="stock-input w-20 rounded-lg border border-stone-200 bg-stone-50 px-2 py-2 text-center text-sm text-stone-400 outline-none">
+                                                <span class="text-xs text-stone-400">tidak dilacak</span>
                                             @endif
                                         </td>
                                         <td class="p-4">
@@ -307,7 +314,7 @@
                             <span id="itemCount">0</span> komponen dipilih untuk ditambah
                         </p>
                         <p class="mt-1 text-xs text-stone-500">
-                            Periksa jumlah tambahan sebelum menyimpan.
+                            Kolom Tambah terisi otomatis hanya untuk baris yang perlu restock; angka boleh diubah manual.
                         </p>
                     </div>
 

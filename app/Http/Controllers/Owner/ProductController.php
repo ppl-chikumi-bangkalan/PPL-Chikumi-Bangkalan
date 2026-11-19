@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductSize;
+use App\Models\StockHistory;
 use App\Models\Variant;
+use App\Support\MovingAverage;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -32,7 +34,15 @@ class ProductController extends Controller
                 + $variants->where('is_available', false)->count(),
         ];
 
-        return view('owner.produk.stok', compact('sizes', 'variants', 'summary'));
+        $rataHarian = MovingAverage::harian();
+        $riwayat = StockHistory::with(['productSize.product:id,name', 'user:id,name'])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit(6)
+            ->get();
+        $riwayatTotal = StockHistory::count();
+
+        return view('owner.produk.stok', compact('sizes', 'variants', 'summary', 'rataHarian', 'riwayat', 'riwayatTotal'));
     }
 
     public function pageEdit(Product $produk, ?ProductSize $ukuran = null)
@@ -56,20 +66,28 @@ class ProductController extends Controller
 
     public function availability()
     {
+        $rataHarian = MovingAverage::harian();
+
         $sizes = ProductSize::with('product:id,name,is_active')
             ->orderBy('product_id')
             ->orderBy('size_name')
             ->get()
-            ->map(fn (ProductSize $size) => [
-                'product_id' => $size->product_id,
-                'product' => $size->product->name,
-                'size' => $size->size_name,
-                'stock' => $size->stock,
-                'min_stock' => $size->min_stock,
-                'status' => ! $size->product->is_active || $size->stock <= 0
-                    ? 'habis'
-                    : ($size->stock <= $size->min_stock ? 'menipis' : 'aman'),
-            ]);
+            ->map(function (ProductSize $size) use ($rataHarian) {
+                $rata = (float) ($rataHarian[$size->id] ?? 0);
+
+                return [
+                    'product_id' => $size->product_id,
+                    'product' => $size->product->name,
+                    'size' => $size->size_name,
+                    'stock' => $size->stock,
+                    'min_stock' => $size->min_stock,
+                    'rata_harian' => $rata,
+                    'saran_restock' => MovingAverage::saran($size->stock, $size->min_stock, $rata),
+                    'status' => ! $size->product->is_active || $size->stock <= 0
+                        ? 'habis'
+                        : ($size->stock <= $size->min_stock ? 'menipis' : 'aman'),
+                ];
+            });
 
         $variants = Variant::with('product:id,name')
             ->orderBy('type')

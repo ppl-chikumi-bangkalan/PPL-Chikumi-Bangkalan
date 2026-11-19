@@ -25,6 +25,14 @@
         </div>
     </div>
 
+    @php
+        $sumberLabel = [
+            'manual_restock' => 'Tambah stok',
+            'pos_transaction' => 'Transaksi kasir',
+            'online_order' => 'Pesanan online',
+        ];
+    @endphp
+
     <!-- TABEL RIWAYAT -->
     <div class="overflow-x-auto">
         <table class="w-full min-w-[900px] text-left text-sm">
@@ -42,94 +50,42 @@
             </thead>
 
             <tbody class="divide-y divide-stone-100">
-
-                <!-- Masuk: tambah stok manual -->
-                <tr class="riwayat-masuk group-has-[#riwayat-filter-keluar:checked]:hidden">
-                    <td class="p-4 text-stone-500">13/11 08.15</td>
-                    <td class="p-4 font-semibold">Regular</td>
-                    <td class="p-4">
-                        <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-600">● Masuk</span>
-                    </td>
-                    <td class="p-4 font-semibold text-green-600">+20 pcs</td>
-                    <td class="p-4">Tambah stok</td>
-                    <td class="p-4">Owner Chikumi</td>
-                    <td class="p-4 text-stone-500">Persiapan buka 15.00</td>
-                </tr>
-
-                <tr class="riwayat-masuk group-has-[#riwayat-filter-keluar:checked]:hidden">
-                    <td class="p-4 text-stone-500">13/11 08.14</td>
-                    <td class="p-4 font-semibold">Large</td>
-                    <td class="p-4">
-                        <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-600">● Masuk</span>
-                    </td>
-                    <td class="p-4 font-semibold text-green-600">+10 pcs</td>
-                    <td class="p-4">Tambah stok</td>
-                    <td class="p-4">Owner Chikumi</td>
-                    <td class="p-4 text-stone-500">-</td>
-                </tr>
-
-                <!-- Keluar: transaksi kasir -->
-                <tr class="riwayat-keluar group-has-[#riwayat-filter-masuk:checked]:hidden">
-                    <td class="p-4 text-stone-500">12/11 20.45</td>
-                    <td class="p-4 font-semibold">Regular</td>
-                    <td class="p-4">
-                        <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500">● Keluar</span>
-                    </td>
-                    <td class="p-4 font-semibold text-red-500">−3 pcs</td>
-                    <td class="p-4">Transaksi kasir</td>
-                    <td class="p-4">Kasir Chikumi</td>
-                    <td class="p-4 text-stone-500">#CK-0125</td>
-                </tr>
-
-                <!-- Keluar: pesanan online -->
-                <tr class="riwayat-keluar group-has-[#riwayat-filter-masuk:checked]:hidden">
-                    <td class="p-4 text-stone-500">12/11 19.30</td>
-                    <td class="p-4 font-semibold">Regular</td>
-                    <td class="p-4">
-                        <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500">● Keluar</span>
-                    </td>
-                    <td class="p-4 font-semibold text-red-500">−2 pcs</td>
-                    <td class="p-4">Pesanan online</td>
-                    <td class="p-4">Pelanggan Contoh</td>
-                    <td class="p-4 text-stone-500">#ORD-0018</td>
-                </tr>
-
-                <tr class="riwayat-keluar group-has-[#riwayat-filter-masuk:checked]:hidden">
-                    <td class="p-4 text-stone-500">12/11 18.05</td>
-                    <td class="p-4 font-semibold">Large</td>
-                    <td class="p-4">
-                        <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500">● Keluar</span>
-                    </td>
-                    <td class="p-4 font-semibold text-red-500">−1 pcs</td>
-                    <td class="p-4">Transaksi kasir</td>
-                    <td class="p-4">Kasir Chikumi</td>
-                    <td class="p-4 text-stone-500">#CK-0119</td>
-                </tr>
-
-                <tr class="riwayat-masuk group-has-[#riwayat-filter-keluar:checked]:hidden">
-                    <td class="p-4 text-stone-500">12/11 08.00</td>
-                    <td class="p-4 font-semibold">Regular</td>
-                    <td class="p-4">
-                        <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-600">● Masuk</span>
-                    </td>
-                    <td class="p-4 font-semibold text-green-600">+15 pcs</td>
-                    <td class="p-4">Tambah stok</td>
-                    <td class="p-4">Owner Chikumi</td>
-                    <td class="p-4 text-stone-500">-</td>
-                </tr>
+                @forelse ($riwayat as $baris)
+                    @php
+                        $masuk = $baris->type === 'in';
+                        $ukuran = trim(($baris->productSize?->product?->name ?? '-').' '.($baris->productSize?->size_name ?? ''));
+                        $catatan = $baris->notes ?: ($baris->reference_id ? '#'.$baris->reference_id : '-');
+                    @endphp
+                    <tr class="{{ $masuk ? 'riwayat-masuk group-has-[#riwayat-filter-keluar:checked]:hidden' : 'riwayat-keluar group-has-[#riwayat-filter-masuk:checked]:hidden' }}">
+                        <td class="p-4 text-stone-500">{{ $baris->created_at?->format('d/m H.i') }}</td>
+                        <td class="p-4 font-semibold">{{ $ukuran }}</td>
+                        <td class="p-4">
+                            @if ($masuk)
+                                <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-600">● Masuk</span>
+                            @else
+                                <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500">● Keluar</span>
+                            @endif
+                        </td>
+                        <td class="p-4 font-semibold {{ $masuk ? 'text-green-600' : 'text-red-500' }}">
+                            {{ ($masuk ? '+' : '−').$baris->quantity }} pcs
+                        </td>
+                        <td class="p-4">{{ $sumberLabel[$baris->source] ?? $baris->source }}</td>
+                        <td class="p-4">{{ $baris->user?->name ?? '-' }}</td>
+                        <td class="p-4 text-stone-500">{{ $catatan }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="p-6 text-center text-sm text-stone-400">Belum ada riwayat stok.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 
     <!-- KAKI TABEL -->
-    <div class="flex flex-col items-center justify-between gap-3 border-t border-stone-100 px-5 py-4 sm:flex-row">
-        <p class="text-xs text-stone-500">Menampilkan 6 riwayat terakhir</p>
-
-        <div class="flex gap-1.5">
-            <button type="button" class="h-8 w-8 rounded-lg border border-stone-200 bg-white text-sm">‹</button>
-            <button type="button" class="h-8 w-8 rounded-lg bg-[#FF8000] text-sm font-semibold text-white">1</button>
-            <button type="button" class="h-8 w-8 rounded-lg border border-stone-200 bg-white text-sm">2</button>
-            <button type="button" class="h-8 w-8 rounded-lg border border-stone-200 bg-white text-sm">›</button>
-        </div>
+    <div class="flex items-center justify-between border-t border-stone-100 px-5 py-4">
+        <p class="text-xs text-stone-500">
+            Menampilkan {{ $riwayat->count() }} dari {{ $riwayatTotal }} riwayat terakhir
+        </p>
     </div>
 </section>

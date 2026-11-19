@@ -35,7 +35,13 @@ await fetch('/owner/api/produk', {
 | GET | `/produk/{id}` | Detail  |
 | PUT | `/produk/{id}` | Ubah (field sama dengan buat) |
 | DELETE | `/produk/{id}` | Hapus; varian + ukuran ikut terhapus (FK CASCADE) |
-| GET | `/produk/ketersediaan` | Query ketersediaan: `data.ringkasan` (total/aman/menipis/habis), `data.produk` (per ukuran), `data.varian` (per varian) |
+| GET | `/produk/ketersediaan` | Query ketersediaan: `data.ringkasan` (total/aman/menipis/habis), `data.produk` (per ukuran, termasuk `rata_harian` & `saran_restock`), `data.varian` (per varian) |
+
+### Saran restock (moving average 3 minggu)
+
+`rata_harian` = total qty terjual 21 hari terakhir (POS `paid` + pesanan online yang sudah dibayar & tidak batal) ÷ 21.
+`saran_restock` = `max(0, max(min_stock, ceil(rata_harian × 7)) − stock)` — menutup kebutuhan 1 minggu, minimal setara minimum stok.
+Halaman `/owner/stok` menampilkan kolom Terpakai/Hari, Saran Besok (atau Cukup Untuk), dan mengisi kolom Tambah dari `saran_restock`.
 
 ## Ukuran (harga & stok)
 

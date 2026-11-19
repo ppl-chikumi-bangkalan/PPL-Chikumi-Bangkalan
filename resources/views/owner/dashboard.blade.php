@@ -246,17 +246,17 @@
             el('stokAman').textContent = `${data.ringkasan.aman} komponen`;
             el('stokMenipis').textContent = `${data.ringkasan.menipis} komponen`;
             el('stokHabis').textContent = `${data.ringkasan.habis} komponen`;
-            const perlu = data.produk.filter(item => item.status !== 'aman');
+            const perlu = data.produk.filter(item => item.status !== 'aman' || item.saran_restock > 0);
             el('tabelStok').innerHTML = perlu.length ? perlu.map(item => {
                 const habis = item.status === 'habis';
-                const saran = Math.max(item.min_stock * 2 - item.stock, 0);
+                const saran = item.saran_restock;
                 const warna = habis ? 'text-red-500' : 'text-orange-600';
                 const latar = habis ? 'bg-red-50' : 'bg-orange-50';
                 return `<tr class="${latar}">
                     <td class="p-3 font-semibold ${warna}">${item.product} ${item.size}</td>
                     <td class="p-3 ${warna}">${item.stock} pcs</td>
                     <td class="p-3 ${warna}">${saran > 0 ? '+' + saran + ' pcs' : '-'}</td>
-                    <td class="p-3 font-semibold ${warna}">● ${habis ? 'Habis' : 'Minimum'}</td>
+                    <td class="p-3 font-semibold ${warna}">● ${habis ? 'Habis' : (item.status === 'menipis' ? 'Minimum' : 'Perlu Restock')}</td>
                 </tr>`;
             }).join('') : '<tr><td colspan="4" class="p-3 text-center text-stone-400">Semua komponen aman.</td></tr>';
         }
