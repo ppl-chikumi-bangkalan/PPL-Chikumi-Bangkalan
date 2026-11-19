@@ -91,6 +91,19 @@ class PaymentController extends Controller
         $order = Order::where('order_number', (string) ($data['merchantOrderId'] ?? ''))->first();
         abort_unless($order, 404, 'Pesanan tidak ditemukan.');
 
+        // Nominal callback harus sama dengan total pesanan; tolak bila tidak cocok.
+        $nominal = (float) ($data['amount'] ?? 0);
+
+        if (abs($nominal - (float) $order->grand_total) > 0.01) {
+            Log::warning('Callback Duitku nominalnya tidak cocok dengan pesanan.', [
+                'order' => $order->order_number,
+                'callback' => $nominal,
+                'pesanan' => (float) $order->grand_total,
+            ]);
+
+            return response()->json(['message' => 'Nominal tidak cocok.'], 400);
+        }
+
         // resultCode: 00 sukses, 01 gagal.
         $this->sync($order, ((string) ($data['resultCode'] ?? '')) === '00' ? 'paid' : null);
 
@@ -120,8 +133,18 @@ class PaymentController extends Controller
      */
     private function sync(Order $order, ?string $status): void
     {
-        if ($status === 'paid' && $order->status === 'unpaid') {
-            $order->update(['status' => 'processing', 'paid_at' => now()]);
+        // Idempoten: callback yang sama bisa datang berulang, status hanya naik sekali.
+        if ($status === 'paid') {
+            if ($order->status === 'unpaid') {
+                // Stok sudah dipotong saat checkout; di sini hanya status Diproses.
+                $order->update(['status' => 'processing', 'paid_at' => now()]);
+            } elseif ($order->status === 'cancelled') {
+                // Uang masuk untuk pesanan yang sudah dibatalkan -> perlu tindak lanjut manual.
+                Log::warning('Pembayaran diterima untuk pesanan yang sudah dibatalkan.', [
+                    'order' => $order->order_number,
+                    'reference' => $order->snap_token,
+                ]);
+            }
         }
 
         if ($status === 'cancelled' && $order->status !== 'cancelled') {
