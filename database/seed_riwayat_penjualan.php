@@ -54,7 +54,7 @@ function riwayat_item(array $ukuran, array $varianPerProduk): array
         }
     }
 
-    $quantity = riwayat_pilih_bobot([1 => 50, 2 => 30, 3 => 15, 4 => 5]);
+    $quantity = riwayat_pilih_bobot([1 => 70, 2 => 25, 3 => 5]);
     $tambahan = array_sum(array_map(fn ($varian) => (float) $varian['additional_price'], $dipilih));
     $hargaSatuan = round((float) $ukuran['base_price'] + $tambahan, 2);
 
@@ -139,8 +139,20 @@ try {
 
     $pdo->beginTransaction();
 
+    // Hapus hanya data hasil seeder ini agar aman dijalankan ulang.
+    $pdo->exec("DELETE sh FROM stock_histories sh JOIN pos_transactions t ON t.id = sh.reference_id
+        WHERE sh.source = 'pos_transaction' AND t.transaction_number LIKE 'POS-SEED-%'");
+    $pdo->exec("DELETE sh FROM stock_histories sh JOIN orders o ON o.id = sh.reference_id
+        WHERE sh.source = 'online_order' AND o.order_number LIKE 'CHKM-SEED-%'");
+    $pdo->exec("DELETE FROM stock_histories WHERE source = 'manual_restock' AND notes = 'Stok awal (seeder)'");
     $pdo->exec("DELETE FROM pos_transactions WHERE transaction_number LIKE 'POS-SEED-%'");
     $pdo->exec("DELETE FROM orders WHERE order_number LIKE 'CHKM-SEED-%'");
+
+    $insHistory = $pdo->prepare("
+        INSERT INTO stock_histories
+            (product_size_id, user_id, type, quantity, source, reference_id, notes, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ");
 
     $insPos = $pdo->prepare("
         INSERT INTO pos_transactions
@@ -181,6 +193,8 @@ try {
     $totalPos = 0;
     $totalPesanan = 0;
     $totalOmzet = 0.0;
+    $terjual = [];
+    $terjualMinggu = [];
 
     for ($mundur = $totalHari - 1; $mundur >= 0; $mundur--) {
         $tanggal = $today->modify("-{$mundur} days");
@@ -188,7 +202,7 @@ try {
         $faktor = 0.75 + (($minggu - 1 - intdiv($mundur, 7)) * 0.05);
 
         $waktuPos = [];
-        $jumlahPos = (int) round(($akhirPekan ? random_int(6, 14) : random_int(4, 10)) * $faktor);
+        $jumlahPos = (int) round(($akhirPekan ? random_int(4, 9) : random_int(2, 6)) * $faktor);
         for ($i = 0; $i < $jumlahPos; $i++) {
             $waktu = riwayat_waktu($tanggal);
             if ($waktu) {
@@ -200,7 +214,7 @@ try {
         foreach ($waktuPos as $nomor => $waktu) {
             $status = random_int(1, 100) <= 2 ? 'cancelled' : 'paid';
             $metode = random_int(1, 100) <= 55 ? 'cash' : 'non_cash';
-            $jumlahItem = min(count($ukuranList), riwayat_pilih_bobot([1 => 40, 2 => 30, 3 => 20, 4 => 10]));
+            $jumlahItem = min(count($ukuranList), riwayat_pilih_bobot([1 => 55, 2 => 30, 3 => 15]));
 
             $pool = $ukuranList;
             shuffle($pool);
@@ -226,7 +240,7 @@ try {
 
             $insPos->execute([
                 'POS-SEED-'.$tanggal->format('ymd').'-'.str_pad((string) ($nomor + 1), 2, '0', STR_PAD_LEFT),
-                $kasirIds[array_rand($kasirIds)],
+                $kasirId = $kasirIds[array_rand($kasirIds)],
                 random_int(1, 100) <= 70 ? $namaPelanggan[array_rand($namaPelanggan)] : null,
                 $total,
                 $metode,
@@ -249,6 +263,17 @@ try {
                 foreach ($item['varian'] as $varian) {
                     $insPosVariant->execute([$itemId, $varian['id'], (float) $varian['additional_price']]);
                 }
+
+                if ($status === 'paid') {
+                    $insHistory->execute([
+                        $item['ukuran']['id'], $kasirId, 'out', $item['quantity'],
+                        'pos_transaction', $posId, null, $waktu->format('Y-m-d H:i:s'),
+                    ]);
+                    $terjual[$item['ukuran']['id']] = ($terjual[$item['ukuran']['id']] ?? 0) + $item['quantity'];
+                    if ($mundur < 7) {
+                        $terjualMinggu[$item['ukuran']['id']] = ($terjualMinggu[$item['ukuran']['id']] ?? 0) + $item['quantity'];
+                    }
+                }
             }
 
             $totalPos++;
@@ -258,7 +283,7 @@ try {
         }
 
         $waktuPesanan = [];
-        $jumlahPesanan = (int) round(($akhirPekan ? random_int(2, 6) : random_int(1, 4)) * $faktor);
+        $jumlahPesanan = (int) round(($akhirPekan ? random_int(1, 4) : random_int(0, 3)) * $faktor);
         for ($i = 0; $i < $jumlahPesanan; $i++) {
             if (random_int(1, 100) <= 15) {
                 continue;
@@ -350,6 +375,17 @@ try {
                 foreach ($item['varian'] as $varian) {
                     $insOrderVariant->execute([$itemId, $varian['id'], (float) $varian['additional_price']]);
                 }
+
+                if ($status !== 'cancelled') {
+                    $insHistory->execute([
+                        $item['ukuran']['id'], $pelangganId, 'out', $item['quantity'],
+                        'online_order', $orderId, null, $waktu->format('Y-m-d H:i:s'),
+                    ]);
+                    $terjual[$item['ukuran']['id']] = ($terjual[$item['ukuran']['id']] ?? 0) + $item['quantity'];
+                    if ($mundur < 7) {
+                        $terjualMinggu[$item['ukuran']['id']] = ($terjualMinggu[$item['ukuran']['id']] ?? 0) + $item['quantity'];
+                    }
+                }
             }
 
             $totalPesanan++;
@@ -357,6 +393,29 @@ try {
                 $totalOmzet += $grandTotal;
             }
         }
+    }
+
+    // Stok awal periode + minimum yang masuk akal terhadap laju penjualan seeder.
+    // Tanpa ini, minimum 5 pcs tidak realistis untuk penjualan belasan pcs/hari.
+    $updateSize = $pdo->prepare('UPDATE product_sizes SET stock = ?, min_stock = ? WHERE id = ?');
+    $awalPeriode = $today->modify('-'.$totalHari.' days')->setTime(8, 0);
+
+    foreach ($ukuranList as $ukuran) {
+        $sizeId = (int) $ukuran['id'];
+        $mingguQty = $terjualMinggu[$sizeId] ?? 0;
+
+        if ($mingguQty <= 0) {
+            continue;
+        }
+
+        $minStok = max(5, (int) ceil($mingguQty / 4));
+        $stok = max($minStok, (int) ceil($mingguQty * 0.8));
+
+        $updateSize->execute([$stok, $minStok, $sizeId]);
+        $insHistory->execute([
+            $sizeId, null, 'in', $stok + ($terjual[$sizeId] ?? 0),
+            'manual_restock', null, 'Stok awal (seeder)', $awalPeriode->format('Y-m-d H:i:s'),
+        ]);
     }
 
     $pdo->commit();

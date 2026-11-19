@@ -113,10 +113,17 @@
                                 </p>
                             </div>
 
-                            <button type="button" onclick="openModal('variant')"
-                                class="shrink-0 rounded-lg bg-orange-50 px-4 py-2 text-sm font-semibold text-[#FF8000] transition hover:bg-orange-100">
-                                + Varian
-                            </button>
+                            <div class="flex shrink-0 items-center gap-2">
+                                <button type="button" onclick="openModal('size')"
+                                    class="rounded-lg bg-orange-50 px-4 py-2 text-sm font-semibold text-[#FF8000] transition hover:bg-orange-100">
+                                    + Ukuran
+                                </button>
+
+                                <button type="button" onclick="openModal('variant')"
+                                    class="rounded-lg bg-orange-50 px-4 py-2 text-sm font-semibold text-[#FF8000] transition hover:bg-orange-100">
+                                    + Varian
+                                </button>
+                            </div>
                         </div>
 
                         <div class="overflow-x-auto">
@@ -425,7 +432,7 @@
                     </select>
                 </div>
 
-                <div>
+                <div id="nameGroup">
                     <label id="nameLabel" for="name" class="mb-1.5 block text-sm font-medium">Nama Produk</label>
                     <input id="name" required placeholder="Masukkan nama"
                         class="w-full rounded-xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-[#FF8000]">
@@ -541,19 +548,22 @@
         // ========== MODAL ==========
         function openModal(mode, variant = null) {
             const isVariant = mode === 'variant';
+            const isSize = mode === 'size';
             EDIT_VARIANT_ID = variant ? variant.id : null;
 
             document.getElementById('mode').value = mode;
             document.getElementById('modalTitle').textContent = isVariant
                 ? (variant ? 'Edit Varian' : 'Tambah Varian')
-                : 'Tambah Produk';
+                : (isSize ? 'Tambah Ukuran' : 'Tambah Produk');
             document.getElementById('nameLabel').textContent = isVariant ? 'Nama Varian' : 'Nama Produk';
             document.getElementById('priceLabel').textContent = isVariant ? 'Tambahan Harga (Rp)' : 'Harga (Rp)';
 
-            show('productGroup', isVariant && !variant);
+            show('nameGroup', !isSize);
+            show('productGroup', (isVariant && !variant) || isSize);
             show('typeGroup', isVariant);
             show('sizeGroup', !isVariant);
             show('stockGroup', !isVariant);
+            document.getElementById('name').required = !isSize;
 
             document.getElementById('name').value = variant ? variant.name : '';
             document.getElementById('type').value = variant ? variant.type : 'filling';
@@ -603,6 +613,15 @@
                         const pid = document.getElementById('productSelect').value;
                         await api('POST', `/owner/api/produk/${pid}/varian`, { ...body, is_available: true });
                     }
+                } else if (mode === 'size') {
+                    if (price === '') throw new Error('Harga wajib diisi.');
+
+                    const stock = document.getElementById('stock').value;
+                    await api('POST', `/owner/api/produk/${document.getElementById('productSelect').value}/ukuran`, {
+                        size_name: document.getElementById('size').value,
+                        base_price: Number(price),
+                        stock: stock === '' ? 0 : Number(stock),
+                    });
                 } else {
                     const res = await api('POST', '/owner/api/produk', { name });
                     const stock = document.getElementById('stock').value;
