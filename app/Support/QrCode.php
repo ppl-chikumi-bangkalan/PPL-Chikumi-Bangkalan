@@ -20,7 +20,7 @@ class QrCode
         }
 
         try {
-            $renderer = new ImageRenderer(new RendererStyle($ukuran, 2), new SvgImageBackEnd());
+            $renderer = new ImageRenderer(new RendererStyle($ukuran, 2), new SvgImageBackEnd);
 
             return (new Writer($renderer))->writeString($isi);
         } catch (Throwable $e) {
