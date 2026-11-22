@@ -71,6 +71,8 @@
                     </label>
                 </section>
 
+                @include('components.owner.laba-rugi')
+
                 <!-- REKAP PENDAPATAN (data contoh) -->
                 <section id="rekapPendapatan" class="overflow-hidden rounded-[18px] border-[1.5px] border-[#EDE6DF] bg-white">
                 <!-- REKAP HARIAN -->
