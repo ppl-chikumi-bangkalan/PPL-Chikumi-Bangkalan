@@ -126,6 +126,7 @@ Route::middleware('auth')->group(function () {
         Route::get('kota', [ShippingCostController::class, 'cities'])->name('customer.kota');
         Route::get('pesanan', [OrderController::class, 'index'])->name('customer.pesanan.index');
         Route::post('pesanan/checkout', [OrderController::class, 'checkout'])->name('customer.pesanan.checkout');
+        Route::get('pesanan/{pesanan}', [OrderController::class, 'show'])->whereNumber('pesanan')->name('customer.pesanan.show');
         Route::patch('pesanan/{pesanan}/batal', [OrderController::class, 'cancel'])->whereNumber('pesanan')->name('customer.pesanan.batal');
         Route::get('pesanan/{pesanan}/pembayaran', [PaymentController::class, 'show'])->whereNumber('pesanan')->name('customer.pesanan.pembayaran');
         Route::post('pesanan/{pesanan}/bayar', [PaymentController::class, 'charge'])->whereNumber('pesanan')->name('customer.pesanan.bayar');
@@ -245,6 +246,7 @@ Route::prefix('frontend/customer/api')->group(function () {
     Route::get('kota', [ShippingCostController::class, 'cities']);
     Route::get('pesanan', [OrderController::class, 'index']);
     Route::post('pesanan/checkout', [OrderController::class, 'checkout']);
+    Route::get('pesanan/{pesanan}', [OrderController::class, 'show'])->whereNumber('pesanan');
     Route::patch('pesanan/{pesanan}/batal', [OrderController::class, 'cancel'])->whereNumber('pesanan');
     Route::get('pesanan/{pesanan}/pembayaran', [PaymentController::class, 'show'])->whereNumber('pesanan');
     Route::post('pesanan/{pesanan}/bayar', [PaymentController::class, 'charge'])->whereNumber('pesanan');
