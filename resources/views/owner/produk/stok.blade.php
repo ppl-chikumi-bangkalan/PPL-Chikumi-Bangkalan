@@ -36,13 +36,13 @@
                 'min' => $size->min_stock . ' pcs',
                 'used' => $rata > 0 ? number_format($rata, 1, ',', '.') . ' pcs' : '-',
                 'suggestion' => $suggestion > 0 ? $suggestion . ' pcs' : '-',
-                'suggestion_class' => $empty ? 'text-red-600' : ($low || $suggestion > 0 ? 'text-orange-600' : ''),
+                'suggestion_class' => $empty || $low ? 'text-[#E03131]' : ($suggestion > 0 ? 'text-orange-600' : ''),
                 'cukup' => $cukup === null ? '-' : $cukup . ' hari',
                 'add' => $suggestion,
                 'size_id' => $size->id,
-                'row_class' => $empty || $low ? 'bg-red-50/60' : '',
-                'status' => $empty ? 'Habis' : ($low ? 'Menipis' : 'Aman'),
-                'badge' => $empty ? 'bg-red-100 text-red-600' : ($low ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'),
+                'row_class' => $empty || $low ? 'bg-[#FDECEC] text-[#E03131]' : '',
+                'status' => $empty ? 'Habis' : ($low ? 'Minimum' : 'Aman'),
+                'badge' => $empty || $low ? 'bg-[#FDECEC] text-[#E03131]' : 'bg-green-100 text-green-600',
             ]);
         }
 
@@ -60,9 +60,9 @@
                 'cukup' => '-',
                 'add' => 0,
                 'size_id' => null,
-                'row_class' => $variant->is_available ? '' : 'bg-red-50/60',
+                'row_class' => $variant->is_available ? '' : 'bg-[#FDECEC] text-[#E03131]',
                 'status' => $variant->is_available ? 'Tersedia' : 'Habis',
-                'badge' => $variant->is_available ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600',
+                'badge' => $variant->is_available ? 'bg-green-100 text-green-600' : 'bg-[#FDECEC] text-[#E03131]',
             ]);
         }
 

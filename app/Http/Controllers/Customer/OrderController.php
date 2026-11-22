@@ -22,35 +22,109 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
+        $filter = $request->validate([
+            'status' => ['nullable', Rule::in(Order::STATUS)],
+        ]);
+
         $orders = Order::with(['items.productSize.product:id,name,image_url', 'items.variants'])
             ->where('customer_id', $this->customerId($request))
+            ->when($filter['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->latest('id')
             ->get()
-            ->map(fn (Order $o) => [
-                'id' => $o->id,
-                'nomor' => $o->order_number,
-                'metode' => $o->delivery_method,
-                'alamat' => $o->shipping_address,
-                'subtotal' => (float) $o->subtotal,
-                'ongkir' => (float) $o->shipping_cost,
-                'total' => (float) $o->grand_total,
-                'pembayaran' => $o->payment_type,
-                'status' => $o->status,
-                'tanggal' => $o->created_at->format('Y-m-d H:i'),
-                'item' => $o->items->map(fn (OrderItem $i) => [
-                    'produk' => $i->productSize->product->name,
-                    'gambar' => $i->productSize->product->image_url,
-                    'ukuran' => $i->productSize->size_name,
-                    'varian' => $i->variants->pluck('name'),
-                    'harga_satuan' => (float) $i->unit_price,
-                    'quantity' => $i->quantity,
-                    'subtotal' => (float) $i->subtotal,
-                ])->values(),
-            ]);
+            ->map(fn (Order $o) => $this->payload($o));
 
         return response()->json([
             'data' => ['total' => $orders->count(), 'pesanan' => $orders->values()],
         ]);
+    }
+
+    // Detail satu pesanan milik pelanggan (dipakai halaman detail & status).
+    public function show(Request $request, Order $pesanan)
+    {
+        abort_unless((int) $pesanan->customer_id === $this->customerId($request), 403);
+
+        $pesanan->load([
+            'items.productSize.product:id,name,image_url',
+            'items.variants',
+            'shippingOrigin',
+            'courier',
+        ]);
+
+        return response()->json(['data' => array_merge($this->payload($pesanan), [
+            'kurir' => $pesanan->courier?->name,
+            'telepon_kurir' => $pesanan->courier?->phone,
+            'titik_asal' => $pesanan->shippingOrigin?->name,
+        ])]);
+    }
+
+    private function payload(Order $order): array
+    {
+        return [
+            'id' => $order->id,
+            'nomor' => $order->order_number,
+            'metode' => $order->delivery_method,
+            'alamat' => $order->shipping_address,
+            'subtotal' => (float) $order->subtotal,
+            'ongkir' => (float) $order->shipping_cost,
+            'total' => (float) $order->grand_total,
+            'pembayaran' => $order->payment_type,
+            'status' => $order->status,
+            'status_label' => $this->statusLabel($order),
+            'tanggal' => $order->created_at->format('Y-m-d H:i'),
+            'dibayar_pada' => $order->paid_at?->format('Y-m-d H:i'),
+            'dikonfirmasi_pada' => $order->shipping_confirmed_at?->format('Y-m-d H:i'),
+            'bisa_dibatalkan' => $order->status === 'unpaid',
+            'jumlah_item' => $order->items->sum('quantity'),
+            'item' => $order->items->map(fn (OrderItem $i) => [
+                'produk' => $i->productSize->product->name,
+                'gambar' => $i->productSize->product->image_url,
+                'ukuran' => $i->productSize->size_name,
+                'varian' => $i->variants->pluck('name'),
+                'harga_satuan' => (float) $i->unit_price,
+                'quantity' => $i->quantity,
+                'subtotal' => (float) $i->subtotal,
+            ])->values(),
+            'timeline' => $this->timeline($order),
+        ];
+    }
+
+    private function statusLabel(Order $order): string
+    {
+        return match ($order->status) {
+            'unpaid' => 'Belum Dibayar',
+            'processing' => 'Diproses',
+            'ready' => $order->delivery_method === DeliveryMethod::COURIER ? 'Siap Dikirim' : 'Siap Diambil',
+            'completed' => 'Selesai',
+            'cancelled' => 'Dibatalkan',
+            default => ucfirst($order->status),
+        };
+    }
+
+    // Tahapan status untuk timeline halaman detail.
+    private function timeline(Order $order): array
+    {
+        $tahap = ['unpaid', 'processing', 'ready', 'completed'];
+        $posisi = array_search($order->status, $tahap, true);
+        $label = [
+            'unpaid' => 'Belum Dibayar',
+            'processing' => 'Diproses',
+            'ready' => $order->delivery_method === DeliveryMethod::COURIER ? 'Siap Dikirim' : 'Siap Diambil',
+            'completed' => 'Selesai',
+        ];
+        $waktu = [
+            'unpaid' => $order->created_at,
+            'processing' => $order->paid_at,
+            'ready' => $order->shipping_confirmed_at,
+            'completed' => $order->status === 'completed' ? $order->updated_at : null,
+        ];
+
+        return collect($tahap)->map(fn (string $kode, int $i) => [
+            'kode' => $kode,
+            'label' => $label[$kode],
+            'waktu' => $waktu[$kode]?->format('Y-m-d H:i'),
+            'selesai' => $posisi !== false && $i < $posisi,
+            'aktif' => $posisi !== false && $i === $posisi,
+        ])->all();
     }
 
     public function checkout(Request $request)
