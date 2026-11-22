@@ -250,8 +250,9 @@
             el('tabelStok').innerHTML = perlu.length ? perlu.map(item => {
                 const habis = item.status === 'habis';
                 const saran = item.saran_restock;
-                const warna = habis ? 'text-red-500' : 'text-orange-600';
-                const latar = habis ? 'bg-red-50' : 'bg-orange-50';
+                const merah = item.status !== 'aman';
+                const warna = merah ? 'text-[#E03131]' : 'text-orange-600';
+                const latar = merah ? 'bg-[#FDECEC]' : 'bg-orange-50';
                 return `<tr class="${latar}">
                     <td class="p-3 font-semibold ${warna}">${item.product} ${item.size}</td>
                     <td class="p-3 ${warna}">${item.stock} pcs</td>
