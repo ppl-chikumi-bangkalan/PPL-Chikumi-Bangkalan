@@ -10,6 +10,8 @@ class ProductSize extends Model
 {
     public const SIZES = ['Regular', 'Large'];
 
+    public const DEFAULT_MIN_STOCK = 5;
+
     protected $fillable = [
         'product_id',
         'size_name',
@@ -22,7 +24,24 @@ class ProductSize extends Model
     {
         return [
             'base_price' => 'decimal:2',
+            'stock' => 'integer',
+            'min_stock' => 'integer',
         ];
+    }
+
+    public function isOutOfStock(): bool
+    {
+        return $this->stock <= 0;
+    }
+
+    public function isBelowMinimum(): bool
+    {
+        return ! $this->isOutOfStock() && $this->stock <= $this->min_stock;
+    }
+
+    public function stockStatus(): string
+    {
+        return $this->isOutOfStock() ? 'habis' : ($this->isBelowMinimum() ? 'menipis' : 'aman');
     }
 
     public function product(): BelongsTo

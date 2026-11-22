@@ -16,7 +16,7 @@ class ProductSizeController extends Controller
             'size_name' => ['required', 'in:Regular,Large'],
             'base_price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
-            'min_stock' => ['nullable', 'integer', 'min:0'],
+            'min_stock' => ['nullable', 'integer', 'min:0', 'max:100000'],
         ]);
 
         $exists = ProductSize::where('product_id', $produk->id)
@@ -29,7 +29,7 @@ class ProductSizeController extends Controller
             ], 422);
         }
 
-        $data['min_stock'] = $data['min_stock'] ?? 5;
+        $data['min_stock'] = $data['min_stock'] ?? ProductSize::DEFAULT_MIN_STOCK;
         $data['product_id'] = $produk->id;
 
         $size = ProductSize::create($data);
@@ -46,8 +46,10 @@ class ProductSizeController extends Controller
             'size_name' => ['required', 'in:Regular,Large'],
             'base_price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
-            'min_stock' => ['nullable', 'integer', 'min:0'],
+            'min_stock' => ['nullable', 'integer', 'min:0', 'max:100000'],
         ]);
+
+        $data['min_stock'] = $data['min_stock'] ?? $ukuran->min_stock;
 
         $taken = ProductSize::where('product_id', $ukuran->product_id)
             ->where('size_name', $data['size_name'])
@@ -64,6 +66,20 @@ class ProductSizeController extends Controller
 
         return response()->json([
             'message' => 'Ukuran berhasil diperbarui.',
+            'data' => $ukuran->fresh(),
+        ]);
+    }
+
+    public function updateMinimum(Request $request, ProductSize $ukuran)
+    {
+        $data = $request->validate([
+            'min_stock' => ['required', 'integer', 'min:0', 'max:100000'],
+        ]);
+
+        $ukuran->update($data);
+
+        return response()->json([
+            'message' => "Batas minimum stok {$ukuran->size_name} menjadi {$ukuran->min_stock} pcs.",
             'data' => $ukuran->fresh(),
         ]);
     }

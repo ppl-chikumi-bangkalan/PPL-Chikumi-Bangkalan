@@ -27,10 +27,10 @@ class ProductController extends Controller
 
         $summary = [
             'total' => $sizes->count() + $variants->count(),
-            'safe' => $sizes->filter(fn ($size) => $size->stock > $size->min_stock)->count()
+            'safe' => $sizes->filter(fn ($size) => $size->stockStatus() === 'aman')->count()
                 + $variants->where('is_available', true)->count(),
-            'low' => $sizes->filter(fn ($size) => $size->stock > 0 && $size->stock <= $size->min_stock)->count(),
-            'empty' => $sizes->where('stock', '<=', 0)->count()
+            'low' => $sizes->filter(fn ($size) => $size->stockStatus() === 'menipis')->count(),
+            'empty' => $sizes->filter(fn ($size) => $size->stockStatus() === 'habis')->count()
                 + $variants->where('is_available', false)->count(),
         ];
 
@@ -83,9 +83,7 @@ class ProductController extends Controller
                     'min_stock' => $size->min_stock,
                     'rata_harian' => $rata,
                     'saran_restock' => MovingAverage::saran($size->stock, $size->min_stock, $rata),
-                    'status' => ! $size->product->is_active || $size->stock <= 0
-                        ? 'habis'
-                        : ($size->stock <= $size->min_stock ? 'menipis' : 'aman'),
+                    'status' => ! $size->product->is_active ? 'habis' : $size->stockStatus(),
                 ];
             });
 

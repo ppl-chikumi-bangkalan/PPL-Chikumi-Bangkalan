@@ -168,6 +168,7 @@ Route::middleware('auth')->group(function () {
         Route::post('produk/{produk}/ukuran', [ProductSizeController::class, 'store'])->whereNumber('produk')->name('owner.ukuran.store');
         Route::put('ukuran/{ukuran}', [ProductSizeController::class, 'update'])->whereNumber('ukuran')->name('owner.ukuran.update');
         Route::patch('ukuran/{ukuran}/stok', [ProductSizeController::class, 'updateStok'])->whereNumber('ukuran')->name('owner.ukuran.stok');
+        Route::patch('ukuran/{ukuran}/minimum', [ProductSizeController::class, 'updateMinimum'])->whereNumber('ukuran')->name('owner.ukuran.minimum');
         Route::delete('ukuran/{ukuran}', [ProductSizeController::class, 'destroy'])->whereNumber('ukuran')->name('owner.ukuran.destroy');
 
         Route::post('produk/{produk}/varian', [VariantController::class, 'store'])->whereNumber('produk')->name('owner.varian.store');
