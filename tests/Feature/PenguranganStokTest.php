@@ -3,8 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\PosTransaction;
+use App\Models\ProductSize;
 use App\Models\StockHistory;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
@@ -111,7 +110,7 @@ class PenguranganStokTest extends TestCase
 
     private function stok(int $sizeId): int
     {
-        return (int) \App\Models\ProductSize::find($sizeId)->stock;
+        return (int) ProductSize::find($sizeId)->stock;
     }
 
     // ---------- Helper pesanan online ----------

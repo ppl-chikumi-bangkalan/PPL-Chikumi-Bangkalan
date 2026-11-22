@@ -19,7 +19,7 @@ function riwayat_waktu(DateTimeImmutable $tanggal): ?DateTimeImmutable
 {
     $mulai = $tanggal->setTime(9, 30);
     $selesai = $tanggal->setTime(21, 0);
-    $sekarang = new DateTimeImmutable();
+    $sekarang = new DateTimeImmutable;
 
     if ($tanggal->format('Y-m-d') === $sekarang->format('Y-m-d')) {
         $selesai = $selesai < $sekarang ? $selesai : $sekarang->modify('-2 minutes');
@@ -29,7 +29,7 @@ function riwayat_waktu(DateTimeImmutable $tanggal): ?DateTimeImmutable
         return null;
     }
 
-    return (new DateTimeImmutable())->setTimestamp(
+    return (new DateTimeImmutable)->setTimestamp(
         random_int($mulai->getTimestamp(), $selesai->getTimestamp())
     );
 }
@@ -81,24 +81,24 @@ function riwayat_status_pesanan(int $umur): string
 $minggu = max(4, min(8, (int) ($argv[1] ?? 8)));
 
 try {
-    $ukuranList = $pdo->query("
+    $ukuranList = $pdo->query('
         SELECT ps.id, ps.product_id, ps.size_name, ps.base_price
         FROM product_sizes ps
         JOIN products p ON p.id = ps.product_id
         WHERE p.is_active = 1
         ORDER BY ps.id
-    ")->fetchAll();
+    ')->fetchAll();
 
     if (! $ukuranList) {
         throw new RuntimeException('Belum ada produk/ukuran aktif. Jalankan php database/migrate.php dan php database/seed.php dulu.');
     }
 
-    $variants = $pdo->query("
+    $variants = $pdo->query('
         SELECT id, product_id, type, name, additional_price
         FROM variants
         WHERE is_available = 1
         ORDER BY id
-    ")->fetchAll();
+    ')->fetchAll();
 
     $varianPerProduk = [];
     foreach ($variants as $varian) {
@@ -116,11 +116,11 @@ try {
     }
 
     $alamatPerPelanggan = [];
-    $alamatRows = $pdo->query("
+    $alamatRows = $pdo->query('
         SELECT customer_id, recipient_name, phone, detail, city, postal_code
         FROM delivery_addresses
         ORDER BY id
-    ")->fetchAll();
+    ')->fetchAll();
     foreach ($alamatRows as $alamat) {
         $alamatPerPelanggan[$alamat['customer_id']] ??= trim(
             "{$alamat['recipient_name']} ({$alamat['phone']}) — {$alamat['detail']}, {$alamat['city']} {$alamat['postal_code']}"
@@ -148,45 +148,45 @@ try {
     $pdo->exec("DELETE FROM pos_transactions WHERE transaction_number LIKE 'POS-SEED-%'");
     $pdo->exec("DELETE FROM orders WHERE order_number LIKE 'CHKM-SEED-%'");
 
-    $insHistory = $pdo->prepare("
+    $insHistory = $pdo->prepare('
         INSERT INTO stock_histories
             (product_size_id, user_id, type, quantity, source, reference_id, notes, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ");
+    ');
 
-    $insPos = $pdo->prepare("
+    $insPos = $pdo->prepare('
         INSERT INTO pos_transactions
             (transaction_number, cashier_id, customer_name, total_amount, payment_method, amount_paid, change_amount, status, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ");
-    $insPosItem = $pdo->prepare("
+    ');
+    $insPosItem = $pdo->prepare('
         INSERT INTO pos_transaction_items
             (pos_transaction_id, product_size_id, unit_price, quantity, subtotal)
         VALUES (?, ?, ?, ?, ?)
-    ");
-    $insPosVariant = $pdo->prepare("
+    ');
+    $insPosVariant = $pdo->prepare('
         INSERT INTO pos_item_variants
             (pos_transaction_item_id, variant_id, variant_price)
         VALUES (?, ?, ?)
-    ");
+    ');
 
-    $insOrder = $pdo->prepare("
+    $insOrder = $pdo->prepare('
         INSERT INTO orders
             (order_number, customer_id, delivery_method, shipping_address, shipping_origin_id, courier_id,
              shipping_confirmed_at, shipping_confirmed_by, subtotal, shipping_cost, grand_total,
              status, payment_type, paid_at, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ");
-    $insOrderItem = $pdo->prepare("
+    ');
+    $insOrderItem = $pdo->prepare('
         INSERT INTO order_items
             (order_id, product_size_id, unit_price, quantity, subtotal)
         VALUES (?, ?, ?, ?, ?)
-    ");
-    $insOrderVariant = $pdo->prepare("
+    ');
+    $insOrderVariant = $pdo->prepare('
         INSERT INTO order_item_variants
             (order_item_id, variant_id, variant_price)
         VALUES (?, ?, ?)
-    ");
+    ');
 
     $today = new DateTimeImmutable('today');
     $totalHari = $minggu * 7;
@@ -322,7 +322,7 @@ try {
             $dibayarPada = null;
             if ($sudahBayar) {
                 $dibayarPada = $waktu->modify('+'.random_int(1, 45).' minutes');
-                $sekarang = new DateTimeImmutable();
+                $sekarang = new DateTimeImmutable;
                 if ($dibayarPada > $sekarang) {
                     $dibayarPada = $sekarang;
                 }
@@ -334,7 +334,7 @@ try {
             $konfirmasiOleh = null;
             if ($metodeKirim === 'courier' && in_array($status, ['ready', 'completed'], true) && random_int(1, 100) <= 80) {
                 $konfirmasiPada = $waktu->modify('+'.random_int(10, 90).' minutes');
-                $sekarang = new DateTimeImmutable();
+                $sekarang = new DateTimeImmutable;
                 if ($konfirmasiPada > $sekarang) {
                     $konfirmasiPada = $sekarang;
                 }

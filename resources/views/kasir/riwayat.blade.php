@@ -1,14 +1,25 @@
+@php
+    $apiBase = auth()->check() ? '/kasir/api' : '/frontend/kasir/api';
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Riwayat Transaksi - Chikumi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css'])
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #kertasStruk, #kertasStruk * { visibility: visible; }
+            #kertasStruk { position: fixed; left: 0; top: 0; width: 302px; box-shadow: none; }
+        }
+    </style>
 </head>
 
 <body class="min-h-screen bg-[#FFF9F2] font-['Poppins'] text-[#1E1B18]">
@@ -40,12 +51,12 @@
             </a>
         </nav>
         <div class="ml-auto flex items-center gap-4">
-            <span class="grid h-10 w-10 place-items-center rounded-full bg-[#FF8000] text-base font-bold text-white">K</span>
+            <span class="grid h-10 w-10 place-items-center rounded-full bg-[#FF8000] text-base font-bold text-white">{{ strtoupper(substr(auth()->user()->name ?? 'K', 0, 1)) }}</span>
             <div class="leading-tight">
-                <p class="text-sm font-semibold">Kasir</p>
+                <p class="text-sm font-semibold">{{ auth()->user()->name ?? 'Kasir' }}</p>
                 <p class="text-xs text-[#6B645D]">Kasir</p>
             </div>
-            <form action="/logout" method="POST">
+            <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit" aria-label="Keluar" class="grid h-11 w-11 place-items-center rounded-xl border border-[#EDE6DF] bg-white text-[#E03131] transition hover:bg-[#FDECEC]">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-5 w-5">
@@ -59,11 +70,11 @@
     <main class="flex min-h-[calc(100vh-76px)]">
 
         <!-- DAFTAR TRANSAKSI -->
-        <section class="group flex-1 p-7">
+        <section class="flex-1 p-7">
             <div class="flex items-start justify-between gap-4">
                 <div>
                     <h2 class="text-2xl font-bold">Riwayat Transaksi</h2>
-                    <p class="mt-0.5 text-sm text-[#6B645D]">Sabtu, 31 Okt 2026 · Shift 15.00–21.00</p>
+                    <p id="subjudulPeriode" class="mt-0.5 text-sm text-[#6B645D]">Memuat transaksi…</p>
                 </div>
                 <label class="mt-2 flex items-center gap-2 rounded-xl border border-[#EDE6DF] bg-white px-4 py-2.5 text-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-4 w-4 text-[#6B645D]">
@@ -100,23 +111,23 @@
             <div class="mt-5 grid grid-cols-4 gap-3.5">
                 <div class="rounded-2xl border border-[#EDE6DF] bg-white p-4">
                     <p class="text-xs text-[#6B645D]">Transaksi</p>
-                    <p class="mt-1 text-lg font-bold">24</p>
+                    <p id="ringkasTransaksi" class="mt-1 text-lg font-bold">0</p>
                 </div>
                 <div class="rounded-2xl border border-[#EDE6DF] bg-white p-4">
                     <p class="text-xs text-[#6B645D]">Tunai</p>
-                    <p class="mt-1 text-lg font-bold">Rp 356.000</p>
+                    <p id="ringkasTunai" class="mt-1 text-lg font-bold">Rp 0</p>
                 </div>
                 <div class="rounded-2xl border border-[#EDE6DF] bg-white p-4">
                     <p class="text-xs text-[#6B645D]">QRIS / VA</p>
-                    <p class="mt-1 text-lg font-bold">Rp 256.000</p>
+                    <p id="ringkasNonTunai" class="mt-1 text-lg font-bold">Rp 0</p>
                 </div>
                 <div class="rounded-2xl bg-[#FF8000] p-4 text-white">
                     <p class="text-xs text-white/85">Total</p>
-                    <p class="mt-1 text-lg font-bold">Rp 612.000</p>
+                    <p id="ringkasTotal" class="mt-1 text-lg font-bold">Rp 0</p>
                 </div>
             </div>
 
-            <!-- TABEL TRANSAKSI (data contoh) -->
+            <!-- TABEL TRANSAKSI (diisi dari GET /kasir/api/riwayat) -->
             <div class="mt-5 overflow-hidden rounded-2xl border border-[#EDE6DF] bg-white">
                 <table class="w-full text-left text-sm">
                     <thead class="bg-[#F7F3EF] text-[11px] font-semibold tracking-wide text-[#6B645D]">
@@ -131,69 +142,8 @@
                         </tr>
                     </thead>
                     <tbody id="daftarTransaksi" class="divide-y divide-[#EDE6DF]">
-                        <tr class="h-[50px] group-has-[#sumber-online:checked]:hidden">
-                            <td class="pl-[18px] font-semibold">#CK-0130</td>
-                            <td class="text-xs text-[#6B645D]">16.58</td>
-                            <td><span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-xs font-medium text-[#6B645D]"><span class="h-1.5 w-1.5 rounded-full bg-[#A39B93]"></span>Kasir</span></td>
-                            <td>2× Reguler · Mentaiko · BBQ</td>
-                            <td>Tunai</td>
-                            <td class="font-semibold">Rp 40.000</td>
-                            <td class="pr-[18px]"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-xs font-medium text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas</span></td>
-                        </tr>
-                        <tr class="h-[50px] group-has-[#sumber-online:checked]:hidden">
-                            <td class="pl-[18px] font-semibold">#CK-0127</td>
-                            <td class="text-xs text-[#6B645D]">16.10</td>
-                            <td><span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-xs font-medium text-[#6B645D]"><span class="h-1.5 w-1.5 rounded-full bg-[#A39B93]"></span>Kasir</span></td>
-                            <td>1× Reguler · Tartar · Teriyaki</td>
-                            <td>QRIS</td>
-                            <td class="font-semibold">Rp 21.000</td>
-                            <td class="pr-[18px]"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-xs font-medium text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas</span></td>
-                        </tr>
-                        <tr class="h-[50px] group-has-[#sumber-kasir:checked]:hidden">
-                            <td class="pl-[18px] font-semibold">#CK-0126</td>
-                            <td class="text-xs text-[#6B645D]">15.45</td>
-                            <td><span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-xs font-medium text-[#D96C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#FF8000]"></span>Online</span></td>
-                            <td>1× Reguler · Mentaiko · Sweetcorn</td>
-                            <td>VA</td>
-                            <td class="font-semibold">Rp 20.000</td>
-                            <td class="pr-[18px]"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-xs font-medium text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Selesai</span></td>
-                        </tr>
-                        <tr class="h-[50px] group-has-[#sumber-online:checked]:hidden">
-                            <td class="pl-[18px] font-semibold">#CK-0125</td>
-                            <td class="text-xs text-[#6B645D]">15.32</td>
-                            <td><span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-xs font-medium text-[#6B645D]"><span class="h-1.5 w-1.5 rounded-full bg-[#A39B93]"></span>Kasir</span></td>
-                            <td>3 pcs Chikumi Reguler</td>
-                            <td>QRIS</td>
-                            <td class="font-semibold">Rp 61.000</td>
-                            <td class="pr-[18px]"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-xs font-medium text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas</span></td>
-                        </tr>
-                        <!-- baris terpilih (detailnya tampil di panel kanan) -->
-                        <tr class="h-[50px] bg-[#FFF9F2] shadow-[inset_3px_0_0_#FF8000] group-has-[#sumber-kasir:checked]:hidden">
-                            <td class="pl-[18px] font-semibold">#CK-0124</td>
-                            <td class="text-xs text-[#6B645D]">15.20</td>
-                            <td><span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-xs font-medium text-[#D96C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#FF8000]"></span>Online</span></td>
-                            <td>2× Large · Garlic CC · Korean Spicy</td>
-                            <td>QRIS</td>
-                            <td class="font-semibold">Rp 54.000</td>
-                            <td class="pr-[18px]"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-xs font-medium text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Selesai</span></td>
-                        </tr>
-                        <tr class="h-[50px] group-has-[#sumber-online:checked]:hidden">
-                            <td class="pl-[18px] font-semibold">#CK-0123</td>
-                            <td class="text-xs text-[#6B645D]">15.08</td>
-                            <td><span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-xs font-medium text-[#6B645D]"><span class="h-1.5 w-1.5 rounded-full bg-[#A39B93]"></span>Kasir</span></td>
-                            <td>1× Reguler · Cream Cheese · BBQ</td>
-                            <td>Tunai</td>
-                            <td class="font-semibold">Rp 20.000</td>
-                            <td class="pr-[18px]"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-xs font-medium text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas</span></td>
-                        </tr>
-                        <tr class="h-[50px] group-has-[#sumber-online:checked]:hidden">
-                            <td class="pl-[18px] font-semibold">#CK-0122</td>
-                            <td class="text-xs text-[#6B645D]">15.02</td>
-                            <td><span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-xs font-medium text-[#6B645D]"><span class="h-1.5 w-1.5 rounded-full bg-[#A39B93]"></span>Kasir</span></td>
-                            <td>3 pcs (Reguler &amp; Large)</td>
-                            <td>Tunai</td>
-                            <td class="font-semibold">Rp 74.000</td>
-                            <td class="pr-[18px]"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-xs font-medium text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas</span></td>
+                        <tr>
+                            <td colspan="7" class="px-[18px] py-6 text-center text-sm text-[#6B645D]">Memuat transaksi…</td>
                         </tr>
                     </tbody>
                 </table>
@@ -203,46 +153,22 @@
         <!-- DETAIL TRANSAKSI -->
         <aside id="detailTransaksi" class="flex w-[380px] shrink-0 flex-col border-l border-[#EDE6DF] bg-white px-[25px] py-6">
             <div class="flex items-center justify-between">
-                <h3 class="text-[22px] font-bold">#CK-0124</h3>
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-xs font-medium text-[#D96C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#FF8000]"></span>Online</span>
+                <h3 id="detailNomor" class="text-[22px] font-bold">—</h3>
+                <span id="detailSumber"></span>
             </div>
-            <p class="mt-3 text-sm text-[#6B645D]">Sabtu, 31 Okt 2026 · 15.20 · Budi</p>
+            <p id="detailSubjudul" class="mt-3 text-sm text-[#6B645D]">Pilih transaksi untuk melihat detail.</p>
 
-            <div class="mt-3.5 rounded-xl bg-[#F7F3EF] p-3.5">
-                <div class="flex justify-between text-sm font-semibold">
-                    <span>2× Large · Dip Sauce</span>
-                    <span>Rp 54.000</span>
-                </div>
-                <p class="mt-1.5 text-xs text-[#6B645D]">Garlic Cream Cheese · Korean Spicy</p>
-            </div>
+            <div id="detailItem" class="mt-3.5 space-y-2.5"></div>
 
             <div class="my-3.5 h-px bg-[#EDE6DF]"></div>
 
-            <dl class="space-y-3.5 text-sm">
-                <div class="flex justify-between">
-                    <dt class="text-[#6B645D]">Metode</dt>
-                    <dd class="font-semibold">QRIS</dd>
-                </div>
-                <div class="flex justify-between">
-                    <dt class="text-[#6B645D]">Pembayaran</dt>
-                    <dd class="font-semibold text-[#1F9D55]">Lunas</dd>
-                </div>
-                <div class="flex justify-between">
-                    <dt class="text-[#6B645D]">Pengambilan</dt>
-                    <dd class="font-semibold">Ambil di Tempat</dd>
-                </div>
-                <div class="flex justify-between">
-                    <dt class="text-[#6B645D]">Status</dt>
-                    <dd class="font-semibold">Selesai · 15.40</dd>
-                </div>
-            </dl>
+            <dl id="detailInfo" class="space-y-3.5 text-sm"></dl>
 
             <div class="mt-3.5 flex items-center justify-between rounded-xl bg-[#FFF3E6] px-3.5 py-3.5">
                 <span class="text-base font-semibold">Total</span>
-                <span class="text-[22px] font-bold text-[#FF8000]">Rp 54.000</span>
+                <span id="detailTotal" class="text-[22px] font-bold text-[#FF8000]">Rp 0</span>
             </div>
 
-            <!-- tombol cetak ulang: backend arahkan ke struk transaksi ini -->
             <button type="button" id="btnCetakUlang" class="mt-auto flex h-[52px] items-center justify-center gap-2 rounded-xl border-[1.5px] border-[#FF8000] bg-white text-base font-semibold text-[#FF8000] transition hover:bg-[#FFF3E6]">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-[18px] w-[18px]">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 3.75h13.5v16.5l-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5V3.75Z" />
@@ -252,6 +178,200 @@
         </aside>
     </main>
 
+    @include('components.kasir.struk')
+
+    <script>
+        const API_BASE = @json($apiBase);
+        const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const el = id => document.getElementById(id);
+        const rp = n => 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Number(n) || 0));
+        const angka = n => new Intl.NumberFormat('id-ID').format(Math.round(Number(n) || 0));
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+
+        let transaksi = [];
+        let dipilih = null;
+
+        const badgeSumber = t => t.tipe === 'online'
+            ? '<span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-xs font-medium text-[#D96C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#FF8000]"></span>Online</span>'
+            : '<span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-xs font-medium text-[#6B645D]"><span class="h-1.5 w-1.5 rounded-full bg-[#A39B93]"></span>Kasir</span>';
+
+        const badgeStatus = t => {
+            const lunas = ['paid', 'ready', 'completed'].includes(t.status);
+            const gaya = lunas
+                ? 'bg-[#E6F6EC] text-[#1F9D55]'
+                : t.status === 'processing'
+                    ? 'bg-[#FFF3E6] text-[#D96C00]'
+                    : 'bg-[#FDECEC] text-[#E03131]';
+            const titik = lunas ? 'bg-[#1F9D55]' : t.status === 'processing' ? 'bg-[#FF8000]' : 'bg-[#E03131]';
+            return `<span class="inline-flex items-center gap-1.5 rounded-full ${gaya} px-2.5 py-1 text-xs font-medium"><span class="h-1.5 w-1.5 rounded-full ${titik}"></span>${esc(t.status_label)}</span>`;
+        };
+
+        const ringkasItem = t => t.item
+            .map(i => `${i.quantity}× ${i.ukuran}${i.varian.length ? ' · ' + i.varian.join(' · ') : ''}`)
+            .join(', ');
+
+        function render() {
+            if (!transaksi.length) {
+                el('daftarTransaksi').innerHTML = '<tr><td colspan="7" class="px-[18px] py-6 text-center text-sm text-[#6B645D]">Belum ada transaksi pada periode ini.</td></tr>';
+                return;
+            }
+
+            el('daftarTransaksi').innerHTML = transaksi.map(t => {
+                const aktif = dipilih && dipilih.tipe === t.tipe && dipilih.id === t.id;
+                const jam = t.waktu.slice(11, 16).replace(':', '.');
+                return `
+                    <tr class="h-[50px] cursor-pointer transition hover:bg-[#FFF9F2] ${aktif ? 'bg-[#FFF9F2] shadow-[inset_3px_0_0_#FF8000]' : ''}"
+                        data-tipe="${t.tipe}" data-id="${t.id}">
+                        <td class="pl-[18px] font-semibold">${esc(t.nomor)}</td>
+                        <td class="text-xs text-[#6B645D]">${jam}</td>
+                        <td>${badgeSumber(t)}</td>
+                        <td class="max-w-[220px] truncate pr-3">${esc(ringkasItem(t))}</td>
+                        <td>${esc(t.metode_label)}</td>
+                        <td class="font-semibold">${rp(t.total)}</td>
+                        <td class="pr-[18px]">${badgeStatus(t)}</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function isiDetail(t) {
+            el('detailNomor').textContent = t.nomor;
+            el('detailSumber').innerHTML = badgeSumber(t);
+            el('detailSubjudul').textContent = `${t.waktu} · ${t.pelanggan}${t.kasir ? ' · ' + t.kasir : ''}`;
+
+            el('detailItem').innerHTML = t.item.map(i => `
+                <div class="rounded-xl bg-[#F7F3EF] p-3.5">
+                    <div class="flex justify-between text-sm font-semibold">
+                        <span>${i.quantity}× ${esc(i.ukuran)}</span>
+                        <span>${rp(i.subtotal)}</span>
+                    </div>
+                    <p class="mt-1.5 text-xs text-[#6B645D]">${esc(i.varian.join(' · ') || 'Tanpa varian')}</p>
+                </div>`).join('');
+
+            const info = [
+                ['Metode', t.metode_label],
+                ['Pembayaran', t.status_label],
+                ['Pengambilan', t.pengambilan],
+            ];
+            if (t.tipe === 'online' && t.ongkir > 0) info.push(['Ongkir', rp(t.ongkir)]);
+            if (t.tipe === 'kasir') {
+                info.push(['Dibayar', rp(t.dibayar)]);
+                info.push(['Kembalian', rp(t.kembalian)]);
+            }
+            info.push(['Status', t.status_label]);
+
+            el('detailInfo').innerHTML = info.map(([label, nilai]) => `
+                <div class="flex justify-between gap-4">
+                    <dt class="text-[#6B645D]">${esc(label)}</dt>
+                    <dd class="text-right font-semibold">${esc(nilai)}</dd>
+                </div>`).join('');
+
+            el('detailTotal').textContent = rp(t.total);
+        }
+
+        function pilih(t) {
+            dipilih = t;
+            render();
+            isiDetail(t);
+        }
+
+        function kosongkanDetail() {
+            dipilih = null;
+            el('detailNomor').textContent = '—';
+            el('detailSumber').innerHTML = '';
+            el('detailSubjudul').textContent = 'Pilih transaksi untuk melihat detail.';
+            el('detailItem').innerHTML = '';
+            el('detailInfo').innerHTML = '';
+            el('detailTotal').textContent = rp(0);
+        }
+
+        function isiStruk(t) {
+            const jumlah = t.item.reduce((total, i) => total + i.quantity, 0);
+            el('strukNomor').textContent = t.nomor;
+            el('strukTanggal').textContent = t.waktu;
+            el('strukKasir').textContent = t.kasir || '-';
+            el('strukPelanggan').textContent = t.pelanggan || '-';
+            el('strukItem').innerHTML = t.item.map(i => `
+                <div>
+                    <p class="font-bold">${esc(i.produk)} · ${esc(i.ukuran)}</p>
+                    <p class="text-[11px] text-[#6B645D]">${esc(i.varian.join(' · ') || 'Tanpa varian')}</p>
+                    <div class="flex justify-between">
+                        <span>${i.quantity} x ${angka(i.harga_satuan)}</span>
+                        <span>${angka(i.subtotal)}</span>
+                    </div>
+                </div>`).join('');
+            el('strukSubtotalQty').textContent = `Subtotal (${jumlah} pcs)`;
+            el('strukSubtotal').textContent = angka(t.total);
+            el('strukTotal').textContent = rp(t.total);
+            el('strukMetode').textContent = t.metode_label;
+            el('strukDibayar').textContent = angka(t.dibayar);
+            el('strukKembalian').textContent = angka(t.kembalian);
+            el('strukStatus').textContent = String(t.status_label).toUpperCase();
+        }
+
+        function cetakStruk() {
+            window.print();
+        }
+
+        async function muat() {
+            const params = new URLSearchParams({
+                sumber: document.querySelector('input[name="sumber"]:checked').value,
+                periode: document.querySelector('select[name="periode"]').value,
+                cari: document.querySelector('input[name="cari"]').value.trim(),
+            });
+
+            try {
+                const response = await fetch(`${API_BASE}/riwayat?${params}`, {
+                    headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                });
+                const hasil = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(hasil.message || 'Gagal memuat riwayat.');
+
+                transaksi = hasil.data.transaksi || [];
+                const ringkasan = hasil.data.ringkasan || {};
+                el('ringkasTransaksi').textContent = ringkasan.transaksi ?? 0;
+                el('ringkasTunai').textContent = rp(ringkasan.tunai ?? 0);
+                el('ringkasNonTunai').textContent = rp(ringkasan.non_tunai ?? 0);
+                el('ringkasTotal').textContent = rp(ringkasan.total ?? 0);
+                el('subjudulPeriode').textContent = `${ringkasan.transaksi ?? 0} transaksi · ${transaksi.length ? 'terbaru ' + transaksi[0].waktu : 'belum ada data'}`;
+
+                if (transaksi.length) {
+                    pilih(transaksi[0]);
+                } else {
+                    kosongkanDetail();
+                    render();
+                }
+            } catch (error) {
+                el('daftarTransaksi').innerHTML = `<tr><td colspan="7" class="px-[18px] py-6 text-center text-sm text-[#E03131]">${esc(error.message)}</td></tr>`;
+            }
+        }
+
+        el('daftarTransaksi').addEventListener('click', event => {
+            const baris = event.target.closest('tr[data-tipe]');
+            if (!baris) return;
+            const t = transaksi.find(x => x.tipe === baris.dataset.tipe && x.id === Number(baris.dataset.id));
+            if (t) pilih(t);
+        });
+
+        document.querySelectorAll('input[name="sumber"]').forEach(input => input.addEventListener('change', muat));
+        document.querySelector('select[name="periode"]').addEventListener('change', muat);
+
+        let timerCari = null;
+        document.querySelector('input[name="cari"]').addEventListener('input', () => {
+            clearTimeout(timerCari);
+            timerCari = setTimeout(muat, 300);
+        });
+
+        el('btnCetakUlang').addEventListener('click', () => {
+            if (!dipilih) {
+                alert('Pilih transaksi dulu.');
+                return;
+            }
+            isiStruk(dipilih);
+            location.hash = '#struk';
+        });
+
+        muat();
+    </script>
 </body>
 
 </html>

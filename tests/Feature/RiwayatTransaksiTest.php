@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\PosTransaction;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
@@ -15,11 +17,9 @@ use Tests\TestCase;
  * Endpoint: GET /kasir/riwayat (role owner,cashier) dan
  * GET /frontend/kasir/riwayat (pratinjau tanpa login).
  *
- * Catatan: per commit 4898fb5 halaman masih berupa mockup statis
- * (data contoh di Blade, tanpa JS maupun API riwayat). Tes di bawah
- * mengunci perilaku akses & render yang ada sekarang; kriteria
- * "menampilkan transaksi dari database" belum terpenuhi dan ditandai
- * lewat tes yang di-skip (lihat docs/LAPORAN-TESTING-RIWAYAT-TRANSAKSI.md).
+ * Halaman kini memuat data lewat GET /kasir/api/riwayat: transaksi kasir
+ * (pos_transactions) digabung dengan pesanan online yang sudah lunas.
+ * Tes mengunci akses halaman, filter sumber/periode, ringkasan, dan cetak ulang.
  */
 class RiwayatTransaksiTest extends TestCase
 {
@@ -51,8 +51,6 @@ class RiwayatTransaksiTest extends TestCase
 
     private function buatSkemaPesanan(): void
     {
-        // Halaman belum membaca tabel ini, tetapi skema disiapkan agar
-        // tes siap dipakai saat riwayat disambungkan ke database.
         if (Schema::hasTable('orders')) {
             return;
         }
@@ -71,6 +69,23 @@ class RiwayatTransaksiTest extends TestCase
             $table->string('payment_type', 50)->nullable();
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();
+        });
+
+        Schema::create('order_items', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_id');
+            $table->foreignId('product_size_id');
+            $table->decimal('unit_price', 12, 2);
+            $table->integer('quantity');
+            $table->decimal('subtotal', 12, 2);
+            $table->timestamp('created_at')->nullable();
+        });
+
+        Schema::create('order_item_variants', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_item_id');
+            $table->foreignId('variant_id');
+            $table->decimal('variant_price', 12, 2);
         });
     }
 
@@ -113,52 +128,32 @@ class RiwayatTransaksiTest extends TestCase
             ->assertSee('Riwayat Transaksi');
     }
 
-    // ---------- Render & isi halaman ----------
+    // ---------- Halaman terhubung ke API ----------
 
-    public function test_halaman_menampilkan_ringkasan_dan_tujuh_baris_contoh(): void
-    {
-        $res = $this->actingAs($this->kasir)
-            ->get('/kasir/riwayat')
-            ->assertOk()
-            ->assertSee('Transaksi')
-            ->assertSee('Rp 612.000')
-            ->assertSee('Sabtu, 31 Okt 2026');
-
-        // Angka ringkasan tidak berubah walau database berisi transaksi lain.
-        $this->assertSame(7, substr_count($res->getContent(), '<tr class="h-[50px]'));
-        $res->assertSee('#CK-0130')->assertSee('#CK-0124');
-    }
-
-    public function test_halaman_tidak_memuat_skrip_atau_handler_klik(): void
+    public function test_halaman_memuat_wadah_dinamis_dan_skrip_api(): void
     {
         $res = $this->actingAs($this->kasir)->get('/kasir/riwayat')->assertOk();
+
         $html = $res->getContent();
-
-        // Tidak ada JS sama sekali: tombol & baris tidak punya handler.
-        $this->assertStringNotContainsString('<script', $html);
-        $this->assertStringNotContainsString('onclick=', $html);
-        $this->assertStringNotContainsString('addEventListener', $html);
-
-        // Tombol cetak ulang ada, tetapi hanya elemen visual.
+        $this->assertStringContainsString('id="daftarTransaksi"', $html);
+        $this->assertStringContainsString('id="ringkasTotal"', $html);
         $this->assertStringContainsString('id="btnCetakUlang"', $html);
-        $this->assertStringContainsString('type="button"', $html);
+        $this->assertStringContainsString('<script', $html);
+        $this->assertStringContainsString('/kasir/api/riwayat', $html);
     }
 
-    public function test_harga_contoh_di_halaman_cocok_dengan_angka_ringkasan(): void
+    public function test_pratinjau_frontend_memakai_api_tanpa_login(): void
     {
-        // Ringkasan menjumlahkan angka contoh yang memang ditulis tangan:
-        // Tunai Rp 356.000 + QRIS/VA Rp 256.000 = Total Rp 612.000.
-        $this->actingAs($this->kasir)
-            ->get('/kasir/riwayat')
+        $this->buatSkemaPesanan();
+
+        $this->getJson('/frontend/kasir/api/riwayat')
             ->assertOk()
-            ->assertSee('Rp 356.000')
-            ->assertSee('Rp 256.000')
-            ->assertSee('Rp 612.000');
+            ->assertJsonPath('data.total', 0);
     }
 
-    // ---------- Kriteria yang belum terpenuhi ----------
+    // ---------- API riwayat ----------
 
-    public function test_riwayat_menampilkan_transaksi_dari_database(): void
+    public function test_riwayat_api_menampilkan_transaksi_kasir_dari_database(): void
     {
         $this->buatSkemaPesanan();
 
@@ -174,16 +169,129 @@ class RiwayatTransaksiTest extends TestCase
             'created_at' => now(),
         ]);
 
-        $this->markTestSkipped(
-            'CHIK-107 masih mockup statis: #daftarTransaksi berisi 7 baris contoh di Blade '.
-            'dan tidak ada endpoint GET riwayat, sehingga transaksi database tidak pernah tampil. '.
-            'Aktifkan tes ini setelah halaman disambungkan ke data.'
-        );
-
-        $this->actingAs($this->kasir)
-            ->get('/kasir/riwayat')
+        $this->actingAs($this->kasir)->getJson('/kasir/api/riwayat')
             ->assertOk()
-            ->assertSee('POS-UJI-0001')
-            ->assertDontSee('#CK-0130');
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.transaksi.0.tipe', 'kasir')
+            ->assertJsonPath('data.transaksi.0.nomor', 'POS-UJI-0001')
+            ->assertJsonPath('data.transaksi.0.metode_label', 'Tunai')
+            ->assertJsonPath('data.ringkasan.tunai', 33000)
+            ->assertJsonPath('data.ringkasan.non_tunai', 0);
+    }
+
+    public function test_riwayat_api_menggabungkan_pesanan_online_lunas(): void
+    {
+        $this->buatSkemaPesanan();
+
+        $order = Order::create([
+            'order_number' => 'CHKM-UJI-0001',
+            'customer_id' => $this->pelanggan->id,
+            'delivery_method' => 'pickup',
+            'subtotal' => 20000,
+            'shipping_cost' => 0,
+            'grand_total' => 20000,
+            'status' => 'completed',
+            'payment_type' => 'qris',
+            'paid_at' => now(),
+        ]);
+        OrderItem::create([
+            'order_id' => $order->id,
+            'product_size_id' => $this->d['regular']->id,
+            'unit_price' => 20000,
+            'quantity' => 1,
+            'subtotal' => 20000,
+        ]);
+
+        PosTransaction::create([
+            'transaction_number' => 'POS-UJI-0002',
+            'cashier_id' => $this->kasir->id,
+            'total_amount' => 15000,
+            'payment_method' => 'non_cash',
+            'amount_paid' => 15000,
+            'change_amount' => 0,
+            'status' => 'paid',
+            'created_at' => now(),
+        ]);
+
+        $this->actingAs($this->kasir)->getJson('/kasir/api/riwayat')
+            ->assertOk()
+            ->assertJsonPath('data.total', 2)
+            ->assertJsonPath('data.ringkasan.tunai', 0)
+            ->assertJsonPath('data.ringkasan.non_tunai', 35000)
+            ->assertJsonFragment(['nomor' => 'CHKM-UJI-0001', 'tipe' => 'online', 'metode_label' => 'QRIS']);
+    }
+
+    public function test_pesanan_online_belum_dibayar_tetap_masuk_riwayat_tanpa_menambah_omzet(): void
+    {
+        $this->buatSkemaPesanan();
+
+        $order = Order::create([
+            'order_number' => 'CHKM-BELUM-BAYAR',
+            'customer_id' => $this->pelanggan->id,
+            'delivery_method' => 'pickup',
+            'subtotal' => 20000,
+            'shipping_cost' => 0,
+            'grand_total' => 20000,
+            'status' => 'unpaid',
+            'payment_type' => 'qris',
+            'paid_at' => null,
+        ]);
+        OrderItem::create([
+            'order_id' => $order->id,
+            'product_size_id' => $this->d['regular']->id,
+            'unit_price' => 20000,
+            'quantity' => 1,
+            'subtotal' => 20000,
+        ]);
+
+        $this->actingAs($this->kasir)->getJson('/kasir/api/riwayat?sumber=online')
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.transaksi.0.nomor', 'CHKM-BELUM-BAYAR')
+            ->assertJsonPath('data.transaksi.0.status_label', 'Belum Dibayar')
+            ->assertJsonPath('data.transaksi.0.lunas', false)
+            ->assertJsonPath('data.ringkasan.total', 0);
+    }
+
+    public function test_riwayat_api_memfilter_sumber_dan_tanggal(): void
+    {
+        $this->buatSkemaPesanan();
+
+        $kemarin = PosTransaction::create([
+            'transaction_number' => 'POS-KEMARIN',
+            'cashier_id' => $this->kasir->id,
+            'total_amount' => 10000,
+            'payment_method' => 'cash',
+            'amount_paid' => 10000,
+            'change_amount' => 0,
+            'status' => 'paid',
+        ]);
+        $kemarin->forceFill(['created_at' => now()->subDay()])->save();
+
+        PosTransaction::create([
+            'transaction_number' => 'POS-HARI-INI',
+            'cashier_id' => $this->kasir->id,
+            'total_amount' => 10000,
+            'payment_method' => 'cash',
+            'amount_paid' => 10000,
+            'change_amount' => 0,
+            'status' => 'paid',
+            'created_at' => now(),
+        ]);
+
+        $this->actingAs($this->kasir)->getJson('/kasir/api/riwayat?periode=hari-ini&sumber=kasir')
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.transaksi.0.nomor', 'POS-HARI-INI');
+
+        $this->actingAs($this->kasir)->getJson('/kasir/api/riwayat?periode=kemarin&sumber=kasir')
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.transaksi.0.nomor', 'POS-KEMARIN');
+    }
+
+    public function test_pelanggan_tidak_bisa_mengakses_api_riwayat(): void
+    {
+        $this->actingAs($this->pelanggan)->getJson('/kasir/api/riwayat')->assertForbidden();
     }
 }

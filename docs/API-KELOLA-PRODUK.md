@@ -50,7 +50,22 @@ Halaman `/owner/stok` menampilkan kolom Terpakai/Hari, Saran Besok (atau Cukup U
 | POST | `/produk/{id}/ukuran` | Buat. body: `size_name` (`Regular`/`Large`)*, `base_price`*, `stock`*, `min_stock?` (default 5). Satu produk maks 1 per ukuran (422 jika duplikat) |
 | PUT | `/ukuran/{id}` | Ubah nama ukuran, harga, stok, min stock |
 | PATCH | `/ukuran/{id}/stok` | Ubah stok. body: `type` (`in`/`out`)*, `quantity`≥1*, `notes?`. Rekaman otomatis ke tabel `stock_histories` (source: `manual_restock`) |
+| PATCH | `/ukuran/{id}/minimum` | Ubah batas minimum stok per produk/ukuran. body: `min_stock`* (integer ≥ 0) |
 | DELETE | `/ukuran/{id}` | Hapus |
+
+### Rule batas minimum stok
+
+Batas minimum disimpan per ukuran produk (`product_sizes.min_stock`, default 5) dan dapat diatur per produk lewat `PATCH /ukuran/{id}/minimum` (atau `PUT /ukuran/{id}`).
+
+Status stok diturunkan dari rule yang sama di seluruh API:
+
+| Status | Kondisi |
+|---|---|
+| `habis` | `stock <= 0` |
+| `menipis` | `0 < stock <= min_stock` |
+| `aman` | `stock > min_stock` |
+
+`GET /produk/ketersediaan` dan ringkasan halaman stok memakai rule ini. Saran restock tetap `max(0, max(min_stock, ceil(rata_harian × 7)) − stock)`.
 
 ## Varian (kategori = filling / dipping_sauce / seasoning)
 

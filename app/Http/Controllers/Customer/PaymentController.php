@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\StockHistory;
+use App\Models\User;
 use App\Support\Duitku;
 use App\Support\QrCode;
 use Illuminate\Http\Request;
@@ -258,7 +259,7 @@ class PaymentController extends Controller
         if (! $customerId) {
             $customerId = $request->header('X-Dev-Customer') ?: $request->query('dev');
             $customerId = $customerId
-                ? \App\Models\User::where('id', $customerId)->where('role', 'customer')->value('id')
+                ? User::where('id', $customerId)->where('role', 'customer')->value('id')
                 : null;
         }
 
