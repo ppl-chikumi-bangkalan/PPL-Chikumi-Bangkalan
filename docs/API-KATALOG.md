@@ -33,7 +33,8 @@ Harga total per item = `harga_dasar + Σ tambahan_harga` (frontend menampilkan s
 ## Pesanan
 | Metode | Endpoint | Keterangan |
 |---|---|---|
-| GET | `/pesanan` | Riwayat pesanan user login (`data = {total, pesanan[]}`; tiap pesanan: `id, nomor, metode, alamat, subtotal, ongkir, total, pembayaran, status, tanggal, item[]`) |
+| GET | `/pesanan` | Riwayat pesanan user login (`data = {total, pesanan[]}`; tiap pesanan: `id, nomor, metode, alamat, subtotal, ongkir, total, pembayaran, status, status_label, tanggal, dibayar_pada, dikonfirmasi_pada, bisa_dibatalkan, jumlah_item, item[], timeline[]`). Query opsional `status` = `unpaid` \| `processing` \| `ready` \| `completed` \| `cancelled`. |
+| GET | `/pesanan/{id}` | Detail satu pesanan milik akun login. Field sama dengan `/pesanan` + `kurir, telepon_kurir, titik_asal`. `timeline[] = {kode, label, waktu, selesai, aktif}`. |
 | POST | `/pesanan/checkout` | Buat pesanan dari keranjang atas nama akun login. body: `delivery_method`* = `courier` \| `pickup`, `address_id?` (alamat milik akun; tanpa ini pakai alamat terbaru), `payment_method?` = `qris` \| `va` (disimpan di `orders.payment_type`). `courier` wajib punya alamat milik akun (else 422) + ongkir dari `App\Support\ShippingCost` (RajaOngkir, fallback flat 5000); `pickup` tanpa ongkir. Transaksi: stok dikurangi (aman dari balapan), keranjang dikosongkan, status awal `unpaid`. Setelah itu frontend diarahkan ke `/customer/pembayaran?pesanan={id}` (lihat `docs/API-PEMBAYARAN.md`). |
 | PATCH | `/pesanan/{id}/batal` | Batalkan — hanya pesanan sendiri & masih `unpaid`; stok otomatis dikembalikan. |
 
@@ -50,7 +51,7 @@ Harga total per item = `harga_dasar + Σ tambahan_harga` (frontend menampilkan s
 2. Pilihan user → `POST /keranjang`.
 3. Halaman keranjang → `GET /keranjang` (tombol +/- = `PUT`, hapus = `DELETE`).
 4. Checkout → (`POST /alamat` bila belum ada) → `POST /pesanan/checkout` (kirim `address_id` pilihan & `payment_method`) → `/customer/pembayaran?pesanan={id}` untuk membayar (QRIS/VA via Duitku).
-5. Halaman pesanan → `GET /pesanan`; tombol batal → `PATCH /pesanan/{id}/batal`.
+5. Halaman pesanan → `GET /pesanan` (filter status di frontend); detail → `GET /pesanan/{id}`; tombol batal → `PATCH /pesanan/{id}/batal`.
 
 ## Self-check backend
 Jalankan dengan server dev aktif:
