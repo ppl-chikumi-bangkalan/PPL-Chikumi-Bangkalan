@@ -65,8 +65,11 @@
         </a>
 
         <!-- Laporan -->
-        <a href="#"
-            class="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]">
+        <a href="{{ route('owner.laporan') }}"
+            class="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] transition
+            {{ $currentRoute === 'owner.laporan'
+                ? 'bg-[#FF8000] font-semibold text-white'
+                : 'text-[#6B645D] hover:bg-[#F7F3EF] hover:text-[#FF8000]' }}">
 
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6"
                 stroke="currentColor" class="h-5 w-5 shrink-0">
@@ -80,7 +83,8 @@
 
     <!-- PROFILE OWNER -->
     <div class="flex items-center gap-3 rounded-xl bg-[#F7F3EF] p-3">
-        <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#FF8000] text-base font-bold text-white">
+        <div
+            class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#FF8000] text-base font-bold text-white">
             O
         </div>
 
