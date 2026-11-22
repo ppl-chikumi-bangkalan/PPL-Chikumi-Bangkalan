@@ -13,6 +13,8 @@ use App\Http\Controllers\Customer\PaymentController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Customer\ShippingCostController;
 use App\Http\Controllers\Kasir\DashboardController as KasirDashboardController;
+use App\Http\Controllers\Kasir\HistoryController as KasirHistoryController;
+use App\Http\Controllers\Kasir\OnlineOrderController as KasirOnlineOrderController;
 use App\Http\Controllers\Kasir\TransactionController as KasirTransactionController;
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboardController;
 use App\Http\Controllers\Owner\ProductController;
@@ -68,6 +70,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/kasir/riwayat', function () {
         return view('kasir.riwayat');
     })->middleware('role:owner,cashier')->name('kasir.riwayat');
+    Route::get('/kasir/api/riwayat', [KasirHistoryController::class, 'index'])
+        ->middleware('role:owner,cashier')->name('kasir.riwayat.api');
+    Route::get('/kasir/api/pesanan-online', [KasirOnlineOrderController::class, 'index'])
+        ->middleware('role:owner,cashier')->name('kasir.pesanan-online.api');
+    Route::patch('/kasir/api/pesanan-online/{pesanan}/siap', [KasirOnlineOrderController::class, 'ready'])
+        ->whereNumber('pesanan')->middleware('role:owner,cashier')->name('kasir.pesanan-online.siap');
+    Route::patch('/kasir/api/pesanan-online/{pesanan}/selesai', [KasirOnlineOrderController::class, 'complete'])
+        ->whereNumber('pesanan')->middleware('role:owner,cashier')->name('kasir.pesanan-online.selesai');
 
     Route::get('/customer/dashboard', [DashboardController::class, 'page'])
         ->middleware('role:customer')->name('customer.dashboard');
@@ -214,6 +224,10 @@ Route::get('/frontend/kasir/dashboard', [KasirDashboardController::class, 'page'
 Route::get('/frontend/kasir/riwayat', function () {
     return view('kasir.riwayat');
 })->name('frontend.kasir.riwayat');
+Route::get('/frontend/kasir/api/riwayat', [KasirHistoryController::class, 'index']);
+Route::get('/frontend/kasir/api/pesanan-online', [KasirOnlineOrderController::class, 'index']);
+Route::patch('/frontend/kasir/api/pesanan-online/{pesanan}/siap', [KasirOnlineOrderController::class, 'ready'])->whereNumber('pesanan');
+Route::patch('/frontend/kasir/api/pesanan-online/{pesanan}/selesai', [KasirOnlineOrderController::class, 'complete'])->whereNumber('pesanan');
 
 Route::get('/frontend/customer/checkout', function () {
     return view('customer.checkout');

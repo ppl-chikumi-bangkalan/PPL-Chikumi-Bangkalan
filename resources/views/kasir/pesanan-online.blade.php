@@ -1,9 +1,13 @@
+@php
+    $apiBase = auth()->check() ? '/kasir/api' : '/frontend/kasir/api';
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Pesanan Online - Chikumi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,12 +44,12 @@
             </a>
         </nav>
         <div class="ml-auto flex items-center gap-4">
-            <span class="grid h-10 w-10 place-items-center rounded-full bg-[#FF8000] text-base font-bold text-white">K</span>
+            <span class="grid h-10 w-10 place-items-center rounded-full bg-[#FF8000] text-base font-bold text-white">{{ strtoupper(substr(auth()->user()->name ?? 'K', 0, 1)) }}</span>
             <div class="leading-tight">
-                <p class="text-sm font-semibold">Kasir</p>
+                <p class="text-sm font-semibold">{{ auth()->user()->name ?? 'Kasir' }}</p>
                 <p class="text-xs text-[#6B645D]">Kasir</p>
             </div>
-            <form action="/logout" method="POST">
+            <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit" aria-label="Keluar" class="grid h-11 w-11 place-items-center rounded-xl border border-[#EDE6DF] bg-white text-[#E03131] transition hover:bg-[#FDECEC]">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-5 w-5">
@@ -56,7 +60,7 @@
         </div>
     </header>
 
-    <main class="group flex flex-col gap-5 p-7">
+    <main class="flex flex-col gap-5 p-7">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h2 class="text-2xl font-bold">Pesanan Online</h2>
@@ -75,172 +79,159 @@
             </div>
         </div>
 
-        <!-- data contoh: backend isi kartu dari pesanan online yang sudah lunas -->
-        <div class="grid items-start gap-[18px] lg:grid-cols-3">
+        <!-- Kartu diisi dari GET /kasir/api/pesanan-online -->
+        <div id="isiPesanan" class="grid items-start gap-[18px] lg:grid-cols-3">
             <!-- KOLOM: DIPROSES -->
-            <section id="kolomDiproses" class="flex flex-col gap-3 rounded-[20px] bg-[#F7F3EF] p-4">
+            <section class="flex flex-col gap-3 rounded-[20px] bg-[#F7F3EF] p-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="h-2.5 w-2.5 rounded-full bg-[#FF8000]"></span>
                         <h3 class="text-base font-bold">Diproses</h3>
                     </div>
-                    <span class="grid h-[26px] w-[26px] place-items-center rounded-full text-xs font-bold bg-[#FF8000] text-white">3</span>
+                    <span id="jumlahDiproses" class="grid h-[26px] w-[26px] place-items-center rounded-full text-xs font-bold bg-[#FF8000] text-white">0</span>
                 </div>
-                <article class="flex flex-col gap-2.5 rounded-2xl border-[1.5px] border-[#EDE6DF] bg-white p-4 shadow-[0_4px_12px_rgba(115,56,0,0.06)] group-has-[#jenis-diantar:checked]:hidden">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[15px] font-bold">#CK-0131</p>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas · QRIS</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-xs text-[#6B645D]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-3.5 w-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                        <span>Budi · 17.05</span>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-[11px] font-semibold text-[#D96C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#FF8000]"></span>Ambil di Tempat</span>
-                    </div>
-                    <div class="space-y-1 border-t border-[#EDE6DF] pt-2.5 text-xs">
-                        <p>2× Large · Garlic CC · Dip Korean Spicy</p>
-                        <p>1× Reguler · Mentaiko · BBQ + Sweetcorn</p>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <p class="text-base font-bold text-[#D96C00]">Rp 74.000</p>
-                        <button type="button" data-aksi="siap" data-pesanan="CK-0131" class="rounded-[14px] bg-[#FF8000] px-7 py-[15px] text-base font-semibold text-white transition hover:bg-[#D96C00]">Tandai Siap</button>
-                    </div>
-                </article>
-                <article class="flex flex-col gap-2.5 rounded-2xl border-[1.5px] border-[#EDE6DF] bg-white p-4 shadow-[0_4px_12px_rgba(115,56,0,0.06)] group-has-[#jenis-diantar:checked]:hidden">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[15px] font-bold">#CK-0132</p>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas · VA BCA</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-xs text-[#6B645D]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-3.5 w-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                        <span>Sinta · 17.12</span>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-[11px] font-semibold text-[#D96C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#FF8000]"></span>Ambil di Tempat</span>
-                    </div>
-                    <div class="space-y-1 border-t border-[#EDE6DF] pt-2.5 text-xs">
-                        <p>1× Reguler · Cream Cheese · Dip BBQ</p>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <p class="text-base font-bold text-[#D96C00]">Rp 21.000</p>
-                        <button type="button" data-aksi="siap" data-pesanan="CK-0132" class="rounded-[14px] bg-[#FF8000] px-7 py-[15px] text-base font-semibold text-white transition hover:bg-[#D96C00]">Tandai Siap</button>
-                    </div>
-                </article>
-                <article class="flex flex-col gap-2.5 rounded-2xl border-[1.5px] border-[#EDE6DF] bg-white p-4 shadow-[0_4px_12px_rgba(115,56,0,0.06)] group-has-[#jenis-ambil:checked]:hidden">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[15px] font-bold">#CK-0133</p>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas · QRIS</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-xs text-[#6B645D]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-3.5 w-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                        <span>Andi · 17.20</span>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF4D6] px-2.5 py-1 text-[11px] font-semibold text-[#C27C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#C27C00]"></span>Diantar</span>
-                    </div>
-                    <div class="space-y-1 border-t border-[#EDE6DF] pt-2.5 text-xs">
-                        <p>2× Reguler · Tartar · Teriyaki</p>
-                        <p class="text-[#6B645D]">Ongkir Rp 8.000</p>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <p class="text-base font-bold text-[#D96C00]">Rp 50.000</p>
-                        <button type="button" data-aksi="siap" data-pesanan="CK-0133" class="rounded-[14px] bg-[#FF8000] px-7 py-[15px] text-base font-semibold text-white transition hover:bg-[#D96C00]">Tandai Siap</button>
-                    </div>
-                </article>
+                <div id="daftarDiproses" class="flex flex-col gap-3"></div>
             </section>
 
             <!-- KOLOM: SIAP DIAMBIL / DIKIRIM -->
-            <section id="kolomSiap" class="flex flex-col gap-3 rounded-[20px] bg-[#F7F3EF] p-4">
+            <section class="flex flex-col gap-3 rounded-[20px] bg-[#F7F3EF] p-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="h-2.5 w-2.5 rounded-full bg-[#1F9D55]"></span>
                         <h3 class="text-base font-bold">Siap Diambil / Dikirim</h3>
                     </div>
-                    <span class="grid h-[26px] w-[26px] place-items-center rounded-full text-xs font-bold bg-[#FF8000] text-white">2</span>
+                    <span id="jumlahSiap" class="grid h-[26px] w-[26px] place-items-center rounded-full text-xs font-bold bg-[#FF8000] text-white">0</span>
                 </div>
-                <article class="flex flex-col gap-2.5 rounded-2xl border-[1.5px] border-[#EDE6DF] bg-white p-4 shadow-[0_4px_12px_rgba(115,56,0,0.06)] group-has-[#jenis-diantar:checked]:hidden">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[15px] font-bold">#CK-0128</p>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas · QRIS</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-xs text-[#6B645D]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-3.5 w-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                        <span>Dewi · 16.40</span>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-[11px] font-semibold text-[#D96C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#FF8000]"></span>Ambil di Tempat</span>
-                    </div>
-                    <div class="space-y-1 border-t border-[#EDE6DF] pt-2.5 text-xs">
-                        <p>1× Large · Mentaiko · BBQ</p>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <p class="text-base font-bold text-[#D96C00]">Rp 26.000</p>
-                        <button type="button" data-aksi="selesai" data-pesanan="CK-0128" class="rounded-[14px] bg-[#FF8000] px-7 py-[15px] text-base font-semibold text-white transition hover:bg-[#D96C00]">Selesai</button>
-                    </div>
-                </article>
-                <article class="flex flex-col gap-2.5 rounded-2xl border-[1.5px] border-[#EDE6DF] bg-white p-4 shadow-[0_4px_12px_rgba(115,56,0,0.06)] group-has-[#jenis-ambil:checked]:hidden">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[15px] font-bold">#CK-0129</p>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas · QRIS</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-xs text-[#6B645D]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-3.5 w-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                        <span>Raka · 16.48</span>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF4D6] px-2.5 py-1 text-[11px] font-semibold text-[#C27C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#C27C00]"></span>Diantar</span>
-                    </div>
-                    <div class="space-y-1 border-t border-[#EDE6DF] pt-2.5 text-xs">
-                        <p>2× Reguler · Garlic CC · Black Pepper</p>
-                        <p class="text-[#6B645D]">Ongkir Rp 8.000</p>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <p class="text-base font-bold text-[#D96C00]">Rp 50.000</p>
-                        <button type="button" data-aksi="selesai" data-pesanan="CK-0129" class="rounded-[14px] bg-[#FF8000] px-7 py-[15px] text-base font-semibold text-white transition hover:bg-[#D96C00]">Selesai</button>
-                    </div>
-                </article>
+                <div id="daftarSiap" class="flex flex-col gap-3"></div>
             </section>
 
             <!-- KOLOM: SELESAI HARI INI -->
-            <section id="kolomSelesai" class="flex flex-col gap-3 rounded-[20px] bg-[#F7F3EF] p-4">
+            <section class="flex flex-col gap-3 rounded-[20px] bg-[#F7F3EF] p-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="h-2.5 w-2.5 rounded-full bg-[#A39B93]"></span>
                         <h3 class="text-base font-bold">Selesai Hari Ini</h3>
                     </div>
-                    <span class="grid h-[26px] w-[26px] place-items-center rounded-full text-xs font-bold bg-[#EDE6DF] text-[#6B645D]">2</span>
+                    <span id="jumlahSelesai" class="grid h-[26px] w-[26px] place-items-center rounded-full text-xs font-bold bg-[#EDE6DF] text-[#6B645D]">0</span>
                 </div>
-                <article class="flex flex-col gap-2.5 rounded-2xl border-[1.5px] border-[#EDE6DF] bg-white p-4 shadow-[0_4px_12px_rgba(115,56,0,0.06)] opacity-65 group-has-[#jenis-diantar:checked]:hidden">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[15px] font-bold">#CK-0124</p>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas · QRIS</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-xs text-[#6B645D]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-3.5 w-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                        <span>Budi · 15.20</span>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-[11px] font-semibold text-[#D96C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#FF8000]"></span>Ambil di Tempat</span>
-                    </div>
-                    <div class="space-y-1 border-t border-[#EDE6DF] pt-2.5 text-xs">
-                        <p>2× Large · Garlic CC · Korean Spicy</p>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <p class="text-base font-bold text-[#D96C00]">Rp 54.000</p>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-[11px] font-semibold text-[#6B645D]"><span class="h-1.5 w-1.5 rounded-full bg-[#A39B93]"></span>Selesai</span>
-                    </div>
-                </article>
-                <article class="flex flex-col gap-2.5 rounded-2xl border-[1.5px] border-[#EDE6DF] bg-white p-4 shadow-[0_4px_12px_rgba(115,56,0,0.06)] opacity-65 group-has-[#jenis-diantar:checked]:hidden">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[15px] font-bold">#CK-0126</p>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas · VA BRI</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-xs text-[#6B645D]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-3.5 w-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                        <span>Nina · 15.45</span>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-[11px] font-semibold text-[#D96C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#FF8000]"></span>Ambil di Tempat</span>
-                    </div>
-                    <div class="space-y-1 border-t border-[#EDE6DF] pt-2.5 text-xs">
-                        <p>1× Reguler · Mentaiko · Sweetcorn</p>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <p class="text-base font-bold text-[#D96C00]">Rp 20.000</p>
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-[11px] font-semibold text-[#6B645D]"><span class="h-1.5 w-1.5 rounded-full bg-[#A39B93]"></span>Selesai</span>
-                    </div>
-                </article>
+                <div id="daftarSelesai" class="flex flex-col gap-3"></div>
             </section>
         </div>
     </main>
 
+    <script>
+        const API_BASE = @json($apiBase);
+        const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const el = id => document.getElementById(id);
+        const rp = n => 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Number(n) || 0));
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+
+        let pesanan = [];
+
+        function jam(waktu) {
+            return String(waktu).slice(11, 16).replace(':', '.');
+        }
+
+        function kartu(p) {
+            const selesai = p.status === 'completed';
+            const jenis = p.jenis === 'courier'
+                ? '<span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF4D6] px-2.5 py-1 text-[11px] font-semibold text-[#C27C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#C27C00]"></span>Diantar</span>'
+                : '<span class="inline-flex items-center gap-1.5 rounded-full bg-[#FFF3E6] px-2.5 py-1 text-[11px] font-semibold text-[#D96C00]"><span class="h-1.5 w-1.5 rounded-full bg-[#FF8000]"></span>Ambil di Tempat</span>';
+
+            const aksi = p.status === 'processing'
+                ? `<button type="button" data-aksi="siap" data-id="${p.id}" class="rounded-[14px] bg-[#FF8000] px-7 py-[15px] text-base font-semibold text-white transition hover:bg-[#D96C00]">Tandai Siap</button>`
+                : p.status === 'ready'
+                    ? `<button type="button" data-aksi="selesai" data-id="${p.id}" class="rounded-[14px] bg-[#FF8000] px-7 py-[15px] text-base font-semibold text-white transition hover:bg-[#D96C00]">Selesai</button>`
+                    : '<span class="inline-flex items-center gap-1.5 rounded-full bg-[#F7F3EF] px-2.5 py-1 text-[11px] font-semibold text-[#6B645D]"><span class="h-1.5 w-1.5 rounded-full bg-[#A39B93]"></span>Selesai</span>';
+
+            const item = p.item.map(i => `<p>${i.quantity}× ${esc(i.ukuran)} · ${esc(i.varian.join(' · ') || 'Tanpa varian')}</p>`).join('');
+            const ongkir = p.ongkir > 0 ? `<p class="text-[#6B645D]">Ongkir ${rp(p.ongkir)}</p>` : '';
+
+            return `
+                <article class="flex flex-col gap-2.5 rounded-2xl border-[1.5px] border-[#EDE6DF] bg-white p-4 shadow-[0_4px_12px_rgba(115,56,0,0.06)] ${selesai ? 'opacity-65' : ''}">
+                    <div class="flex items-center justify-between">
+                        <p class="text-[15px] font-bold">${esc(p.nomor)}</p>
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Lunas · ${esc(p.metode_label)}</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 text-xs text-[#6B645D]">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-3.5 w-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                        <span>${esc(p.pelanggan)} · ${jam(p.waktu)}</span>
+                        ${jenis}
+                    </div>
+                    <div class="space-y-1 border-t border-[#EDE6DF] pt-2.5 text-xs">
+                        ${item}
+                        ${ongkir}
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <p class="text-base font-bold text-[#D96C00]">${rp(p.total)}</p>
+                        ${aksi}
+                    </div>
+                </article>`;
+        }
+
+        function isi(idDaftar, idJumlah, daftar) {
+            el(idJumlah).textContent = daftar.length;
+            el(idDaftar).innerHTML = daftar.length
+                ? daftar.map(kartu).join('')
+                : '<p class="rounded-2xl border-[1.5px] border-dashed border-[#EDE6DF] bg-white/60 p-4 text-center text-xs text-[#A39B93]">Belum ada pesanan.</p>';
+        }
+
+        function render() {
+            const jenis = document.querySelector('input[name="jenis"]:checked')?.value || 'semua';
+            const tampil = jenis === 'semua' ? pesanan : pesanan.filter(p => p.jenis === jenis);
+
+            isi('daftarDiproses', 'jumlahDiproses', tampil.filter(p => p.status === 'processing'));
+            isi('daftarSiap', 'jumlahSiap', tampil.filter(p => p.status === 'ready'));
+            isi('daftarSelesai', 'jumlahSelesai', tampil.filter(p => p.status === 'completed'));
+        }
+
+        async function muat() {
+            try {
+                const response = await fetch(`${API_BASE}/pesanan-online`, {
+                    headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                });
+                const hasil = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(hasil.message || 'Gagal memuat pesanan.');
+
+                pesanan = hasil.data.pesanan || [];
+                render();
+            } catch (error) {
+                ['daftarDiproses', 'daftarSiap', 'daftarSelesai'].forEach(id => {
+                    el(id).innerHTML = `<p class="rounded-2xl bg-white p-4 text-center text-xs text-[#E03131]">${esc(error.message)}</p>`;
+                });
+            }
+        }
+
+        async function aksi(id, tindakan) {
+            try {
+                const response = await fetch(`${API_BASE}/pesanan-online/${id}/${tindakan}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        ...(CSRF ? {'X-CSRF-TOKEN': CSRF} : {}),
+                    },
+                });
+                const hasil = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(hasil.message || 'Gagal memperbarui pesanan.');
+
+                const index = pesanan.findIndex(p => p.id === id);
+                if (index >= 0) pesanan[index] = hasil.data;
+                render();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        el('isiPesanan').addEventListener('click', event => {
+            const tombol = event.target.closest('button[data-aksi]');
+            if (tombol) aksi(Number(tombol.dataset.id), tombol.dataset.aksi);
+        });
+
+        document.querySelectorAll('input[name="jenis"]').forEach(input => input.addEventListener('change', render));
+
+        muat();
+    </script>
 </body>
 
 </html>
