@@ -111,3 +111,20 @@
         </form>
     </div>
 </aside>
+
+
+<script>
+    // Buka/tutup sidebar di HP untuk semua halaman owner
+    document.addEventListener('click', (e) => {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        if (e.target.closest('#menuButton')) {
+            sidebar?.classList.remove('-translate-x-full');
+            overlay?.classList.remove('hidden');
+        } else if (e.target.closest('#overlay')) {
+            sidebar?.classList.add('-translate-x-full');
+            overlay?.classList.add('hidden');
+        }
+    });
+</script>
