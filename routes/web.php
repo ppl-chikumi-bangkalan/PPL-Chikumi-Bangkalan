@@ -146,6 +146,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/owner/stok', [ProductController::class, 'pageStok'])
         ->middleware('role:owner')->name('owner.stok');
 
+    Route::get('/owner/laporan', function () {
+        return view('owner.laporan');
+    })->middleware('role:owner')->name('owner.laporan');
+
     Route::prefix('owner/api')->middleware('role:owner')->group(function () {
         Route::get('dashboard', [OwnerDashboardController::class, 'summary'])->name('owner.dashboard.api');
         Route::get('produk', [ProductController::class, 'index'])->name('owner.produk.index');
@@ -228,6 +232,10 @@ Route::get('/frontend/customer/pesanan', function () {
 Route::get('/frontend/customer/pesanan/detail', function () {
     return view('customer.pesanan-detail');
 })->name('frontend.customer.pesanan.detail');
+
+Route::get('/frontend/owner/laporan', function () {
+    return view('owner.laporan');
+})->name('frontend.owner.laporan');
 
 // API dev kasir (tanpa login; kirim header `X-Dev-Kasir: <id kasir/owner>`)
 Route::post('/frontend/kasir/api/transaksi', [KasirTransactionController::class, 'store']);
