@@ -47,36 +47,43 @@
                 <!-- FILTER -->
                 <div class="flex flex-wrap items-center gap-2">
                     <label class="cursor-pointer rounded-full border-[1.5px] border-[#EDE6DF] bg-white px-5 py-2.5 text-sm font-medium transition has-checked:border-[#FF8000] has-checked:bg-[#FF8000] has-checked:text-white">
-                        <input type="radio" name="jenis" id="jenis-semua" class="sr-only" checked>Semua
+                        <input type="radio" name="jenis" id="jenis-semua" value="semua" class="sr-only" checked>Semua
                     </label>
                     <label class="cursor-pointer rounded-full border-[1.5px] border-[#EDE6DF] bg-white px-5 py-2.5 text-sm font-medium transition has-checked:border-[#FF8000] has-checked:bg-[#FF8000] has-checked:text-white">
-                        <input type="radio" name="jenis" id="jenis-masuk" class="sr-only">Uang Masuk
+                        <input type="radio" name="jenis" id="jenis-masuk" value="masuk" class="sr-only">Uang Masuk
                     </label>
                     <label class="cursor-pointer rounded-full border-[1.5px] border-[#EDE6DF] bg-white px-5 py-2.5 text-sm font-medium transition has-checked:border-[#FF8000] has-checked:bg-[#FF8000] has-checked:text-white">
-                        <input type="radio" name="jenis" id="jenis-keluar" class="sr-only">Pengeluaran
+                        <input type="radio" name="jenis" id="jenis-keluar" value="keluar" class="sr-only">Pengeluaran
                     </label>
                     <select name="periode" class="ml-auto rounded-xl border-[1.5px] border-[#EDE6DF] bg-white px-4 py-2.5 text-[13px] font-medium outline-none focus:border-[#FF8000]">
-                        <option>Oktober 2026</option>
-                        <option>September 2026</option>
+                        @php
+                            $namaBulan = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                        @endphp
+                        @for ($i = 0; $i < 3; $i++)
+                            @php $bulan = now()->startOfMonth()->subMonths($i); @endphp
+                            <option value="{{ $bulan->format('Y-m') }}" @selected($i === 0)>
+                                {{ $namaBulan[(int) $bulan->month] }} {{ $bulan->year }}
+                            </option>
+                        @endfor
                     </select>
                     <select name="kategori" class="rounded-xl border-[1.5px] border-[#EDE6DF] bg-white px-4 py-2.5 text-[13px] font-medium outline-none focus:border-[#FF8000]">
-                        <option>Semua kategori</option>
-                        <option>Penjualan Kasir</option>
-                        <option>Penjualan Online</option>
-                        <option>Bahan Baku</option>
-                        <option>Kemasan</option>
-                        <option>Operasional</option>
-                        <option>Gaji</option>
-                        <option>Bonus</option>
-                        <option>Lembur</option>
-                        <option>Lainnya</option>
+                        <option value="">Semua kategori</option>
+                        <option value="penjualan_kasir">Penjualan Kasir</option>
+                        <option value="penjualan_online">Penjualan Online</option>
+                        <option value="raw_material">Bahan Baku</option>
+                        <option value="packaging">Kemasan</option>
+                        <option value="operational">Operasional</option>
+                        <option value="salary">Gaji</option>
+                        <option value="bonus">Bonus</option>
+                        <option value="overtime">Lembur</option>
+                        <option value="other">Lainnya</option>
                     </select>
                 </div>
 
-                <!-- RIWAYAT TRANSAKSI (data contoh) -->
+                <!-- RIWAYAT TRANSAKSI: diisi dari GET /owner/api/transaksi -->
                 <section class="overflow-hidden rounded-[20px] border-[1.5px] border-[#EDE6DF] bg-white">
                     <div class="px-5 py-4">
-                        <h3 class="text-base font-semibold">Riwayat Transaksi · Oktober 2026</h3>
+                        <h3 class="text-base font-semibold">Riwayat Transaksi · <span id="judulPeriode">-</span></h3>
                         <p class="mt-0.5 text-xs text-[#6B645D]">Penjualan tercatat otomatis, pengeluaran dicatat manual</p>
                     </div>
 
@@ -93,126 +100,29 @@
                                     <th class="px-5 py-2.5"></th>
                                 </tr>
                             </thead>
-                            <tbody id="tabelTransaksi" class="divide-y divide-[#EDE6DF]">
-                                <tr class="group-has-[#jenis-keluar:checked]:hidden">
-                                    <td class="px-5 py-3 text-xs text-[#6B645D]">30/10 20.45</td>
-                                    <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Masuk</span></td>
-                                    <td class="px-5 py-3">Penjualan Online</td>
-                                    <td class="px-5 py-3">#CK-0124 · 2 item</td>
-                                    <td class="px-5 py-3 text-[#6B645D]">QRIS</td>
-                                    <td class="px-5 py-3 font-semibold text-[#1F9D55]">+ Rp 54.000</td>
-                                    <td class="px-5 py-3"><a href="#" aria-label="Lihat struk" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 3.75h13.5v16.5l-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5V3.75Z" /></svg></a></td>
-                                </tr>
-                                <tr class="group-has-[#jenis-keluar:checked]:hidden">
-                                    <td class="px-5 py-3 text-xs text-[#6B645D]">30/10 20.30</td>
-                                    <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Masuk</span></td>
-                                    <td class="px-5 py-3">Penjualan Kasir</td>
-                                    <td class="px-5 py-3">#CK-0123 · 1 item</td>
-                                    <td class="px-5 py-3 text-[#6B645D]">Tunai</td>
-                                    <td class="px-5 py-3 font-semibold text-[#1F9D55]">+ Rp 20.000</td>
-                                    <td class="px-5 py-3"><a href="#" aria-label="Lihat struk" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 3.75h13.5v16.5l-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5V3.75Z" /></svg></a></td>
-                                </tr>
-                                <tr class="group-has-[#jenis-masuk:checked]:hidden">
-                                    <td class="px-5 py-3 text-xs text-[#6B645D]">30/10 20.10</td>
-                                    <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#FDECEC] px-2.5 py-1 text-[11px] font-semibold text-[#E03131]"><span class="h-1.5 w-1.5 rounded-full bg-[#E03131]"></span>Keluar</span></td>
-                                    <td class="px-5 py-3">Lembur</td>
-                                    <td class="px-5 py-3">Lembur Rina 2 jam</td>
-                                    <td class="px-5 py-3 text-[#6B645D]">Tunai</td>
-                                    <td class="px-5 py-3 font-semibold text-[#E03131]">− Rp 50.000</td>
-                                    <td class="px-5 py-3"><a href="#catat-pengeluaran" aria-label="Ubah pengeluaran" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg></a></td>
-                                </tr>
-                                <tr class="group-has-[#jenis-keluar:checked]:hidden">
-                                    <td class="px-5 py-3 text-xs text-[#6B645D]">30/10 19.55</td>
-                                    <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Masuk</span></td>
-                                    <td class="px-5 py-3">Penjualan Kasir</td>
-                                    <td class="px-5 py-3">#CK-0122 · 3 item</td>
-                                    <td class="px-5 py-3 text-[#6B645D]">Tunai</td>
-                                    <td class="px-5 py-3 font-semibold text-[#1F9D55]">+ Rp 74.000</td>
-                                    <td class="px-5 py-3"><a href="#" aria-label="Lihat struk" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 3.75h13.5v16.5l-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5V3.75Z" /></svg></a></td>
-                                </tr>
-                                <tr class="group-has-[#jenis-masuk:checked]:hidden">
-                                    <td class="px-5 py-3 text-xs text-[#6B645D]">30/10 14.30</td>
-                                    <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#FDECEC] px-2.5 py-1 text-[11px] font-semibold text-[#E03131]"><span class="h-1.5 w-1.5 rounded-full bg-[#E03131]"></span>Keluar</span></td>
-                                    <td class="px-5 py-3">Bahan Baku</td>
-                                    <td class="px-5 py-3">Belanja mentaiko</td>
-                                    <td class="px-5 py-3 text-[#6B645D]">Transfer</td>
-                                    <td class="px-5 py-3 font-semibold text-[#E03131]">− Rp 39.000</td>
-                                    <td class="px-5 py-3"><a href="#catat-pengeluaran" aria-label="Ubah pengeluaran" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg></a></td>
-                                </tr>
-                                <tr class="group-has-[#jenis-keluar:checked]:hidden">
-                                    <td class="px-5 py-3 text-xs text-[#6B645D]">29/10 20.50</td>
-                                    <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Masuk</span></td>
-                                    <td class="px-5 py-3">Penjualan Online</td>
-                                    <td class="px-5 py-3">#CK-0118 · 2 item</td>
-                                    <td class="px-5 py-3 text-[#6B645D]">QRIS</td>
-                                    <td class="px-5 py-3 font-semibold text-[#1F9D55]">+ Rp 47.000</td>
-                                    <td class="px-5 py-3"><a href="#" aria-label="Lihat struk" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 3.75h13.5v16.5l-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5-2.25-1.5-2.25 1.5V3.75Z" /></svg></a></td>
-                                </tr>
-                                <tr class="group-has-[#jenis-masuk:checked]:hidden">
-                                    <td class="px-5 py-3 text-xs text-[#6B645D]">29/10 15.10</td>
-                                    <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#FDECEC] px-2.5 py-1 text-[11px] font-semibold text-[#E03131]"><span class="h-1.5 w-1.5 rounded-full bg-[#E03131]"></span>Keluar</span></td>
-                                    <td class="px-5 py-3">Operasional</td>
-                                    <td class="px-5 py-3">Isi ulang gas 3 kg</td>
-                                    <td class="px-5 py-3 text-[#6B645D]">Tunai</td>
-                                    <td class="px-5 py-3 font-semibold text-[#E03131]">− Rp 25.000</td>
-                                    <td class="px-5 py-3"><a href="#catat-pengeluaran" aria-label="Ubah pengeluaran" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg></a></td>
-                                </tr>
-                                <tr class="group-has-[#jenis-masuk:checked]:hidden">
-                                    <td class="px-5 py-3 text-xs text-[#6B645D]">28/10 14.00</td>
-                                    <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#FDECEC] px-2.5 py-1 text-[11px] font-semibold text-[#E03131]"><span class="h-1.5 w-1.5 rounded-full bg-[#E03131]"></span>Keluar</span></td>
-                                    <td class="px-5 py-3">Kemasan</td>
-                                    <td class="px-5 py-3">Paper cup 200 pcs</td>
-                                    <td class="px-5 py-3 text-[#6B645D]">Tunai</td>
-                                    <td class="px-5 py-3 font-semibold text-[#E03131]">− Rp 85.000</td>
-                                    <td class="px-5 py-3"><a href="#catat-pengeluaran" aria-label="Ubah pengeluaran" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg></a></td>
-                                </tr>
-                                <tr class="group-has-[#jenis-masuk:checked]:hidden">
-                                    <td class="px-5 py-3 text-xs text-[#6B645D]">25/10 21.10</td>
-                                    <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#FDECEC] px-2.5 py-1 text-[11px] font-semibold text-[#E03131]"><span class="h-1.5 w-1.5 rounded-full bg-[#E03131]"></span>Keluar</span></td>
-                                    <td class="px-5 py-3">Gaji</td>
-                                    <td class="px-5 py-3">Gaji Rina (Oktober)</td>
-                                    <td class="px-5 py-3 text-[#6B645D]">Transfer</td>
-                                    <td class="px-5 py-3 font-semibold text-[#E03131]">− Rp 700.000</td>
-                                    <td class="px-5 py-3"><a href="#catat-pengeluaran" aria-label="Ubah pengeluaran" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg></a></td>
-                                </tr>
-                                <tr class="group-has-[#jenis-masuk:checked]:hidden">
-                                    <td class="px-5 py-3 text-xs text-[#6B645D]">25/10 21.05</td>
-                                    <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5 rounded-full bg-[#FDECEC] px-2.5 py-1 text-[11px] font-semibold text-[#E03131]"><span class="h-1.5 w-1.5 rounded-full bg-[#E03131]"></span>Keluar</span></td>
-                                    <td class="px-5 py-3">Bonus</td>
-                                    <td class="px-5 py-3">Bonus target penjualan</td>
-                                    <td class="px-5 py-3 text-[#6B645D]">Tunai</td>
-                                    <td class="px-5 py-3 font-semibold text-[#E03131]">− Rp 50.000</td>
-                                    <td class="px-5 py-3"><a href="#catat-pengeluaran" aria-label="Ubah pengeluaran" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg></a></td>
-                                </tr>
-                            </tbody>
+                            <tbody id="tabelTransaksi" class="divide-y divide-[#EDE6DF]"></tbody>
                         </table>
                     </div>
 
                     <div class="flex flex-wrap items-center justify-between gap-3 border-t border-[#EDE6DF] px-5 py-3">
-                        <p class="text-xs text-[#6B645D]">Menampilkan 10 dari 486 transaksi</p>
-                        <div class="flex gap-1.5">
-                            <a href="#" class="grid h-[34px] w-[34px] place-items-center rounded-[10px] border-[1.5px] text-[13px] font-semibold border-[#EDE6DF] bg-white hover:border-[#FF8000]">‹</a>
-                            <a href="#" class="grid h-[34px] w-[34px] place-items-center rounded-[10px] border-[1.5px] text-[13px] font-semibold border-[#FF8000] bg-[#FF8000] text-white">1</a>
-                            <a href="#" class="grid h-[34px] w-[34px] place-items-center rounded-[10px] border-[1.5px] text-[13px] font-semibold border-[#EDE6DF] bg-white hover:border-[#FF8000]">2</a>
-                            <a href="#" class="grid h-[34px] w-[34px] place-items-center rounded-[10px] border-[1.5px] text-[13px] font-semibold border-[#EDE6DF] bg-white hover:border-[#FF8000]">3</a>
-                            <a href="#" class="grid h-[34px] w-[34px] place-items-center rounded-[10px] border-[1.5px] text-[13px] font-semibold border-[#EDE6DF] bg-white hover:border-[#FF8000]">›</a>
-                        </div>
+                        <p id="infoHalaman" class="text-xs text-[#6B645D]">Memuat transaksi...</p>
+                        <div id="pager" class="flex gap-1.5"></div>
                     </div>
                 </section>
 
                 <!-- TOTAL PERIODE -->
                 <section class="grid gap-4 rounded-[20px] border-[1.5px] border-[#EDE6DF] bg-white p-5 sm:grid-cols-3">
                     <div>
-                        <p class="text-xs text-[#6B645D]">Uang masuk (412 transaksi)</p>
-                        <p id="totalMasuk" class="mt-1 text-lg font-bold text-[#1F9D55]">+ Rp 8.750.000</p>
+                        <p class="text-xs text-[#6B645D]">Uang masuk (<span id="jumlahMasuk">0</span> transaksi)</p>
+                        <p id="totalMasuk" class="mt-1 text-lg font-bold text-[#1F9D55]">+ Rp 0</p>
                     </div>
                     <div>
-                        <p class="text-xs text-[#6B645D]">Pengeluaran (74 transaksi)</p>
-                        <p id="totalKeluar" class="mt-1 text-lg font-bold text-[#E03131]">− Rp 5.200.000</p>
+                        <p class="text-xs text-[#6B645D]">Pengeluaran (<span id="jumlahKeluar">0</span> transaksi)</p>
+                        <p id="totalKeluar" class="mt-1 text-lg font-bold text-[#E03131]">− Rp 0</p>
                     </div>
                     <div>
                         <p class="text-xs text-[#6B645D]">Selisih</p>
-                        <p id="totalSelisih" class="mt-1 text-lg font-bold text-[#D96C00]">Rp 3.550.000</p>
+                        <p id="totalSelisih" class="mt-1 text-lg font-bold text-[#D96C00]">Rp 0</p>
                     </div>
                 </section>
 
@@ -227,10 +137,117 @@
         const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
         const formPengeluaran = document.getElementById('formPengeluaran');
 
+        const NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        const rupiah = nilai => 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Math.abs(nilai)));
+        const esc = teks => String(teks ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        let HALAMAN = 1;
+
+        const el = id => document.getElementById(id);
+        const periodeTerpilih = () => document.querySelector('select[name="periode"]').value;
+        const jenisTerpilih = () => document.querySelector('input[name="jenis"]:checked')?.value || 'semua';
+        const kategoriTerpilih = () => document.querySelector('select[name="kategori"]').value;
+
+        function waktuTampil(item) {
+            const [tanggal, jam] = item.waktu.split(' ');
+            const [tahun, bulan, hari] = tanggal.split('-');
+            return jam ? `${hari}/${bulan} ${jam.replace(':', '.')}` : `${hari}/${bulan}`;
+        }
+
+        function barisTransaksi(item) {
+            const masuk = item.jenis === 'masuk';
+            const badge = masuk
+                ? '<span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F6EC] px-2.5 py-1 text-[11px] font-semibold text-[#1F9D55]"><span class="h-1.5 w-1.5 rounded-full bg-[#1F9D55]"></span>Masuk</span>'
+                : '<span class="inline-flex items-center gap-1.5 rounded-full bg-[#FDECEC] px-2.5 py-1 text-[11px] font-semibold text-[#E03131]"><span class="h-1.5 w-1.5 rounded-full bg-[#E03131]"></span>Keluar</span>';
+            const nominal = masuk
+                ? `<span class="font-semibold text-[#1F9D55]">+ ${rupiah(item.nominal)}</span>`
+                : `<span class="font-semibold text-[#E03131]">− ${rupiah(item.nominal)}</span>`;
+            const aksi = masuk
+                ? '<a href="#" aria-label="Lihat struk" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]">🧾</a>'
+                : '<a href="#catat-pengeluaran" aria-label="Ubah pengeluaran" class="grid h-8 w-8 place-items-center rounded-lg text-[#6B645D] transition hover:bg-[#F7F3EF] hover:text-[#FF8000]">✎</a>';
+
+            return `<tr>
+                <td class="px-5 py-3 text-xs text-[#6B645D]">${waktuTampil(item)}</td>
+                <td class="px-5 py-3">${badge}</td>
+                <td class="px-5 py-3">${esc(item.kategori_label)}</td>
+                <td class="px-5 py-3">${esc(item.keterangan)}</td>
+                <td class="px-5 py-3 text-[#6B645D]">${esc(item.metode_label)}</td>
+                <td class="px-5 py-3">${nominal}</td>
+                <td class="px-5 py-3">${aksi}</td>
+            </tr>`;
+        }
+
+        function gambarPager(meta) {
+            const tombol = (teks, halaman, aktif = false) =>
+                `<button type="button" data-halaman="${halaman}" class="grid h-[34px] w-[34px] place-items-center rounded-[10px] border-[1.5px] text-[13px] font-semibold ${
+                    aktif ? 'border-[#FF8000] bg-[#FF8000] text-white' : 'border-[#EDE6DF] bg-white hover:border-[#FF8000]'
+                }">${teks}</button>`;
+
+            let html = tombol('‹', Math.max(1, meta.halaman - 1));
+            for (let i = 1; i <= meta.total_halaman; i++) {
+                if (meta.total_halaman > 7 && Math.abs(i - meta.halaman) > 2 && i !== 1 && i !== meta.total_halaman) {
+                    if (i === 2 || i === meta.total_halaman - 1) html += '<span class="px-1 text-[#6B645D]">…</span>';
+                    continue;
+                }
+                html += tombol(i, i, i === meta.halaman);
+            }
+            html += tombol('›', Math.min(meta.total_halaman, meta.halaman + 1));
+
+            el('pager').innerHTML = html;
+            el('pager').querySelectorAll('button').forEach(btn =>
+                btn.addEventListener('click', () => { HALAMAN = Number(btn.dataset.halaman); muatTransaksi(); })
+            );
+        }
+
+        async function muatTransaksi() {
+            const params = new URLSearchParams({
+                jenis: jenisTerpilih(),
+                periode: periodeTerpilih(),
+                halaman: HALAMAN,
+            });
+            if (kategoriTerpilih()) params.set('kategori', kategoriTerpilih());
+
+            try {
+                const response = await fetch(`${API_BASE}/transaksi?${params}`, {
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (!response.ok) return;
+
+                const { data } = await response.json();
+                const [tahun, bulan] = data.periode.split('-');
+
+                el('judulPeriode').textContent = `${NAMA_BULAN[Number(bulan) - 1]} ${tahun}`;
+                el('tabelTransaksi').innerHTML = data.transaksi.length
+                    ? data.transaksi.map(barisTransaksi).join('')
+                    : '<tr><td colspan="7" class="px-5 py-8 text-center text-sm text-[#6B645D]">Belum ada transaksi pada filter ini.</td></tr>';
+
+                const awal = (data.meta.halaman - 1) * data.meta.per_halaman + 1;
+                const akhir = Math.min(data.meta.halaman * data.meta.per_halaman, data.meta.total);
+                el('infoHalaman').textContent = data.meta.total
+                    ? `Menampilkan ${awal}–${akhir} dari ${data.meta.total} transaksi`
+                    : 'Tidak ada transaksi';
+                gambarPager(data.meta);
+
+                el('jumlahMasuk').textContent = data.ringkasan.jumlah_masuk;
+                el('jumlahKeluar').textContent = data.ringkasan.jumlah_keluar;
+                el('totalMasuk').textContent = '+ ' + rupiah(data.ringkasan.masuk);
+                el('totalKeluar').textContent = '− ' + rupiah(data.ringkasan.keluar);
+                el('totalSelisih').textContent = (data.ringkasan.selisih < 0 ? '− ' : '') + rupiah(data.ringkasan.selisih);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        document.querySelectorAll('input[name="jenis"]').forEach(radio =>
+            radio.addEventListener('change', () => { HALAMAN = 1; muatTransaksi(); })
+        );
+        document.querySelector('select[name="periode"]').addEventListener('change', () => { HALAMAN = 1; muatTransaksi(); });
+        document.querySelector('select[name="kategori"]').addEventListener('change', () => { HALAMAN = 1; muatTransaksi(); });
+
         formPengeluaran.addEventListener('submit', async event => {
             event.preventDefault();
 
-            const tombol = document.getElementById('btnSimpanPengeluaran');
+            const tombol = el('btnSimpanPengeluaran');
             tombol.disabled = true;
 
             try {
@@ -254,6 +271,8 @@
 
                 formPengeluaran.reset();
                 location.hash = '';
+                HALAMAN = 1;
+                muatTransaksi();
                 alert(hasil.message || 'Pengeluaran berhasil dicatat.');
             } catch (error) {
                 alert(error.message);
@@ -261,6 +280,18 @@
                 tombol.disabled = false;
             }
         });
+
+        document.getElementById('btnExport').addEventListener('click', event => {
+            event.preventDefault();
+            const params = new URLSearchParams({
+                jenis: jenisTerpilih(),
+                periode: periodeTerpilih(),
+            });
+            if (kategoriTerpilih()) params.set('kategori', kategoriTerpilih());
+            window.location.href = `${API_BASE}/transaksi/export?${params}`;
+        });
+
+        muatTransaksi();
     </script>
 </body>
 </html>

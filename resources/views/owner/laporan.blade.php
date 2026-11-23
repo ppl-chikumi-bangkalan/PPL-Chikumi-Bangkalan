@@ -1,5 +1,6 @@
 @php
     $apiBase = auth()->check() ? '/owner/api' : '/frontend/owner/api';
+    $halamanBase = auth()->check() ? '/owner' : '/frontend/owner';
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -40,8 +41,7 @@
                         <a href="#" id="btnExportPdf"
                             class="rounded-[14px] border-[1.5px] border-[#EDE6DF] bg-white px-7 py-[15px] text-base font-semibold transition hover:border-[#FF8000]">Export PDF</a>
                         <a href="#" id="btnExportExcel"
-                            class="rounded-[14px] bg-[#FF8000] px-7 py-[15px] text-base font-semibold text-white transition hover:bg-[#D96C00]">Export Excel</a>
-                    </div>
+                            class="rounded-[14px] bg-[#FF8000] px-7 py-[15px] text-base font-semibold text-white transition hover:bg-[#D96C00]">Export Excel</a>                    </div>
                 </div>
 
                 <!-- FILTER -->
@@ -67,9 +67,15 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
                             <select name="periode" class="w-full cursor-pointer bg-transparent text-[15px] outline-none">
-                                <option value="2026-10">Oktober 2026</option>
-                                <option value="2026-09">September 2026</option>
-                                <option value="2026-08">Agustus 2026</option>
+                                @php
+                                    $namaBulan = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                                @endphp
+                                @for ($i = 0; $i < 3; $i++)
+                                    @php $bulan = now()->startOfMonth()->subMonths($i); @endphp
+                                    <option value="{{ $bulan->format('Y-m') }}" @selected($i === 0)>
+                                        {{ $namaBulan[(int) $bulan->month] }} {{ $bulan->year }}
+                                    </option>
+                                @endfor
                             </select>
                         </span>
                     </label>
@@ -77,7 +83,7 @@
 
                 @include('components.owner.laba-rugi')
 
-                <!-- REKAP PENDAPATAN (data contoh) -->
+                <!-- REKAP PENDAPATAN: diisi dari GET /owner/api/laporan/pendapatan -->
                 <section id="rekapPendapatan" class="overflow-hidden rounded-[18px] border-[1.5px] border-[#EDE6DF] bg-white">
                 <!-- REKAP HARIAN -->
                 <div id="rekapHarian" class="hidden group-has-[#rekap-harian:checked]:block">
@@ -96,64 +102,7 @@
                                     <th class="px-5 py-2.5">LABA BERSIH</th>
                                 </tr>
                             </thead>
-                            <tbody id="rekapHarianBody" class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]">
-                            <tr>
-                                <td class="px-5 py-2.5">25 Okt</td>
-                                <td class="px-5 py-2.5">16</td>
-                                <td class="px-5 py-2.5">Rp 340.000</td>
-                                <td class="px-5 py-2.5">Rp 750.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">− Rp 410.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">26 Okt</td>
-                                <td class="px-5 py-2.5">18</td>
-                                <td class="px-5 py-2.5">Rp 380.000</td>
-                                <td class="px-5 py-2.5">Rp 0</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 380.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">27 Okt</td>
-                                <td class="px-5 py-2.5">14</td>
-                                <td class="px-5 py-2.5">Rp 300.000</td>
-                                <td class="px-5 py-2.5">Rp 0</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 300.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">28 Okt</td>
-                                <td class="px-5 py-2.5">15</td>
-                                <td class="px-5 py-2.5">Rp 320.000</td>
-                                <td class="px-5 py-2.5">Rp 85.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 235.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">29 Okt</td>
-                                <td class="px-5 py-2.5">17</td>
-                                <td class="px-5 py-2.5">Rp 360.000</td>
-                                <td class="px-5 py-2.5">Rp 25.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 335.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">30 Okt</td>
-                                <td class="px-5 py-2.5">12</td>
-                                <td class="px-5 py-2.5">Rp 260.000</td>
-                                <td class="px-5 py-2.5">Rp 89.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 171.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">31 Okt</td>
-                                <td class="px-5 py-2.5">8</td>
-                                <td class="px-5 py-2.5">Rp 190.000</td>
-                                <td class="px-5 py-2.5">Rp 0</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 190.000</td>
-                            </tr>
-                                <tr class="bg-[#FFF3E6] font-bold">
-                                    <td class="px-5 py-2.5">Total 7 hari</td>
-                                    <td class="px-5 py-2.5">100</td>
-                                    <td class="px-5 py-2.5">Rp 2.150.000</td>
-                                    <td class="px-5 py-2.5">Rp 949.000</td>
-                                    <td class="px-5 py-2.5 text-[#D96C00]">Rp 1.201.000</td>
-                                </tr>
-                            </tbody>
+                            <tbody id="rekapHarianBody" class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]"></tbody>
                         </table>
                     </div>
                 </div>
@@ -175,50 +124,7 @@
                                     <th class="px-5 py-2.5">LABA BERSIH</th>
                                 </tr>
                             </thead>
-                            <tbody id="rekapMingguanBody" class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]">
-                            <tr>
-                                <td class="px-5 py-2.5">1–7 Okt</td>
-                                <td class="px-5 py-2.5">88</td>
-                                <td class="px-5 py-2.5">Rp 1.850.000</td>
-                                <td class="px-5 py-2.5">Rp 1.300.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 550.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">8–14 Okt</td>
-                                <td class="px-5 py-2.5">96</td>
-                                <td class="px-5 py-2.5">Rp 2.050.000</td>
-                                <td class="px-5 py-2.5">Rp 1.150.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 900.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">15–21 Okt</td>
-                                <td class="px-5 py-2.5">100</td>
-                                <td class="px-5 py-2.5">Rp 2.100.000</td>
-                                <td class="px-5 py-2.5">Rp 1.250.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 850.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">22–28 Okt</td>
-                                <td class="px-5 py-2.5">108</td>
-                                <td class="px-5 py-2.5">Rp 2.300.000</td>
-                                <td class="px-5 py-2.5">Rp 1.200.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 1.100.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">29–31 Okt</td>
-                                <td class="px-5 py-2.5">20</td>
-                                <td class="px-5 py-2.5">Rp 450.000</td>
-                                <td class="px-5 py-2.5">Rp 300.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 150.000</td>
-                            </tr>
-                                <tr class="bg-[#FFF3E6] font-bold">
-                                    <td class="px-5 py-2.5">Total</td>
-                                    <td class="px-5 py-2.5">412</td>
-                                    <td class="px-5 py-2.5">Rp 8.750.000</td>
-                                    <td class="px-5 py-2.5">Rp 5.200.000</td>
-                                    <td class="px-5 py-2.5 text-[#D96C00]">Rp 3.550.000</td>
-                                </tr>
-                            </tbody>
+                            <tbody id="rekapMingguanBody" class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]"></tbody>
                         </table>
                     </div>
                 </div>
@@ -240,36 +146,7 @@
                                     <th class="px-5 py-2.5">LABA BERSIH</th>
                                 </tr>
                             </thead>
-                            <tbody id="rekapBulananBody" class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]">
-                            <tr>
-                                <td class="px-5 py-2.5">Agustus 2026</td>
-                                <td class="px-5 py-2.5">356</td>
-                                <td class="px-5 py-2.5">Rp 7.420.000</td>
-                                <td class="px-5 py-2.5">Rp 4.810.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 2.610.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">September 2026</td>
-                                <td class="px-5 py-2.5">389</td>
-                                <td class="px-5 py-2.5">Rp 8.130.000</td>
-                                <td class="px-5 py-2.5">Rp 5.020.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 3.110.000</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-2.5">Oktober 2026</td>
-                                <td class="px-5 py-2.5">412</td>
-                                <td class="px-5 py-2.5">Rp 8.750.000</td>
-                                <td class="px-5 py-2.5">Rp 5.200.000</td>
-                                <td class="px-5 py-2.5 font-semibold text-[#D96C00]">Rp 3.550.000</td>
-                            </tr>
-                                <tr class="bg-[#FFF3E6] font-bold">
-                                    <td class="px-5 py-2.5">Total 3 bulan</td>
-                                    <td class="px-5 py-2.5">1.157</td>
-                                    <td class="px-5 py-2.5">Rp 24.300.000</td>
-                                    <td class="px-5 py-2.5">Rp 15.030.000</td>
-                                    <td class="px-5 py-2.5 text-[#D96C00]">Rp 9.270.000</td>
-                                </tr>
-                            </tbody>
+                            <tbody id="rekapBulananBody" class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]"></tbody>
                         </table>
                     </div>
                 </div>
@@ -326,12 +203,64 @@
             }
         }
 
+        const isi = (id, teks) => { document.getElementById(id).textContent = teks; };
+        const potong = nilai => '− ' + rupiah(nilai);
+
+        async function muatLaba() {
+            try {
+                const periode = document.querySelector('select[name="periode"]').value;
+                const response = await fetch(`${API_BASE}/laporan/laba-rugi?periode=${periode}`, {
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (!response.ok) return;
+
+                const { data } = await response.json();
+
+                isi('labaPeriode', data.label_periode);
+                isi('labaJumlahTransaksi', data.transaksi);
+                isi('labaOmzet', rupiah(data.omzet));
+                isi('labaBahanBaku', potong(data.hpp.bahan_baku));
+                isi('labaKemasan', potong(data.hpp.kemasan));
+                isi('labaKotor', rupiah(data.laba_kotor));
+                isi('labaOperasional', potong(data.operasional));
+                isi('labaGaji', potong(data.karyawan.gaji));
+                isi('labaBonusLembur', potong(data.karyawan.bonus_lembur));
+                isi('labaLainnya', potong(data.lainnya));
+                isi('labaBersih', uang(data.laba_bersih));
+
+                const barisLainnya = document.getElementById('barisLainnya');
+                barisLainnya.classList.toggle('hidden', data.lainnya <= 0);
+                barisLainnya.classList.toggle('flex', data.lainnya > 0);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         document.querySelectorAll('input[name="rekap_per"]').forEach(radio => {
             radio.addEventListener('change', () => muatRekap(radio.value));
         });
-        document.querySelector('select[name="periode"]').addEventListener('change', () => muatRekap(radioRekap()));
+        document.querySelector('select[name="periode"]').addEventListener('change', () => {
+            muatRekap(radioRekap());
+            muatLaba();
+        });
 
         muatRekap(radioRekap());
+        muatLaba();
+
+        const parameterExport = () => new URLSearchParams({
+            rekap: radioRekap(),
+            periode: document.querySelector('select[name="periode"]').value,
+        });
+
+        document.getElementById('btnExportExcel').addEventListener('click', event => {
+            event.preventDefault();
+            window.location.href = `${API_BASE}/laporan/export?${parameterExport()}`;
+        });
+
+        document.getElementById('btnExportPdf').addEventListener('click', event => {
+            event.preventDefault();
+            window.open(`@json($halamanBase)/laporan/cetak?${parameterExport()}`, '_blank');
+        });
     </script>
 </body>
 </html>

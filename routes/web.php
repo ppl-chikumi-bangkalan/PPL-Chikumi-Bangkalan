@@ -18,6 +18,7 @@ use App\Http\Controllers\Kasir\OnlineOrderController as KasirOnlineOrderControll
 use App\Http\Controllers\Kasir\TransactionController as KasirTransactionController;
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboardController;
 use App\Http\Controllers\Owner\ExpenseController;
+use App\Http\Controllers\Owner\LedgerController;
 use App\Http\Controllers\Owner\ProductController;
 use App\Http\Controllers\Owner\ProductSizeController;
 use App\Http\Controllers\Owner\ReportController;
@@ -167,10 +168,17 @@ Route::middleware('auth')->group(function () {
         return view('owner.laporan');
     })->middleware('role:owner')->name('owner.laporan');
 
+    Route::get('/owner/laporan/cetak', [ReportController::class, 'cetak'])
+        ->middleware('role:owner')->name('owner.laporan.cetak');
+
     Route::prefix('owner/api')->middleware('role:owner')->group(function () {
         Route::get('dashboard', [OwnerDashboardController::class, 'summary'])->name('owner.dashboard.api');
 
         Route::get('laporan/pendapatan', [ReportController::class, 'pendapatan'])->name('owner.laporan.pendapatan');
+        Route::get('laporan/laba-rugi', [ReportController::class, 'labaRugi'])->name('owner.laporan.laba-rugi');
+        Route::get('laporan/export', [ReportController::class, 'exportPendapatan'])->name('owner.laporan.export');
+        Route::get('transaksi', [LedgerController::class, 'index'])->name('owner.transaksi.api');
+        Route::get('transaksi/export', [LedgerController::class, 'export'])->name('owner.transaksi.export');
 
         Route::get('pengeluaran', [ExpenseController::class, 'index'])->name('owner.pengeluaran.index');
         Route::get('pengeluaran/kategori', [ExpenseController::class, 'categories'])->name('owner.pengeluaran.kategori');
@@ -214,6 +222,8 @@ Route::get('/frontend/owner/dashboard', [OwnerDashboardController::class, 'page'
 Route::get('/frontend/owner/api/dashboard', [OwnerDashboardController::class, 'summary']);
 Route::get('/frontend/owner/api/ketersediaan', [ProductController::class, 'availability']);
 Route::get('/frontend/owner/api/laporan/pendapatan', [ReportController::class, 'pendapatan']);
+Route::get('/frontend/owner/api/laporan/laba-rugi', [ReportController::class, 'labaRugi']);
+Route::get('/frontend/owner/api/transaksi', [LedgerController::class, 'index']);
 Route::get('/frontend/owner/api/pengeluaran', [ExpenseController::class, 'index']);
 Route::get('/frontend/owner/api/pengeluaran/kategori', [ExpenseController::class, 'categories']);
 Route::get('/frontend/customer/dashboard', [DashboardController::class, 'page'])
@@ -274,6 +284,9 @@ Route::get('/frontend/owner/transaksi', function () {
 Route::get('/frontend/owner/laporan', function () {
     return view('owner.laporan');
 })->name('frontend.owner.laporan');
+Route::get('/frontend/owner/laporan/cetak', [ReportController::class, 'cetak'])->name('frontend.owner.laporan.cetak');
+Route::get('/frontend/owner/api/laporan/export', [ReportController::class, 'exportPendapatan']);
+Route::get('/frontend/owner/api/transaksi/export', [LedgerController::class, 'export']);
 
 // API dev kasir (tanpa login; kirim header `X-Dev-Kasir: <id kasir/owner>`)
 Route::post('/frontend/kasir/api/transaksi', [KasirTransactionController::class, 'store']);
