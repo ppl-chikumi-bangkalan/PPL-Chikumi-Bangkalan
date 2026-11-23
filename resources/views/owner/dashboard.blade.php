@@ -266,7 +266,7 @@
             try {
                 const [ringkasan, stok] = await Promise.all([
                     ambil(`/dashboard?periode=${periode}`),
-                    ambil('/ketersediaan'),
+                                        ambil(API_BASE === '/owner/api' ? '/produk/ketersediaan' : '/ketersediaan'),
                 ]);
                 renderRingkasan(ringkasan.data);
                 renderStok(stok.data);
