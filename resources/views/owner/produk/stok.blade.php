@@ -188,12 +188,9 @@
                 <section class="mb-6 overflow-hidden rounded-xl border border-orange-100 bg-white">
 
                     <div class="border-b border-orange-100 p-5">
-                        <h3 class="text-base font-bold">Disiapkan Harian - Kulit & Filling</h3>
+                        <h3 class="text-base font-bold">Disiapkan Harian · Kulit & Filling</h3>
                         <p class="mt-1 text-xs text-stone-500">
-                            Stok produk siap jual dan kebutuhan persiapan harian. Terpakai/hari = rata-rata penjualan 3 minggu terakhir (kasir + pesanan online lunas).
-                        </p>
-                        <p class="mt-1 text-xs text-stone-400">
-                            Saran restock = kebutuhan 7 hari − sisa stok (minimal mengikuti minimum stok). Kosong bila stok sudah cukup.
+                            Rata-rata dari penjualan 3 minggu terakhir · saran untuk kebutuhan 7 hari ke depan
                         </p>
                     </div>
 
@@ -204,9 +201,9 @@
                             <thead class="bg-[#F8F5F2] text-xs font-semibold text-stone-500">
                                 <tr>
                                     <th class="p-4">KOMPONEN</th>
-                                    <th class="p-4">SISA STOK</th>
-                                    <th class="p-4">MINIMUM</th>
-                                    <th class="p-4">TERPAKAI / HARI</th>
+                                    <th class="p-4">SISA</th>
+                                    <th class="p-4">MIN.</th>
+                                    <th class="p-4">TERPAKAI/HARI</th>
                                     <th class="p-4">SARAN RESTOCK</th>
                                     <th class="p-4">TAMBAH</th>
                                     <th class="p-4">STATUS</th>
@@ -250,9 +247,9 @@
                 <section class="overflow-hidden rounded-xl border border-orange-100 bg-white">
 
                     <div class="border-b border-orange-100 p-5">
-                        <h3 class="text-base font-bold">Restock Bila Menipis - Dip Sauce & Seasoning</h3>
+                        <h3 class="text-base font-bold">Restock Bila Menipis · Dip Sauce & Seasoning</h3>
                         <p class="mt-1 text-xs text-stone-500">
-                            Persediaan bumbu dan saus untuk kebutuhan penjualan. Varian belum punya pencatatan stok, jadi statusnya mengikuti ketersediaan.
+                            Tahan lama — stok varian belum dicatat, status mengikuti ketersediaan di Data Produk
                         </p>
                     </div>
 
@@ -263,9 +260,9 @@
                             <thead class="bg-[#F8F5F2] text-xs font-semibold text-stone-500">
                                 <tr>
                                     <th class="p-4">KOMPONEN</th>
-                                    <th class="p-4">SISA STOK</th>
-                                    <th class="p-4">MINIMUM</th>
-                                    <th class="p-4">TERPAKAI / HARI</th>
+                                    <th class="p-4">SISA</th>
+                                    <th class="p-4">MIN.</th>
+                                    <th class="p-4">TERPAKAI/HARI</th>
                                     <th class="p-4">CUKUP UNTUK</th>
                                     <th class="p-4">TAMBAH</th>
                                     <th class="p-4">STATUS</th>
@@ -311,10 +308,10 @@
 
                     <div>
                         <p class="text-sm font-semibold">
-                            <span id="itemCount">0</span> komponen dipilih untuk ditambah
+                            <span id="itemCount">0</span> komponen akan ditambah
                         </p>
                         <p class="mt-1 text-xs text-stone-500">
-                            Kolom Tambah terisi otomatis hanya untuk baris yang perlu restock; angka boleh diubah manual.
+                            Angka Tambah terisi dari saran — ubah bila perlu
                         </p>
                     </div>
 
@@ -338,9 +335,6 @@
                 <!-- RIWAYAT STOK -->
                 @include('components.owner.riwayat-stok')
 
-                <p class="py-6 text-center text-xs text-stone-400">
-                    Chikumi Admin Dashboard · Data contoh frontend
-                </p>
 
             </div>
         </main>
@@ -411,5 +405,4 @@
         updateCount();
     </script>
 </body>
-
 </html>
