@@ -20,6 +20,7 @@ use App\Http\Controllers\Owner\DashboardController as OwnerDashboardController;
 use App\Http\Controllers\Owner\ExpenseController;
 use App\Http\Controllers\Owner\ProductController;
 use App\Http\Controllers\Owner\ProductSizeController;
+use App\Http\Controllers\Owner\ReportController;
 use App\Http\Controllers\Owner\ShippingConfirmationController;
 use App\Http\Controllers\Owner\VariantController;
 use App\Models\Product;
@@ -169,6 +170,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('owner/api')->middleware('role:owner')->group(function () {
         Route::get('dashboard', [OwnerDashboardController::class, 'summary'])->name('owner.dashboard.api');
 
+        Route::get('laporan/pendapatan', [ReportController::class, 'pendapatan'])->name('owner.laporan.pendapatan');
+
         Route::get('pengeluaran', [ExpenseController::class, 'index'])->name('owner.pengeluaran.index');
         Route::get('pengeluaran/kategori', [ExpenseController::class, 'categories'])->name('owner.pengeluaran.kategori');
         Route::post('pengeluaran', [ExpenseController::class, 'store'])->name('owner.pengeluaran.store');
@@ -210,6 +213,7 @@ Route::get('/frontend/owner/dashboard', [OwnerDashboardController::class, 'page'
     ->name('frontend.owner');
 Route::get('/frontend/owner/api/dashboard', [OwnerDashboardController::class, 'summary']);
 Route::get('/frontend/owner/api/ketersediaan', [ProductController::class, 'availability']);
+Route::get('/frontend/owner/api/laporan/pendapatan', [ReportController::class, 'pendapatan']);
 Route::get('/frontend/owner/api/pengeluaran', [ExpenseController::class, 'index']);
 Route::get('/frontend/owner/api/pengeluaran/kategori', [ExpenseController::class, 'categories']);
 Route::get('/frontend/customer/dashboard', [DashboardController::class, 'page'])
