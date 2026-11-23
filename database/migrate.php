@@ -100,10 +100,11 @@ try {
     // 7. Expenses (Pengeluaran Usaha)
     $pdo->exec("CREATE TABLE expenses (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
-        category ENUM('raw_material', 'operational', 'salary', 'bonus', 'overtime', 'other') NOT NULL,
+        category ENUM('raw_material', 'packaging', 'operational', 'salary', 'bonus', 'overtime', 'other') NOT NULL,
         title VARCHAR(255) NOT NULL,
         amount DECIMAL(12, 2) NOT NULL,
         expense_date DATE NOT NULL,
+        payment_method ENUM('cash', 'transfer', 'qris') NOT NULL DEFAULT 'cash',
         notes TEXT NULL,
         created_by BIGINT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
