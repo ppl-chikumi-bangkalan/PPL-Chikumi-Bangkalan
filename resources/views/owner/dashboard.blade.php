@@ -214,7 +214,11 @@
         const el = id => document.getElementById(id);
 
         async function ambil(path) {
-            const response = await fetch(API_BASE + path, {headers: {'Accept': 'application/json'}});
+            const response = await fetch(API_BASE + path, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
             if (!response.ok) throw new Error('Gagal memuat data.');
             return response.json();
         }
@@ -266,7 +270,7 @@
             try {
                 const [ringkasan, stok] = await Promise.all([
                     ambil(`/dashboard?periode=${periode}`),
-                                        ambil(API_BASE === '/owner/api' ? '/produk/ketersediaan' : '/ketersediaan'),
+                    ambil(API_BASE === '/owner/api' ? '/produk/ketersediaan' : '/ketersediaan'),
                 ]);
                 renderRingkasan(ringkasan.data);
                 renderStok(stok.data);
@@ -278,7 +282,8 @@
         document.querySelectorAll('.period-btn').forEach(button => {
             button.addEventListener('click', () => {
                 document.querySelectorAll('.period-btn').forEach(item => {
-                    item.classList.remove('border-[#FF8000]', 'bg-[#FF8000]', 'font-semibold', 'text-white');
+                    item.classList.remove('border-[#FF8000]', 'bg-[#FF8000]', 'font-semibold',
+                        'text-white');
                     item.classList.add('border', 'border-stone-200', 'bg-white');
                 });
                 button.classList.remove('border-stone-200', 'bg-white');
@@ -289,4 +294,5 @@
         muat();
     </script>
 </body>
+
 </html>
