@@ -1,9 +1,13 @@
+@php
+    $apiBase = auth()->check() ? '/owner/api' : '/frontend/owner/api';
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Laporan Keuangan - Chikumi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -92,7 +96,7 @@
                                     <th class="px-5 py-2.5">LABA BERSIH</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]">
+                            <tbody id="rekapHarianBody" class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]">
                             <tr>
                                 <td class="px-5 py-2.5">25 Okt</td>
                                 <td class="px-5 py-2.5">16</td>
@@ -171,7 +175,7 @@
                                     <th class="px-5 py-2.5">LABA BERSIH</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]">
+                            <tbody id="rekapMingguanBody" class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]">
                             <tr>
                                 <td class="px-5 py-2.5">1–7 Okt</td>
                                 <td class="px-5 py-2.5">88</td>
@@ -236,7 +240,7 @@
                                     <th class="px-5 py-2.5">LABA BERSIH</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]">
+                            <tbody id="rekapBulananBody" class="divide-y divide-[#EDE6DF] border-t border-[#EDE6DF]">
                             <tr>
                                 <td class="px-5 py-2.5">Agustus 2026</td>
                                 <td class="px-5 py-2.5">356</td>
@@ -274,5 +278,60 @@
             </div>
         </main>
     </div>
+
+    <script>
+        const API_BASE = @json($apiBase);
+        const rupiah = nilai => 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Math.abs(nilai)));
+        const uang = nilai => (nilai < 0 ? '− ' : '') + rupiah(nilai);
+
+        const bodyRekap = {
+            harian: document.getElementById('rekapHarianBody'),
+            mingguan: document.getElementById('rekapMingguanBody'),
+            bulanan: document.getElementById('rekapBulananBody'),
+        };
+        const radioRekap = () => document.querySelector('input[name="rekap_per"]:checked')?.value || 'mingguan';
+
+        async function muatRekap(rekap) {
+            try {
+                const periode = document.querySelector('select[name="periode"]').value;
+                const response = await fetch(
+                    `${API_BASE}/laporan/pendapatan?rekap=${rekap}&periode=${periode}`,
+                    { headers: { 'Accept': 'application/json' } }
+                );
+                if (!response.ok) return;
+
+                const { data } = await response.json();
+
+                const baris = data.baris.map(item => `
+                    <tr>
+                        <td class="px-5 py-2.5">${item.label}</td>
+                        <td class="px-5 py-2.5">${item.transaksi}</td>
+                        <td class="px-5 py-2.5">${rupiah(item.omzet)}</td>
+                        <td class="px-5 py-2.5">${rupiah(item.pengeluaran)}</td>
+                        <td class="px-5 py-2.5 font-semibold text-[#D96C00]">${uang(item.laba)}</td>
+                    </tr>`).join('');
+
+                const total = `
+                    <tr class="bg-[#FFF3E6] font-bold">
+                        <td class="px-5 py-2.5">Total</td>
+                        <td class="px-5 py-2.5">${data.total.transaksi}</td>
+                        <td class="px-5 py-2.5">${rupiah(data.total.omzet)}</td>
+                        <td class="px-5 py-2.5">${rupiah(data.total.pengeluaran)}</td>
+                        <td class="px-5 py-2.5 text-[#D96C00]">${uang(data.total.laba)}</td>
+                    </tr>`;
+
+                bodyRekap[rekap].innerHTML = baris + total;
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        document.querySelectorAll('input[name="rekap_per"]').forEach(radio => {
+            radio.addEventListener('change', () => muatRekap(radio.value));
+        });
+        document.querySelector('select[name="periode"]').addEventListener('change', () => muatRekap(radioRekap()));
+
+        muatRekap(radioRekap());
+    </script>
 </body>
 </html>
