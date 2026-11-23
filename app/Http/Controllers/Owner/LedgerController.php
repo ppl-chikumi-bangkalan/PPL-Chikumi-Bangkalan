@@ -31,6 +31,89 @@ class LedgerController extends Controller
             'per_halaman' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
+        $perHalaman = $filter['per_halaman'] ?? 10;
+        $halaman = $filter['halaman'] ?? 1;
+
+        ['acuan' => $acuan, 'baris' => $baris] = $this->kumpulkan($filter);
+
+        $masuk = $baris->where('jenis', 'masuk');
+        $keluar = $baris->where('jenis', 'keluar');
+
+        $ringkasan = [
+            'masuk' => round((float) $masuk->sum('nominal'), 2),
+            'keluar' => round((float) $keluar->sum('nominal'), 2),
+            'selisih' => round((float) $masuk->sum('nominal') - (float) $keluar->sum('nominal'), 2),
+            'jumlah_masuk' => $masuk->count(),
+            'jumlah_keluar' => $keluar->count(),
+        ];
+
+        $total = $baris->count();
+        $totalHalaman = max(1, (int) ceil($total / $perHalaman));
+        $halaman = min($halaman, $totalHalaman);
+
+        return response()->json([
+            'data' => [
+                'periode' => $acuan->format('Y-m'),
+                'transaksi' => $baris->forPage($halaman, $perHalaman)->values(),
+                'ringkasan' => $ringkasan,
+                'meta' => [
+                    'halaman' => $halaman,
+                    'per_halaman' => $perHalaman,
+                    'total' => $total,
+                    'total_halaman' => $totalHalaman,
+                ],
+                'kategori' => collect(self::KATEGORI_MASUK)
+                    ->merge(Expense::CATEGORIES)
+                    ->map(fn (string $label, string $kode) => ['kode' => $kode, 'label' => $label])
+                    ->values(),
+            ],
+        ]);
+    }
+
+    // Export CSV seluruh baris pada filter aktif (tanpa paginasi).
+    public function export(Request $request)
+    {
+        $filter = $request->validate([
+            'jenis' => ['nullable', 'in:semua,masuk,keluar'],
+            'kategori' => ['nullable', 'string', 'max:50'],
+            'periode' => ['nullable', 'date_format:Y-m'],
+            'cari' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        ['acuan' => $acuan, 'baris' => $baris] = $this->kumpulkan($filter);
+
+        $masuk = (float) $baris->where('jenis', 'masuk')->sum('nominal');
+        $keluar = (float) $baris->where('jenis', 'keluar')->sum('nominal');
+
+        $csv = [['Waktu', 'Jenis', 'Kategori', 'Keterangan', 'Metode', 'Nominal']];
+        foreach ($baris as $item) {
+            $csv[] = [
+                $item['waktu'],
+                $item['jenis'] === 'masuk' ? 'Masuk' : 'Keluar',
+                $item['kategori_label'],
+                $item['keterangan'],
+                $item['metode_label'],
+                ($item['jenis'] === 'masuk' ? '' : '-').$item['nominal'],
+            ];
+        }
+        $csv[] = [];
+        $csv[] = ['', '', '', '', 'Total masuk', $masuk];
+        $csv[] = ['', '', '', '', 'Total keluar', $keluar];
+        $csv[] = ['', '', '', '', 'Selisih', round($masuk - $keluar, 2)];
+
+        return response()->streamDownload(function () use ($csv) {
+            $keluaran = fopen('php://output', 'w');
+            // BOM agar Excel membaca UTF-8 dengan benar.
+            fwrite($keluaran, "\xEF\xBB\xBF");
+            foreach ($csv as $kolom) {
+                fputcsv($keluaran, $kolom);
+            }
+            fclose($keluaran);
+        }, "transaksi-{$acuan->format('Y-m')}.csv", ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    private function kumpulkan(array $filter): array
+    {
         $acuan = isset($filter['periode'])
             ? Carbon::createFromFormat('Y-m-d', $filter['periode'].'-01')->startOfMonth()
             : now()->startOfMonth();
@@ -40,8 +123,6 @@ class LedgerController extends Controller
         $cari = trim($filter['cari'] ?? '');
         $jenis = $filter['jenis'] ?? 'semua';
         $kategori = $filter['kategori'] ?? null;
-        $perHalaman = $filter['per_halaman'] ?? 10;
-        $halaman = $filter['halaman'] ?? 1;
 
         // ponytail: gabung di memori; cukup untuk ratusan baris/bulan.
         // Ganti ke UNION SQL bila data sudah puluhan ribu.
@@ -122,39 +203,9 @@ class LedgerController extends Controller
             $baris = $baris->where('kategori', $kategori);
         }
 
-        $baris = $baris->sortByDesc('waktu_iso')->values();
-
-        $masuk = $baris->where('jenis', 'masuk');
-        $keluar = $baris->where('jenis', 'keluar');
-
-        $ringkasan = [
-            'masuk' => round((float) $masuk->sum('nominal'), 2),
-            'keluar' => round((float) $keluar->sum('nominal'), 2),
-            'selisih' => round((float) $masuk->sum('nominal') - (float) $keluar->sum('nominal'), 2),
-            'jumlah_masuk' => $masuk->count(),
-            'jumlah_keluar' => $keluar->count(),
+        return [
+            'acuan' => $acuan,
+            'baris' => $baris->sortByDesc('waktu_iso')->values(),
         ];
-
-        $total = $baris->count();
-        $totalHalaman = max(1, (int) ceil($total / $perHalaman));
-        $halaman = min($halaman, $totalHalaman);
-
-        return response()->json([
-            'data' => [
-                'periode' => $acuan->format('Y-m'),
-                'transaksi' => $baris->forPage($halaman, $perHalaman)->values(),
-                'ringkasan' => $ringkasan,
-                'meta' => [
-                    'halaman' => $halaman,
-                    'per_halaman' => $perHalaman,
-                    'total' => $total,
-                    'total_halaman' => $totalHalaman,
-                ],
-                'kategori' => collect(self::KATEGORI_MASUK)
-                    ->merge(Expense::CATEGORIES)
-                    ->map(fn (string $label, string $kode) => ['kode' => $kode, 'label' => $label])
-                    ->values(),
-            ],
-        ]);
     }
 }

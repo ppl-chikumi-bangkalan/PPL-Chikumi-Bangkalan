@@ -281,6 +281,16 @@
             }
         });
 
+        document.getElementById('btnExport').addEventListener('click', event => {
+            event.preventDefault();
+            const params = new URLSearchParams({
+                jenis: jenisTerpilih(),
+                periode: periodeTerpilih(),
+            });
+            if (kategoriTerpilih()) params.set('kategori', kategoriTerpilih());
+            window.location.href = `${API_BASE}/transaksi/export?${params}`;
+        });
+
         muatTransaksi();
     </script>
 </body>

@@ -59,3 +59,11 @@ Baris digabung lalu diurutkan dari waktu terbaru.
 - Halaman `/owner/transaksi` sudah tersambung: filter Semua/Uang Masuk/Pengeluaran, kategori, periode, paginasi, tabel, dan kartu total memakai endpoint ini.
 - Tombol "Export" belum tersambung (di luar endpoint ini).
 - Penggabungan dilakukan di memori (cukup untuk ratusan baris/bulan); ubah ke `UNION` SQL bila volume sudah puluhan ribu baris.
+
+## Export
+
+| Endpoint | Keterangan |
+|---|---|
+| `GET /owner/api/transaksi/export?jenis=&kategori=&periode=&cari=` | Unduh seluruh baris pada filter aktif (tanpa paginasi) sebagai CSV: `transaksi-<periode>.csv` |
+
+CSV berisi kolom Waktu, Jenis, Kategori, Keterangan, Metode, Nominal, lalu baris Total masuk / Total keluar / Selisih. Nominal pengeluaran ditandai `-`. Tombol "Export" di halaman `/owner/transaksi` memakai filter yang sedang aktif.

@@ -92,3 +92,14 @@ Nilai bisa negatif bila pengeluaran melebihi omzet.
 - Kartu "Laba Rugi" di `/owner/laporan` sudah tersambung: angka & label periode mengikuti pilihan "Periode" pada halaman.
 - Baris "Lainnya" hanya tampil bila ada pengeluaran kategori `other`.
 - Kategori mengikuti `App\Models\Expense::CATEGORIES`.
+
+# Export Laporan
+
+| Endpoint | Keterangan |
+|---|---|
+| `GET /owner/api/laporan/export?rekap=&periode=` | Unduh rekap pendapatan sebagai CSV (`rekap-pendapatan-<rekap>-<periode>.csv`), berisi baris + Total |
+| `GET /owner/laporan/cetak?rekap=&periode=` | Halaman cetak (rekap + laba rugi). Otomatis membuka dialog cetak → "Simpan sebagai PDF" |
+
+- CSV memakai BOM UTF-8 + pemisah koma, sehingga langsung rapi di Excel/LibreOffice.
+- PDF tidak memakai pustaka tambahan (tidak ada `dompdf` di proyek): halaman cetak memakai `window.print()` browser.
+- Pratinjau tanpa login: `/frontend/owner/api/laporan/export` dan `/frontend/owner/laporan/cetak`.

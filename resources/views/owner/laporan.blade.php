@@ -1,5 +1,6 @@
 @php
     $apiBase = auth()->check() ? '/owner/api' : '/frontend/owner/api';
+    $halamanBase = auth()->check() ? '/owner' : '/frontend/owner';
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -40,8 +41,7 @@
                         <a href="#" id="btnExportPdf"
                             class="rounded-[14px] border-[1.5px] border-[#EDE6DF] bg-white px-7 py-[15px] text-base font-semibold transition hover:border-[#FF8000]">Export PDF</a>
                         <a href="#" id="btnExportExcel"
-                            class="rounded-[14px] bg-[#FF8000] px-7 py-[15px] text-base font-semibold text-white transition hover:bg-[#D96C00]">Export Excel</a>
-                    </div>
+                            class="rounded-[14px] bg-[#FF8000] px-7 py-[15px] text-base font-semibold text-white transition hover:bg-[#D96C00]">Export Excel</a>                    </div>
                 </div>
 
                 <!-- FILTER -->
@@ -246,6 +246,21 @@
 
         muatRekap(radioRekap());
         muatLaba();
+
+        const parameterExport = () => new URLSearchParams({
+            rekap: radioRekap(),
+            periode: document.querySelector('select[name="periode"]').value,
+        });
+
+        document.getElementById('btnExportExcel').addEventListener('click', event => {
+            event.preventDefault();
+            window.location.href = `${API_BASE}/laporan/export?${parameterExport()}`;
+        });
+
+        document.getElementById('btnExportPdf').addEventListener('click', event => {
+            event.preventDefault();
+            window.open(`@json($halamanBase)/laporan/cetak?${parameterExport()}`, '_blank');
+        });
     </script>
 </body>
 </html>
