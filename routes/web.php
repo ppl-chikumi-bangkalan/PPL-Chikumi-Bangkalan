@@ -18,6 +18,7 @@ use App\Http\Controllers\Kasir\OnlineOrderController as KasirOnlineOrderControll
 use App\Http\Controllers\Kasir\TransactionController as KasirTransactionController;
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboardController;
 use App\Http\Controllers\Owner\ExpenseController;
+use App\Http\Controllers\Owner\LedgerController;
 use App\Http\Controllers\Owner\ProductController;
 use App\Http\Controllers\Owner\ProductSizeController;
 use App\Http\Controllers\Owner\ReportController;
@@ -172,6 +173,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('laporan/pendapatan', [ReportController::class, 'pendapatan'])->name('owner.laporan.pendapatan');
         Route::get('laporan/laba-rugi', [ReportController::class, 'labaRugi'])->name('owner.laporan.laba-rugi');
+        Route::get('transaksi', [LedgerController::class, 'index'])->name('owner.transaksi.api');
 
         Route::get('pengeluaran', [ExpenseController::class, 'index'])->name('owner.pengeluaran.index');
         Route::get('pengeluaran/kategori', [ExpenseController::class, 'categories'])->name('owner.pengeluaran.kategori');
@@ -216,6 +218,7 @@ Route::get('/frontend/owner/api/dashboard', [OwnerDashboardController::class, 's
 Route::get('/frontend/owner/api/ketersediaan', [ProductController::class, 'availability']);
 Route::get('/frontend/owner/api/laporan/pendapatan', [ReportController::class, 'pendapatan']);
 Route::get('/frontend/owner/api/laporan/laba-rugi', [ReportController::class, 'labaRugi']);
+Route::get('/frontend/owner/api/transaksi', [LedgerController::class, 'index']);
 Route::get('/frontend/owner/api/pengeluaran', [ExpenseController::class, 'index']);
 Route::get('/frontend/owner/api/pengeluaran/kategori', [ExpenseController::class, 'categories']);
 Route::get('/frontend/customer/dashboard', [DashboardController::class, 'page'])
