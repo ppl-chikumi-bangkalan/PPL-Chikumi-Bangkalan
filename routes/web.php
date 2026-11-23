@@ -17,6 +17,7 @@ use App\Http\Controllers\Kasir\HistoryController as KasirHistoryController;
 use App\Http\Controllers\Kasir\OnlineOrderController as KasirOnlineOrderController;
 use App\Http\Controllers\Kasir\TransactionController as KasirTransactionController;
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboardController;
+use App\Http\Controllers\Owner\ExpenseController;
 use App\Http\Controllers\Owner\ProductController;
 use App\Http\Controllers\Owner\ProductSizeController;
 use App\Http\Controllers\Owner\ShippingConfirmationController;
@@ -167,6 +168,13 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('owner/api')->middleware('role:owner')->group(function () {
         Route::get('dashboard', [OwnerDashboardController::class, 'summary'])->name('owner.dashboard.api');
+
+        Route::get('pengeluaran', [ExpenseController::class, 'index'])->name('owner.pengeluaran.index');
+        Route::get('pengeluaran/kategori', [ExpenseController::class, 'categories'])->name('owner.pengeluaran.kategori');
+        Route::post('pengeluaran', [ExpenseController::class, 'store'])->name('owner.pengeluaran.store');
+        Route::put('pengeluaran/{pengeluaran}', [ExpenseController::class, 'update'])->whereNumber('pengeluaran')->name('owner.pengeluaran.update');
+        Route::delete('pengeluaran/{pengeluaran}', [ExpenseController::class, 'destroy'])->whereNumber('pengeluaran')->name('owner.pengeluaran.destroy');
+
         Route::get('produk', [ProductController::class, 'index'])->name('owner.produk.index');
         Route::post('produk', [ProductController::class, 'store'])->name('owner.produk.store');
         Route::get('produk/ketersediaan', [ProductController::class, 'availability'])->name('owner.produk.ketersediaan');
@@ -202,6 +210,8 @@ Route::get('/frontend/owner/dashboard', [OwnerDashboardController::class, 'page'
     ->name('frontend.owner');
 Route::get('/frontend/owner/api/dashboard', [OwnerDashboardController::class, 'summary']);
 Route::get('/frontend/owner/api/ketersediaan', [ProductController::class, 'availability']);
+Route::get('/frontend/owner/api/pengeluaran', [ExpenseController::class, 'index']);
+Route::get('/frontend/owner/api/pengeluaran/kategori', [ExpenseController::class, 'categories']);
 Route::get('/frontend/customer/dashboard', [DashboardController::class, 'page'])
     ->name('frontend.customer.dashboard');
 Route::get('/frontend/customer/api/katalog', [CatalogController::class, 'index'])

@@ -1,9 +1,13 @@
+@php
+    $apiBase = auth()->check() ? '/owner/api' : '/frontend/owner/api';
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Transaksi - Chikumi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -218,5 +222,45 @@
 
     @include('components.owner.catat-pengeluaran')
 
+    <script>
+        const API_BASE = @json($apiBase);
+        const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const formPengeluaran = document.getElementById('formPengeluaran');
+
+        formPengeluaran.addEventListener('submit', async event => {
+            event.preventDefault();
+
+            const tombol = document.getElementById('btnSimpanPengeluaran');
+            tombol.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/pengeluaran`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': CSRF,
+                    },
+                    body: new FormData(formPengeluaran),
+                });
+
+                const hasil = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const pesan = hasil.errors
+                        ? Object.values(hasil.errors).flat().join(' ')
+                        : (hasil.message || 'Gagal menyimpan pengeluaran.');
+                    throw new Error(pesan);
+                }
+
+                formPengeluaran.reset();
+                location.hash = '';
+                alert(hasil.message || 'Pengeluaran berhasil dicatat.');
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                tombol.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>
