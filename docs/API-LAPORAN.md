@@ -44,3 +44,51 @@ Aturan ini sama dengan `GET /owner/api/dashboard` (omzet & pengeluaran), sehingg
 - Halaman `/owner/laporan` sudah tersambung: tabel Harian/Mingguan/Bulanan diisi dari endpoint ini sesuai radio "Rekap per" dan pilihan "Periode".
 - Kartu laba-rugi (HPP/operasional/gaji) masih angka contoh milik frontend.
 - Daftar opsi `periode` pada view masih statis (Okt/Sep/Agu 2026); tambah opsi saat perlu bulan lain.
+
+# API Backend Perhitungan Laba Kotor & Laba Bersih
+
+- **Endpoint**: `GET /owner/api/laporan/laba-rugi` (role `owner`)
+- **Pratinjau tanpa login**: `GET /frontend/owner/api/laporan/laba-rugi`
+- **Query**: `periode` = `YYYY-MM` (default bulan berjalan)
+
+## Rumus
+
+| Komponen | Isi |
+|---|---|
+| Omzet | POS `paid` + pesanan online berbayar (bukan `cancelled`) pada bulan tsb |
+| HPP | `expenses` kategori `raw_material` (Bahan Baku) + `packaging` (Kemasan) |
+| **Laba kotor** | `omzet − HPP` |
+| Operasional | `expenses` kategori `operational` |
+| Karyawan | `expenses` kategori `salary` + `bonus` + `overtime` |
+| Lainnya | `expenses` kategori `other` |
+| **Laba bersih** | `laba kotor − operasional − karyawan − lainnya` = `omzet − seluruh pengeluaran` |
+
+Laba bersih karena itu identik dengan `laba` pada `GET /owner/api/dashboard` untuk periode yang sama.
+
+## Response
+
+```json
+{
+  "data": {
+    "periode": "2026-10",
+    "label_periode": "Oktober 2026",
+    "omzet": 7943500,
+    "transaksi": 170,
+    "hpp": { "bahan_baku": 300000, "kemasan": 50000, "total": 350000 },
+    "laba_kotor": 7593500,
+    "operasional": 120000,
+    "karyawan": { "gaji": 700000, "bonus_lembur": 100000, "total": 800000 },
+    "lainnya": 15000,
+    "total_pengeluaran": 1285000,
+    "laba_bersih": 6658500
+  }
+}
+```
+
+Nilai bisa negatif bila pengeluaran melebihi omzet.
+
+## Catatan
+
+- Kartu "Laba Rugi" di `/owner/laporan` sudah tersambung: angka & label periode mengikuti pilihan "Periode" pada halaman.
+- Baris "Lainnya" hanya tampil bila ada pengeluaran kategori `other`.
+- Kategori mengikuti `App\Models\Expense::CATEGORIES`.

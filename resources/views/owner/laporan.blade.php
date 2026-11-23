@@ -326,12 +326,49 @@
             }
         }
 
+        const isi = (id, teks) => { document.getElementById(id).textContent = teks; };
+        const potong = nilai => '− ' + rupiah(nilai);
+
+        async function muatLaba() {
+            try {
+                const periode = document.querySelector('select[name="periode"]').value;
+                const response = await fetch(`${API_BASE}/laporan/laba-rugi?periode=${periode}`, {
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (!response.ok) return;
+
+                const { data } = await response.json();
+
+                isi('labaPeriode', data.label_periode);
+                isi('labaJumlahTransaksi', data.transaksi);
+                isi('labaOmzet', rupiah(data.omzet));
+                isi('labaBahanBaku', potong(data.hpp.bahan_baku));
+                isi('labaKemasan', potong(data.hpp.kemasan));
+                isi('labaKotor', rupiah(data.laba_kotor));
+                isi('labaOperasional', potong(data.operasional));
+                isi('labaGaji', potong(data.karyawan.gaji));
+                isi('labaBonusLembur', potong(data.karyawan.bonus_lembur));
+                isi('labaLainnya', potong(data.lainnya));
+                isi('labaBersih', uang(data.laba_bersih));
+
+                const barisLainnya = document.getElementById('barisLainnya');
+                barisLainnya.classList.toggle('hidden', data.lainnya <= 0);
+                barisLainnya.classList.toggle('flex', data.lainnya > 0);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         document.querySelectorAll('input[name="rekap_per"]').forEach(radio => {
             radio.addEventListener('change', () => muatRekap(radio.value));
         });
-        document.querySelector('select[name="periode"]').addEventListener('change', () => muatRekap(radioRekap()));
+        document.querySelector('select[name="periode"]').addEventListener('change', () => {
+            muatRekap(radioRekap());
+            muatLaba();
+        });
 
         muatRekap(radioRekap());
+        muatLaba();
     </script>
 </body>
 </html>

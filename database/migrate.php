@@ -16,6 +16,7 @@ try {
         'expenses', 'stock_histories',
         'product_sizes', 'variants', 'products', 'categories', 'users',
         'shipping_origins', 'couriers',
+        'cache', 'cache_locks',
     ];
 
     foreach ($tables as $table) {

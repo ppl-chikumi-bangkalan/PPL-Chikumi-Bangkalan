@@ -14,6 +14,15 @@ class ReportController extends Controller
         'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
     ];
 
+    private const BULAN_PANJANG = [
+        1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+    ];
+
+    // HPP = bahan baku + kemasan; karyawan = gaji + bonus + lembur.
+    private const HPP = ['raw_material', 'packaging'];
+    private const KARYAWAN = ['salary', 'bonus', 'overtime'];
+
     public function pendapatan(Request $request)
     {
         $data = $request->validate([
@@ -47,6 +56,72 @@ class ReportController extends Controller
                 'total' => $this->jumlahkan($baris),
             ],
         ]);
+    }
+
+    public function labaRugi(Request $request)
+    {
+        $data = $request->validate([
+            'periode' => ['nullable', 'date_format:Y-m'],
+        ]);
+
+        $acuan = isset($data['periode'])
+            ? Carbon::createFromFormat('Y-m-d', $data['periode'].'-01')->startOfMonth()
+            : now()->startOfMonth();
+
+        $mulai = $acuan->copy()->startOfMonth();
+        $selesai = $acuan->copy()->endOfMonth();
+
+        $omzet = $this->omzetHarian($mulai, $selesai);
+        $pengeluaran = $this->pengeluaranKategori($mulai, $selesai);
+
+        $bahanBaku = $pengeluaran['raw_material'] ?? 0.0;
+        $kemasan = $pengeluaran['packaging'] ?? 0.0;
+        $operasional = $pengeluaran['operational'] ?? 0.0;
+        $gaji = $pengeluaran['salary'] ?? 0.0;
+        $bonusLembur = ($pengeluaran['bonus'] ?? 0.0) + ($pengeluaran['overtime'] ?? 0.0);
+        $lainnya = $pengeluaran['other'] ?? 0.0;
+
+        $totalOmzet = round(array_sum(array_column($omzet, 'omzet')), 2);
+        $totalTransaksi = array_sum(array_column($omzet, 'transaksi'));
+        $hpp = round($bahanBaku + $kemasan, 2);
+        $labaKotor = round($totalOmzet - $hpp, 2);
+        $karyawan = round($gaji + $bonusLembur, 2);
+
+        return response()->json([
+            'data' => [
+                'periode' => $acuan->format('Y-m'),
+                'label_periode' => self::BULAN_PANJANG[$acuan->month].' '.$acuan->year,
+                'omzet' => $totalOmzet,
+                'transaksi' => $totalTransaksi,
+                'hpp' => [
+                    'bahan_baku' => round($bahanBaku, 2),
+                    'kemasan' => round($kemasan, 2),
+                    'total' => $hpp,
+                ],
+                'laba_kotor' => $labaKotor,
+                'operasional' => round($operasional, 2),
+                'karyawan' => [
+                    'gaji' => round($gaji, 2),
+                    'bonus_lembur' => round($bonusLembur, 2),
+                    'total' => $karyawan,
+                ],
+                'lainnya' => round($lainnya, 2),
+                'total_pengeluaran' => round(array_sum($pengeluaran), 2),
+                'laba_bersih' => round($labaKotor - $operasional - $karyawan - $lainnya, 2),
+            ],
+        ]);
+    }
+
+    // Total pengeluaran per kategori pada rentang tanggal.
+    private function pengeluaranKategori(Carbon $mulai, Carbon $selesai): array
+    {
+        return DB::table('expenses')
+            ->whereBetween('expense_date', [$mulai->toDateString(), $selesai->toDateString()])
+            ->selectRaw('category, SUM(amount) as total')
+            ->groupBy('category')
+            ->pluck('total', 'category')
+            ->map(fn ($total) => (float) $total)
+            ->all();
     }
 
     // Omzet per tanggal: POS lunas + pesanan online yang sudah dibayar & tidak batal.
