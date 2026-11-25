@@ -43,84 +43,84 @@
 
                     <div class="flex flex-wrap gap-1.5">
                         <button data-period="hari"
-                            class="period-btn rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs">
-                            Hari Ini
+                            class="period-btn rounded-full border border-stone-200 bg-white px-5 py-2.5 text-sm">
+                            Hari ini
                         </button>
 
                         <button data-period="minggu"
-                            class="period-btn rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs">
-                            Minggu Ini
+                            class="period-btn rounded-full border border-stone-200 bg-white px-5 py-2.5 text-sm">
+                            Minggu ini
                         </button>
 
                         <button data-period="bulan"
-                            class="period-btn rounded-full bg-[#FF8000] px-3 py-1.5 text-xs font-semibold text-white">
-                            Bulan Ini
+                            class="period-btn rounded-full border border-[#FF8000] bg-[#FF8000] px-5 py-2.5 text-sm font-semibold text-white">
+                            Bulan ini
                         </button>
                     </div>
                 </div>
 
                 <!-- KARTU RINGKASAN -->
-                <div class="grid grid-cols-2 gap-2 xl:grid-cols-4">
+                <div class="grid grid-cols-2 gap-3.5 md:grid-cols-4">
 
                     <!-- OMZET -->
-                    <div class="rounded-xl border border-orange-100 bg-white p-3">
-                        <div class="mb-2 grid h-7 w-7 place-items-center rounded-lg bg-orange-50 text-[#FF8000]">
+                    <div class="rounded-[18px] border-[1.5px] border-[#EDE6DF] bg-white p-[18px]">
+                        <div class="mb-2 grid h-10 w-10 place-items-center rounded-xl bg-[#FFF3E6] text-[#FF8000]">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M3.75 18V5.25m0 12.75h16.5M7.5 15l3.75-4.5 3 2.25 4.5-6" />
                             </svg>
                         </div>
                         <p class="text-sm text-stone-500">Omzet</p>
-                        <h3 id="cardOmzet" class="mt-1 text-xl font-bold">Rp 0</h3>
+                        <h3 id="cardOmzet" class="mt-1 text-lg font-bold">Rp 0</h3>
                         <p id="cardOmzetSub" class="mt-1 text-xs text-stone-400">Kasir · Online</p>
                     </div>
 
                     <!-- PENGELUARAN -->
-                    <div class="rounded-xl border border-orange-100 bg-white p-3">
-                        <div class="mb-2 grid h-7 w-7 place-items-center rounded-lg bg-orange-50 text-[#FF8000]">
+                    <div class="rounded-[18px] border-[1.5px] border-[#EDE6DF] bg-white p-[18px]">
+                        <div class="mb-2 grid h-10 w-10 place-items-center rounded-xl bg-[#FFF3E6] text-[#FF8000]">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M8.25 6.75h7.5m-7.5 3h7.5m-7.5 3h4.5M6 3.75h12A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75Z" />
                             </svg>
                         </div>
                         <p class="text-sm text-stone-500">Pengeluaran</p>
-                        <h3 id="cardPengeluaran" class="mt-1 text-xl font-bold">Rp 0</h3>
+                        <h3 id="cardPengeluaran" class="mt-1 text-lg font-bold">Rp 0</h3>
                         <p class="mt-1 text-xs text-stone-400">Total biaya usaha</p>
                     </div>
 
                     <!-- LABA -->
-                    <div class="rounded-xl border border-[#FF8000] bg-[#FF8000] p-3 text-white">
-                        <div class="mb-2 grid h-7 w-7 place-items-center rounded-lg bg-black/10">
+                    <div class="rounded-[18px] border-[1.5px] border-[#EDE6DF] bg-white p-[18px]">
+                        <div class="mb-2 grid h-10 w-10 place-items-center rounded-xl bg-[#FFF3E6] text-[#FF8000]">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="m9 12.75 2.25 2.25 4.5-5.25m5.25 2.25a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
                         </div>
-                        <p class="text-sm text-white/80">Laba Bersih*</p>
-                        <h3 id="cardLaba" class="mt-1 text-xl font-bold">Rp 0</h3>
-                        <p id="cardMargin" class="mt-1 text-xs text-white/80">Margin 0%</p>
+                        <p class="text-sm text-stone-500">Laba Bersih*</p>
+                        <h3 id="cardLaba" class="mt-1 text-lg font-bold">Rp 0</h3>
+                        <p id="cardMargin" class="mt-1 text-xs text-stone-400">Margin 0%</p>
                     </div>
 
                     <!-- TRANSAKSI -->
-                    <div class="rounded-xl border border-orange-100 bg-white p-3">
-                        <div class="mb-2 grid h-7 w-7 place-items-center rounded-lg bg-orange-50 text-[#FF8000]">
+                    <div class="rounded-[18px] border-[1.5px] border-[#EDE6DF] bg-white p-[18px]">
+                        <div class="mb-2 grid h-10 w-10 place-items-center rounded-xl bg-[#FFF3E6] text-[#FF8000]">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M3 7.5h18l-1.5 12h-15L3 7.5Zm4.5 0 4.5-4.5 4.5 4.5M9 12h.008v.008H9V12Zm6 0h.008v.008H15V12Z" />
                             </svg>
                         </div>
                         <p class="text-sm text-stone-500">Transaksi</p>
-                        <h3 id="cardTransaksi" class="mt-1 text-xl font-bold">0</h3>
+                        <h3 id="cardTransaksi" class="mt-1 text-lg font-bold">0</h3>
                         <p id="cardTransaksiSub" class="mt-1 text-xs text-stone-400">Kasir 0 · Online 0</p>
                     </div>
                 </div>
 
                 <!-- GRAFIK -->
-                <section class="rounded-xl border border-orange-100 bg-white p-4">
+                <section class="rounded-[18px] border-[1.5px] border-[#EDE6DF] bg-white p-5">
 
                     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <div>
@@ -132,22 +132,22 @@
 
                         <div class="flex gap-3 text-xs">
                             <span class="flex items-center gap-1">
-                                <span class="h-2 w-2 rounded-full bg-[#FF8000]"></span>
+                                <span class="h-2.5 w-2.5 rounded-full bg-[#FF8000]"></span>
                                 Omzet
                             </span>
                             <span class="flex items-center gap-1">
-                                <span class="h-2 w-2 rounded-full bg-stone-500"></span>
+                                <span class="h-2.5 w-2.5 rounded-full bg-[#6B645D]"></span>
                                 Pengeluaran
                             </span>
                         </div>
                     </div>
 
                     <!-- BAR CHART -->
-                    <div id="grafikBars" class="flex h-36 items-end justify-around gap-3 border-b border-stone-100 px-2"></div>
+                    <div id="grafikBars" class="flex h-48 items-end justify-around gap-3 px-2"></div>
                 </section>
 
                 <!-- KONDISI STOK -->
-                <section class="overflow-hidden rounded-xl border border-orange-100 bg-white">
+                <section class="overflow-hidden rounded-[18px] border-[1.5px] border-[#EDE6DF] bg-white">
 
                     <div class="flex items-center justify-between gap-2 p-4">
                         <div>
@@ -164,17 +164,17 @@
                     </div>
 
                     <!-- RINGKASAN STOK -->
-                    <div class="grid grid-cols-3 gap-2 px-4 pb-3">
-                        <div class="rounded-lg bg-green-50 p-2">
-                            <h4 id="stokAman" class="text-sm font-bold text-green-600">0 komponen</h4>
+                    <div class="grid grid-cols-3 gap-3 px-4 pb-4">
+                        <div class="rounded-[14px] bg-[#E6F6EC] p-3.5">
+                            <h4 id="stokAman" class="text-lg font-bold text-[#1F9D55]">0 komponen</h4>
                             <p class="text-xs text-stone-500">Aman</p>
                         </div>
-                        <div class="rounded-lg bg-red-50 p-2">
-                            <h4 id="stokMenipis" class="text-sm font-bold text-red-500">0 komponen</h4>
+                        <div class="rounded-[14px] bg-[#FDECEC] p-3.5">
+                            <h4 id="stokMenipis" class="text-lg font-bold text-[#E03131]">0 komponen</h4>
                             <p class="text-xs text-stone-500">Di bawah minimum</p>
                         </div>
-                        <div class="rounded-lg bg-rose-100 p-2">
-                            <h4 id="stokHabis" class="text-sm font-bold text-rose-600">0 komponen</h4>
+                        <div class="rounded-[14px] bg-[#FDECEC] p-3.5">
+                            <h4 id="stokHabis" class="text-lg font-bold text-[#E03131]">0 komponen</h4>
                             <p class="text-xs text-stone-500">Habis</p>
                         </div>
                     </div>
@@ -182,7 +182,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-[600px] text-left text-sm">
 
-                            <thead class="bg-[#F8F5F2] text-stone-500">
+                            <thead class="bg-[#F7F3EF] text-[11px] font-semibold text-[#6B645D]">
                                 <tr>
                                     <th class="p-3">KOMPONEN</th>
                                     <th class="p-3">SISA</th>
@@ -214,7 +214,11 @@
         const el = id => document.getElementById(id);
 
         async function ambil(path) {
-            const response = await fetch(API_BASE + path, {headers: {'Accept': 'application/json'}});
+            const response = await fetch(API_BASE + path, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
             if (!response.ok) throw new Error('Gagal memuat data.');
             return response.json();
         }
@@ -234,11 +238,11 @@
             const max = Math.max(1, ...grafik.omzet, ...grafik.pengeluaran);
             el('grafikBars').innerHTML = grafik.label.map((label, i) => `
                 <div class="flex h-full flex-1 flex-col items-center justify-end">
-                    <div class="flex h-full items-end gap-1">
-                        <div class="w-3 rounded-t bg-[#FF8000]" style="height: ${Math.round(grafik.omzet[i] / max * 100)}%"></div>
-                        <div class="w-3 rounded-t bg-stone-500" style="height: ${Math.round(grafik.pengeluaran[i] / max * 100)}%"></div>
+                    <div class="flex h-full items-end gap-1.5">
+                        <div class="w-[22px] rounded-t-md bg-[#FF8000]" style="height: ${Math.round(grafik.omzet[i] / max * 100)}%"></div>
+                        <div class="w-[22px] rounded-t-md bg-[#6B645D]" style="height: ${Math.round(grafik.pengeluaran[i] / max * 100)}%"></div>
                     </div>
-                    <p class="mt-2 text-[7px] text-stone-400">${label}</p>
+                    <p class="mt-2 text-[11px] text-[#6B645D]">${label}</p>
                 </div>`).join('');
         }
 
@@ -266,7 +270,7 @@
             try {
                 const [ringkasan, stok] = await Promise.all([
                     ambil(`/dashboard?periode=${periode}`),
-                    ambil('/ketersediaan'),
+                    ambil(API_BASE === '/owner/api' ? '/produk/ketersediaan' : '/ketersediaan'),
                 ]);
                 renderRingkasan(ringkasan.data);
                 renderStok(stok.data);
@@ -278,17 +282,17 @@
         document.querySelectorAll('.period-btn').forEach(button => {
             button.addEventListener('click', () => {
                 document.querySelectorAll('.period-btn').forEach(item => {
-                    item.classList.remove('bg-[#FF8000]', 'font-semibold', 'text-white');
+                    item.classList.remove('border-[#FF8000]', 'bg-[#FF8000]', 'font-semibold',
+                        'text-white');
                     item.classList.add('border', 'border-stone-200', 'bg-white');
                 });
-                button.classList.remove('border', 'border-stone-200', 'bg-white');
-                button.classList.add('bg-[#FF8000]', 'font-semibold', 'text-white');
+                button.classList.remove('border-stone-200', 'bg-white');
+                button.classList.add('border-[#FF8000]', 'bg-[#FF8000]', 'font-semibold', 'text-white');
                 muat(button.dataset.period);
             });
         });
         muat();
     </script>
 </body>
-
 
 </html>
