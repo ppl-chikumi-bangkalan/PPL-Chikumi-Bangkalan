@@ -66,6 +66,12 @@ class ProductController extends Controller
 
     public function availability()
     {
+        return response()->json(['data' => self::ketersediaan()]);
+    }
+
+    // Ringkasan ketersediaan stok dipakai endpoint ketersediaan & agregasi dashboard.
+    public static function ketersediaan(): array
+    {
         $rataHarian = MovingAverage::harian();
 
         $sizes = ProductSize::with('product:id,name,is_active')
@@ -101,18 +107,16 @@ class ProductController extends Controller
 
         $statuses = $sizes->pluck('status')->concat($variants->pluck('status'));
 
-        return response()->json([
-            'data' => [
-                'ringkasan' => [
-                    'total' => $statuses->count(),
-                    'aman' => $statuses->filter(fn ($status) => $status === 'aman')->count(),
-                    'menipis' => $statuses->filter(fn ($status) => $status === 'menipis')->count(),
-                    'habis' => $statuses->filter(fn ($status) => $status === 'habis')->count(),
-                ],
-                'produk' => $sizes->values(),
-                'varian' => $variants->values(),
+        return [
+            'ringkasan' => [
+                'total' => $statuses->count(),
+                'aman' => $statuses->filter(fn ($status) => $status === 'aman')->count(),
+                'menipis' => $statuses->filter(fn ($status) => $status === 'menipis')->count(),
+                'habis' => $statuses->filter(fn ($status) => $status === 'habis')->count(),
             ],
-        ]);
+            'produk' => $sizes->values(),
+            'varian' => $variants->values(),
+        ];
     }
 
     public function index()

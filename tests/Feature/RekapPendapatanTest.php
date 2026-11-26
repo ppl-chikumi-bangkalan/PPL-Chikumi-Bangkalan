@@ -75,6 +75,15 @@ class RekapPendapatanTest extends TestCase
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });
+
+        Schema::create('order_items', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_id');
+            $table->foreignId('product_size_id');
+            $table->decimal('unit_price', 12, 2);
+            $table->integer('quantity');
+            $table->decimal('subtotal', 12, 2);
+        });
     }
 
     protected function tearDown(): void
