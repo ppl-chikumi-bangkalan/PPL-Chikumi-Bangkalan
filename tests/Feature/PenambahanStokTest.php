@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Tests\Concerns\MenyiapkanDataChikumi;
 use Tests\TestCase;
 
@@ -32,6 +34,29 @@ class PenambahanStokTest extends TestCase
             'password' => 'rahasia123',
             'role' => 'owner',
         ]);
+
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id();
+            $table->string('order_number')->unique();
+            $table->foreignId('customer_id');
+            $table->string('delivery_method');
+            $table->text('shipping_address')->nullable();
+            $table->decimal('subtotal', 12, 2);
+            $table->decimal('shipping_cost', 12, 2)->default(0);
+            $table->decimal('grand_total', 12, 2);
+            $table->string('status')->default('unpaid');
+            $table->timestamp('paid_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('order_items', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_id');
+            $table->foreignId('product_size_id');
+            $table->decimal('unit_price', 12, 2);
+            $table->integer('quantity');
+            $table->decimal('subtotal', 12, 2);
+        });
     }
 
     private function ubahStok(int $sizeId, array $body)

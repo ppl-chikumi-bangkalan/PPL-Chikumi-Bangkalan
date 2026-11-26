@@ -19,13 +19,14 @@
 |---|---|---|---|---|
 | Kasir | 26 | 26 | 0 | 110 |
 | Pemesanan online | 116 | 116 | 0 | 406 |
-| Stok | 70 | 69 | 1 (lama) | 284 |
+| Stok | 70 | 70 | 0 | 315 |
 | Keuangan | 60 | 60 | 0 | 305 |
-| **Total** | **272** | **271** | **1** | **1.105** |
+| **Total** | **272** | **272** | **0** | **1.137** |
+| Regresi penuh (seluruh suite) | 288 | 288 | 0 | 1.137 |
 
-**Hasil: LULUS DENGAN CATATAN.**
+**Hasil: LULUS.**
 
-Perubahan agregasi (menambahkan `stok` ke response dashboard) **tidak menimbulkan regresi** di alur kasir, pemesanan online, maupun keuangan (100% lulus). Satu kegagalan pada alur stok (`PenambahanStokTest::test_halaman_stok_merender_form_dan_riwayat`) adalah **kegagalan lama** yang sudah ada sebelum perubahan ini: skema setup tes tidak membuat tabel `order_items` yang dibutuhkan `MovingAverage::harian()` saat merender `/owner/stok`. Di database produksi tabel tersebut ada.
+Perubahan agregasi (menambahkan `stok` ke response dashboard) **tidak menimbulkan regresi** di alur kasir, pemesanan online, stok, maupun keuangan (100% lulus). Dua kegagalan yang tercatat pada uji awal sudah **diperbaiki** (lihat Temuan U-05 & U-06): pengujian ulang suite penuh kini **288/288 lulus**.
 
 ## Kriteria Penerimaan yang Diuji
 
@@ -74,7 +75,7 @@ Kartu Jira `CHIK-145` tidak diakses dari mesin uji; kriteria diturunkan dari jud
 
 | Kelompok | File | Tests | Status |
 |---|---|---|---|
-| Tambah/kurangi stok & riwayat | `PenambahanStokTest` | 8 | ⚠️ 7/8 (U-05) |
+| Tambah/kurangi stok & riwayat | `PenambahanStokTest` | 8 | ✅ 8/8 |
 | Pengurangan stok (kasir, online, batal, kedaluwarsa) | `PenguranganStokTest` | 13 | ✅ 13/13 |
 | Penanda stok minimum & batas per produk | `PenandaStokMinimumTest` | 34 | ✅ 34/34 |
 | Moving average & saran restock | `PrediksiStokTest` | 15 | ✅ 15/15 |
@@ -87,11 +88,12 @@ Kartu Jira `CHIK-145` tidak diakses dari mesin uji; kriteria diturunkan dari jud
 | Rekap pendapatan & laba rugi | `RekapPendapatanTest` | 31 | ✅ 31/31 |
 | Wiring dashboard kasir & owner | `DashboardWiringTest` | 2 | ✅ 2/2 |
 
-## Temuan
+## Temuan & Perbaikan
 
-| ID | Tingkat | Temuan | Rekomendasi | Status |
+| ID | Tingkat | Temuan | Perbaikan | Status |
 |---|---|---|---|---|
-| U-05 | **Rendah** | **Kegagalan lama (bukan regresi).** `PenambahanStokTest::test_halaman_stok_merender_form_dan_riwayat` gagal 500 `no such table: order_items`. Setup tes memakai `MenyiapkanDataChikumi` yang tidak membuat tabel `orders`/`order_items`, padahal `pageStok()` memanggil `MovingAverage::harian()` yang meng-query `order_items`. Terbukti gagal juga pada commit sebelum perubahan agregasi. | Lengkapi skema tes stok dengan tabel `orders` & `order_items` (seperti pada `DashboardWiringTest`/`RekapPendapatanTest`). | ⚠️ Known issue |
+| U-05 | **Rendah** | `PenambahanStokTest::test_halaman_stok_merender_form_dan_riwayat` gagal 500 `no such table: order_items`. Setup tes memakai `MenyiapkanDataChikumi` yang tidak membuat tabel `orders`/`order_items`, padahal `pageStok()` memanggil `MovingAverage::harian()` yang meng-query `order_items`. | Menambahkan tabel `orders` & `order_items` pada `setUp()` `tests/Feature/PenambahanStokTest.php`. Tes kini **8/8 lulus**. | ✅ Diperbaiki |
+| U-06 | **Rendah** | `ExampleTest` (boilerplate Laravel) menganggap `GET /` harus 200, padahal route `/` sengaja mengalihkan tamu ke `/login`. | Mengubah asersi menjadi `assertRedirect(route('login'))` sesuai perilaku yang dimaksud. | ✅ Diperbaiki |
 | P-01 | **Info** | **`MovingAverage::harian()` ikut dieksekusi oleh agregasi dashboard**, sehingga `GET /api/dashboard` kini meng-query `pos_transaction_items`, `order_items`, `product_sizes`, `variants`. Beban tambahan kecil (1 query per tabel), tetapi berarti dashboard & endpoint ketersediaan berbagi sumber yang sama. | Bila dashboard mulai lambat, cache hasil `ketersediaan()` per menit. | ℹ️ Catatan |
 | P-02 | **Info** | **`ProductController::ketersediaan()` dibuat `public static`** agar bisa dipanggil dari `DashboardController`. Ini menambah kopling antar-controller. | Bila tumbuh, pindahkan ke `App\Support`/service tersendiri. | ℹ️ Catatan |
 
@@ -113,10 +115,10 @@ Kartu Jira `CHIK-145` tidak diakses dari mesin uji; kriteria diturunkan dari jud
    ```
    php artisan test --filter='TransaksiKasirTest|RiwayatTransaksiTest|PesananOnlineKasirTest|KeranjangTest|OngkosKirimTest|PemesananOnlineTest|CheckoutPesananTest|PembayaranSandboxTest|HargaDinamisTest|PenambahanStokTest|PenguranganStokTest|PenandaStokMinimumTest|PrediksiStokTest|PencatatanPengeluaranTest|RekapPendapatanTest|DashboardWiringTest'
    ```
-   Diharapkan **271 lulus, 1 gagal lama** (U-05).
+   Diharapkan **272 lulus, 0 gagal**.
 2. **Cek kontrak dashboard:**
    ```
    curl -s -H 'Accept: application/json' http://localhost:8000/owner/api/dashboard?periode=bulan
    ```
    Pastikan ada `data.stok.ringkasan`, `data.stok.produk`, `data.stok.varian` di samping `omzet`, `pengeluaran`, `laba`, `transaksi`, `grafik`.
-3. **Regresi penuh:** `php artisan test` → selain U-05, `ExampleTest` juga gagal lama (`GET /` → 302, keduanya di luar scope).
+3. **Regresi penuh:** `php artisan test` → **288/288 lulus**.
