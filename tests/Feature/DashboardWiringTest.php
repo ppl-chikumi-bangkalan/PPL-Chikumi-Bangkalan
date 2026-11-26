@@ -53,6 +53,14 @@ class DashboardWiringTest extends TestCase
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });
+        Schema::create('order_items', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_id');
+            $table->foreignId('product_size_id');
+            $table->decimal('unit_price', 12, 2);
+            $table->integer('quantity');
+            $table->decimal('subtotal', 12, 2);
+        });
     }
 
     public function test_halaman_kasir_dan_owner_merender_data_backend(): void
@@ -107,5 +115,8 @@ class DashboardWiringTest extends TestCase
         $this->assertEquals(110000, $response->json('data.laba'));
         $this->assertEquals(2, $response->json('data.transaksi.total'));
         $this->assertCount(5, $response->json('data.grafik.label'));
+        $this->assertArrayHasKey('ringkasan', $response->json('data.stok'));
+        $this->assertArrayHasKey('produk', $response->json('data.stok'));
+        $this->assertArrayHasKey('varian', $response->json('data.stok'));
     }
 }

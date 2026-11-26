@@ -52,6 +52,7 @@ class DashboardController extends Controller
                     'kasir' => (clone $pos)->count(),
                     'online' => (clone $pesanan)->count(),
                 ],
+                'stok' => ProductController::ketersediaan(),
                 'grafik' => $this->grafikBulanan(),
             ],
         ]);
